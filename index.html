@@ -18,8 +18,9 @@ h1{font-size:42px;font-weight:900;color:#ff2a5f;margin:0 0 8px;letter-spacing:-.
 #seating-wrapper{width:100%;overflow-x:auto;padding-bottom:20px;box-sizing:border-box;-webkit-overflow-scrolling:touch}
 #stage-container{width:max-content;margin:0 auto;display:flex;flex-direction:column;align-items:center}
 .stage{width:100%;background:linear-gradient(180deg,#380816,#17040a);border:1px solid #881337;border-bottom:none;border-radius:12px 12px 0 0;padding:14px 0;text-align:center;box-shadow:0 -4px 20px rgba(136,19,55,.3);box-sizing:border-box;color:#ff2a5f;font-weight:900;letter-spacing:5px;font-size:15px}
-.arena{display:flex;align-items:flex-start;gap:38px;width:100%;box-sizing:border-box}
-.catwalk{width:38px;height:318px;background:linear-gradient(180deg,#280610,#17040a);border:1px solid #881337;border-top:none;border-radius:0 0 8px 8px;box-shadow:0 6px 15px rgba(136,19,55,.25);display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;color:#ff2a5f;font-size:11px;font-weight:800;letter-spacing:3px;box-sizing:border-box;flex-shrink:0;user-select:none}
+.arena{display:flex;align-items:flex-start;gap:38px;width:100%;box-sizing:border-box;position:relative}
+.arena::before{content:'';position:absolute;top:0;left:38px;right:38px;border-top:1px solid #881337;box-shadow:0 2px 14px rgba(136,19,55,.45)}
+.catwalk{width:38px;height:318px;background:#17040a;border:1px solid #881337;border-top:none;border-radius:0 0 8px 8px;box-shadow:0 6px 15px rgba(136,19,55,.25);display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;color:#ff2a5f;font-size:11px;font-weight:800;letter-spacing:3px;box-sizing:border-box;flex-shrink:0;user-select:none}
 #chart{display:flex;gap:20px;margin-top:15px}
 .seat-block{display:flex;flex-direction:column;gap:6px}
 .block-1,.block-3{align-items:flex-end}.block-2,.block-4{align-items:flex-start}
@@ -47,6 +48,7 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 .seat{width:32px;height:38px;font-size:10px}.seat-row{height:40px;gap:4px}
 #chart{gap:12px;margin-top:10px}
 .catwalk{width:30px;height:260px;font-size:9px;letter-spacing:2px}
+.arena::before{left:30px;right:30px}
 .stage{font-size:12px;letter-spacing:3px}}
 </style>
 </head>
