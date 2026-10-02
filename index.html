@@ -148,10 +148,20 @@ function render() {
     `<div class="seat-block block-${j + 1}">` +
     LAYOUT.map(row => `<div class="seat-row">${row[j].map(seat).join('')}</div>`).join('') + '</div>').join('');
   $('total').textContent = records.length;
-  requestAnimationFrame(() => {
-    const w = $('seating-wrapper');
-    w.scrollLeft = ($('stage-container').scrollWidth - w.clientWidth) / 2;
-  });
+  requestAnimationFrame(centerChart);
+}
+
+function fitChart() {
+  const w = $('seating-wrapper'), c = $('stage-container');
+  c.style.zoom = '';
+  if (!w.clientWidth) return; // tab tersembunyi
+  if (window.innerWidth > 768 && c.scrollWidth > w.clientWidth) c.style.zoom = (w.clientWidth / c.scrollWidth).toFixed(3);
+}
+window.addEventListener('resize', () => { fitChart(); centerChart(); });
+function centerChart() {
+  fitChart();
+  const w = $('seating-wrapper'), c = $('stage-container');
+  w.scrollLeft = (c.scrollWidth - w.clientWidth) / 2;
 }
 
 function openSeat(code) {
