@@ -103,18 +103,36 @@ const normSeat = s => {
   return m ? m[1] + '-' + Number(m[2]) : '';
 };
 const okPhoto = p => typeof p === 'string' && (p.startsWith('data:image/') || /^https?:\/\//i.test(p));
-const sanitize = r => {
-  const ts = r && (r.twoshot === 'Ya' || r.twoshot === true) ? 'Ya' : 'Tidak';
-  return {
-    seat: normSeat(r && r.seat),
-    setlist: String((r && r.setlist) || ''),
-    date: String((r && r.date) || ''),
-    note: String((r && r.note) || ''),
-    twoshot: ts,
-    member: ts === 'Ya' ? String((r && r.member) || '') : '',
-    photo: ts === 'Ya' && okPhoto(r && r.photo) ? r.photo : ''
+const KINDS = [
+  {k:'ts', q:'2-Shot?', name:'2-Shot', icon:'📸', f:'twoshot', t:'tsType', m:'member', p:'photo',
+   types:[['birthday','Birthday 2-Shot'],['roulette','2-Shot Roulette']], short:{birthday:'Birthday 2-Shot', roulette:'2-Shot'}},
+  {k:'ck', q:'Chekicha?', name:'Chekicha', icon:'🎴', f:'chekicha', t:'ckType', m:'ckMember', p:'ckPhoto',
+   types:[['birthday','Birthday Chekicha'],['roulette','Roulette Chekicha']], short:{birthday:'Birthday Chekicha', roulette:'Chekicha'}}
+];
+// daftar 2-Shot / Chekicha yang aktif di satu record (roulette ditampilkan singkat)
+const extras = r => KINDS.filter(K => r[K.f] === 'Ya')
+  .map(K => ({label: K.short[r[K.t]] || K.short.roulette, icon: K.icon, member: r[K.m], photo: r[K.p]}));
+const SO = {Malam: 2, Siang: 1};
+const cmp = (a, b) => b.date.localeCompare(a.date) || ((SO[b.sesi] || 0) - (SO[a.sesi] || 0));
+
+function sanitize(r, i) {
+  r = r || {};
+  const o = {
+    id: 0,
+    seat: normSeat(r.seat) || String(r.seat || '').toUpperCase(),
+    setlist: String(r.setlist || ''), date: String(r.date || ''),
+    sesi: ['Siang', 'Malam'].includes(r.sesi) ? r.sesi : '',
+    note: String(r.note || '')
   };
-};
+  for (const K of KINDS) {
+    const on = r[K.f] === 'Ya' || r[K.f] === true;
+    o[K.f] = on ? 'Ya' : 'Tidak';
+    o[K.t] = on ? (r[K.t] === 'birthday' ? 'birthday' : 'roulette') : '';
+    o[K.m] = on ? String(r[K.m] || '') : '';
+    o[K.p] = on && okPhoto(r[K.p]) ? r[K.p] : '';
+  }
+  return o;
+}
 
 let records = [];
 
@@ -138,14 +156,13 @@ function render() {
 
 function openSeat(code) {
   $('modal-seat').textContent = code;
-  const list = records.filter(r => r.seat === code).sort((a, b) => b.date.localeCompare(a.date));
+  const list = records.filter(r => r.seat === code).sort(cmp);
   $('modal-hist').innerHTML = list.length ? list.map(r => `
     <div class="hi">
       <b>${esc(r.setlist)}</b>
-      <div class="hd">${esc(r.date)}</div>
+      <div class="hd">${esc(r.date)}${r.sesi ? ' · ' + r.sesi : ''}</div>
       ${r.note ? `<div class="hn">"${esc(r.note)}"</div>` : ''}
-      ${r.twoshot === 'Ya' ? `<div class="ht">📸 2-Shot dengan ${esc(r.member)}</div>` : ''}
-      ${r.photo ? `<img src="${esc(r.photo)}" data-photo alt="Foto 2-shot" loading="lazy">` : ''}
+      ${extras(r).map(x => `<div class="ht">${x.icon} ${esc(x.label)} dengan ${esc(x.member)}</div>${x.photo ? `<img src="${esc(x.photo)}" data-photo alt="Foto" loading="lazy">` : ''}`).join('')}
     </div>`).join('') : `<div class="empty">Belum ada riwayat di kursi ${esc(code)}</div>`;
   $('seat-modal').classList.add('open');
   $('seat-close').focus();
