@@ -71,9 +71,10 @@ td{padding:12px 10px;border-bottom:1px solid #24151d;color:#e4e4e7}
 .ht{font-size:12px;color:#34d399;margin-top:4px;font-weight:600}
 .empty{color:#71717a;font-size:14px;text-align:center;padding:16px 0}
 .thumb{display:block;width:44px;height:44px;object-fit:cover;border-radius:6px;margin-top:6px;cursor:zoom-in;border:1px solid #3d222e}
-#photo-prev{display:none;align-items:center;gap:10px;margin-top:6px}
-#photo-img{width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #3d222e}
-#photo-prev .btn{padding:6px 10px;font-size:12px}
+
+.pprev{display:none;align-items:center;gap:10px;margin-top:6px}
+.pprev img{width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #3d222e}
+.pprev .btn{padding:6px 10px;font-size:12px}
 .hi img{display:block;max-width:100%;max-height:160px;border-radius:8px;margin-top:8px;cursor:zoom-in}
 #lb-img{max-width:100%;max-height:90vh;border-radius:12px;box-shadow:0 0 30px rgba(0,0,0,.6)}
 #lightbox{cursor:zoom-out;z-index:200}
@@ -124,17 +125,11 @@ h1{font-size:28px}.sub{font-size:13px;margin-bottom:16px}.wrap{padding:20px 12px
             <input id="f-setlist" placeholder="Pajama Drive" autocomplete="off"></div>
           <div class="fg"><label for="f-date">Tanggal Show</label>
             <input type="date" id="f-date"></div>
+          <div class="fg"><label for="f-sesi">Sesi</label>
+            <select id="f-sesi"><option value="">-</option><option value="Siang">Siang</option><option value="Malam">Malam</option></select></div>
           <div class="fg"><label for="f-note">Keterangan / Momen (Opsional)</label>
             <textarea id="f-note" rows="2" placeholder="STS / diwaro member"></textarea></div>
-          <div class="fg"><label for="f-ts">2-Shot?</label>
-            <select id="f-ts"><option value="Tidak">Tidak</option><option value="Ya">Ya</option></select></div>
-          <div id="member-box" style="display:none">
-            <div class="fg"><label for="f-member">2-Shot dengan</label>
-              <input id="f-member" placeholder="Nama Member" autocomplete="off"></div>
-            <div class="fg"><label for="f-photo">Foto 2-Shot (Opsional)</label>
-              <input type="file" id="f-photo" accept="image/*">
-              <div id="photo-prev"><img id="photo-img" alt="Preview foto"><button type="button" class="btn" id="photo-rm">Hapus foto</button></div></div>
-          </div>
+          <div id="extras"></div>
           <div id="msg" role="alert"></div>
           <div class="actions">
             <button type="submit" class="btn main" id="btn-submit">+ Simpan Data</button>
@@ -155,7 +150,7 @@ h1{font-size:28px}.sub{font-size:13px;margin-bottom:16px}.wrap{padding:20px 12px
         </div>
         <div class="scroll">
           <table>
-            <thead><tr><th>Kursi</th><th>Setlist</th><th>Tanggal</th><th>Keterangan</th><th>2-Shot</th><th style="width:100px">Aksi</th></tr></thead>
+            <thead><tr><th>Kursi</th><th>Setlist</th><th>Tanggal</th><th>Keterangan</th><th>2-Shot / Chekicha</th><th style="width:100px">Aksi</th></tr></thead>
             <tbody id="tbody"></tbody>
           </table>
         </div>
@@ -212,18 +207,36 @@ function normSeat(s) {
   return m ? m[1] + '-' + Number(m[2]) : '';
 }
 
+const KINDS = [
+  {k:'ts', q:'2-Shot?', name:'2-Shot', icon:'📸', f:'twoshot', t:'tsType', m:'member', p:'photo',
+   types:[['birthday','Birthday 2-Shot'],['roulette','2-Shot Roulette']], short:{birthday:'Birthday 2-Shot', roulette:'2-Shot'}},
+  {k:'ck', q:'Chekicha?', name:'Chekicha', icon:'🎴', f:'chekicha', t:'ckType', m:'ckMember', p:'ckPhoto',
+   types:[['birthday','Birthday Chekicha'],['roulette','Roulette Chekicha']], short:{birthday:'Birthday Chekicha', roulette:'Chekicha'}}
+];
+// daftar 2-Shot / Chekicha yang aktif di satu record (roulette ditampilkan singkat)
+const extras = r => KINDS.filter(K => r[K.f] === 'Ya')
+  .map(K => ({label: K.short[r[K.t]] || K.short.roulette, icon: K.icon, member: r[K.m], photo: r[K.p]}));
+const SO = {Malam: 2, Siang: 1};
+const cmp = (a, b) => b.date.localeCompare(a.date) || ((SO[b.sesi] || 0) - (SO[a.sesi] || 0));
+
+const okP = p => typeof p === 'string' && p.startsWith('data:image/');
 function sanitize(r, i) {
-  const ts = r && r.twoshot === 'Ya' ? 'Ya' : 'Tidak';
-  return {
-    id: Number(r && r.id) || Date.now() + i,
-    seat: normSeat(r && r.seat) || String((r && r.seat) || '').toUpperCase(),
-    setlist: String((r && r.setlist) || ''),
-    date: String((r && r.date) || ''),
-    note: String((r && r.note) || ''),
-    twoshot: ts,
-    member: ts === 'Ya' ? String((r && r.member) || '') : '',
-    photo: ts === 'Ya' && r && typeof r.photo === 'string' && r.photo.startsWith('data:image/') ? r.photo : ''
+  r = r || {};
+  const o = {
+    id: Number(r.id) || Date.now() + i,
+    seat: normSeat(r.seat) || String(r.seat || '').toUpperCase(),
+    setlist: String(r.setlist || ''), date: String(r.date || ''),
+    sesi: ['Siang', 'Malam'].includes(r.sesi) ? r.sesi : '',
+    note: String(r.note || '')
   };
+  for (const K of KINDS) {
+    const on = r[K.f] === 'Ya' || r[K.f] === true;
+    o[K.f] = on ? 'Ya' : 'Tidak';
+    o[K.t] = on ? (r[K.t] === 'birthday' ? 'birthday' : 'roulette') : '';
+    o[K.m] = on ? String(r[K.m] || '') : '';
+    o[K.p] = on && okP(r[K.p]) ? r[K.p] : '';
+  }
+  return o;
 }
 
 // ---------- Storage + migrasi ----------
@@ -272,15 +285,14 @@ document.addEventListener('keydown', e => {
 
 function openSeat(code) {
   $('modal-seat').textContent = code;
-  const list = records.filter(r => r.seat === code).sort((a, b) => b.date.localeCompare(a.date));
+  const list = records.filter(r => r.seat === code).sort(cmp);
   $('modal-hist').innerHTML = list.length
     ? list.map(r => `
       <div class="hi">
         <b>${esc(r.setlist)}</b>
-        <div class="hd">${esc(r.date)}</div>
+        <div class="hd">${esc(r.date)}${r.sesi ? ' · ' + r.sesi : ''}</div>
         ${r.note ? `<div class="hn">"${esc(r.note)}"</div>` : ''}
-        ${r.twoshot === 'Ya' ? `<div class="ht">📸 2-Shot dengan ${esc(r.member)}</div>` : ''}
-        ${r.photo ? `<img src="${esc(r.photo)}" data-photo alt="Foto 2-shot">` : ''}
+        ${extras(r).map(x => `<div class="ht">${x.icon} ${esc(x.label)} dengan ${esc(x.member)}</div>${x.photo ? `<img src="${esc(x.photo)}" data-photo alt="Foto">` : ''}`).join('')}
       </div>`).join('')
     : `<div class="empty">Belum ada riwayat show di kursi ${esc(code)}</div>`;
   openEl('seat-modal');
@@ -306,15 +318,15 @@ function renderTheater() {
 function renderTable() {
   const q = $('search').value.toLowerCase();
   const list = [...records]
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .filter(r => [r.seat, r.setlist, r.note, r.member, r.date].some(v => v.toLowerCase().includes(q)));
+    .sort(cmp)
+    .filter(r => [r.seat, r.setlist, r.note, r.member, r.ckMember, r.date, r.sesi].some(v => v.toLowerCase().includes(q)));
   $('tbody').innerHTML = list.length ? list.map(r => `
     <tr>
       <td><span class="seat-badge${SEATS.has(r.seat) ? '' : ' bad'}" ${SEATS.has(r.seat) ? '' : 'title="Kursi tidak ada di peta — edit supaya muncul"'}>${esc(r.seat)}</span></td>
       <td><b>${esc(r.setlist)}</b></td>
-      <td>${esc(r.date)}</td>
+      <td>${esc(r.date)}${r.sesi ? ' · ' + r.sesi : ''}</td>
       <td>${esc(r.note) || '-'}</td>
-      <td>${r.twoshot === 'Ya' ? `<span class="ts-ya">Ya (${esc(r.member) || '-'})</span>${r.photo ? `<img class="thumb" src="${esc(r.photo)}" data-photo alt="Foto 2-shot">` : ''}` : '<span class="ts-no">Tidak</span>'}</td>
+      <td>${exCell(r)}</td>
       <td>
         <button class="act edit" data-act="edit" data-id="${r.id}">Edit</button>
         <button class="act del" data-act="del" data-id="${r.id}">Hapus</button>
@@ -340,12 +352,25 @@ document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', (
 // ---------- Form ----------
 const setMsg = t => $('msg').textContent = t || '';
 
-let curPhoto = '';
-function setPhoto(d) {
-  curPhoto = d || '';
-  $('f-photo').value = '';
-  $('photo-img').src = curPhoto;
-  $('photo-prev').style.display = curPhoto ? 'flex' : 'none';
+$('extras').innerHTML = KINDS.map(K => `
+  <div class="fg"><label for="f-${K.k}">${K.q}</label>
+    <select id="f-${K.k}"><option value="Tidak">Tidak</option><option value="Ya">Ya</option></select></div>
+  <div id="box-${K.k}" style="display:none">
+    <div class="fg"><label for="t-${K.k}">Jenis ${K.name}</label>
+      <select id="t-${K.k}">${K.types.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select></div>
+    <div class="fg"><label for="m-${K.k}">${K.name} dengan</label>
+      <input id="m-${K.k}" placeholder="Nama Member" autocomplete="off"></div>
+    <div class="fg"><label for="p-${K.k}">Foto ${K.name} (Opsional)</label>
+      <input type="file" id="p-${K.k}" accept="image/*">
+      <div class="pprev" id="pv-${K.k}"><img id="pi-${K.k}" alt="Preview foto"><button type="button" class="btn" id="pr-${K.k}">Hapus foto</button></div></div>
+  </div>`).join('');
+
+const cur = { ts: '', ck: '' };
+function setPhoto(k, d) {
+  cur[k] = d || '';
+  $('p-' + k).value = '';
+  $('pi-' + k).src = cur[k];
+  $('pv-' + k).style.display = cur[k] ? 'flex' : 'none';
 }
 // Kompres foto (maks 900px, JPEG) supaya hemat localStorage
 function compress(file, max = 900, q = 0.75) {
@@ -363,13 +388,22 @@ function compress(file, max = 900, q = 0.75) {
     img.src = url;
   });
 }
-$('f-photo').addEventListener('change', async e => {
-  const f = e.target.files[0];
-  if (!f) return;
-  try { setPhoto(await compress(f)); setMsg(''); }
-  catch (err) { setPhoto(''); setMsg(err.message + '. Coba format JPG/PNG.'); }
+function toggleBox(k) {
+  const on = $('f-' + k).value === 'Ya';
+  $('box-' + k).style.display = on ? 'block' : 'none';
+  if (!on) { $('m-' + k).value = ''; $('t-' + k).selectedIndex = 0; setPhoto(k, ''); }
+}
+const toggleAll = () => KINDS.forEach(K => toggleBox(K.k));
+KINDS.forEach(K => {
+  $('f-' + K.k).addEventListener('change', () => toggleBox(K.k));
+  $('pr-' + K.k).addEventListener('click', () => setPhoto(K.k, ''));
+  $('p-' + K.k).addEventListener('change', async e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    try { setPhoto(K.k, await compress(f)); setMsg(''); }
+    catch (err) { setPhoto(K.k, ''); setMsg(err.message + '. Coba format JPG/PNG.'); }
+  });
 });
-$('photo-rm').addEventListener('click', () => setPhoto(''));
 document.addEventListener('click', e => {
   const im = e.target.closest('img[data-photo]');
   if (!im) return;
@@ -378,12 +412,11 @@ document.addEventListener('click', e => {
 });
 $('lightbox').addEventListener('click', () => closeEl('lightbox'));
 
-function toggleMember() {
-  const on = $('f-ts').value === 'Ya';
-  $('member-box').style.display = on ? 'block' : 'none';
-  if (!on) { $('f-member').value = ''; setPhoto(''); }
-}
-$('f-ts').addEventListener('change', toggleMember);
+const exCell = r => {
+  const e = extras(r);
+  return e.length ? e.map(x => `<div><span class="ts-ya">${esc(x.label)} (${esc(x.member) || '-'})</span>${x.photo ? `<img class="thumb" src="${esc(x.photo)}" data-photo alt="Foto">` : ''}</div>`).join('')
+                  : '<span class="ts-no">-</span>';
+};
 
 function resetForm() {
   $('form').reset();
@@ -392,8 +425,7 @@ function resetForm() {
   $('btn-submit').textContent = '+ Simpan Data';
   $('btn-cancel').style.display = 'none';
   setMsg('');
-  toggleMember();
-  setPhoto('');
+  toggleAll();
 }
 $('btn-cancel').addEventListener('click', resetForm);
 
@@ -405,19 +437,26 @@ $('form').addEventListener('submit', async e => {
   const setlist = $('f-setlist').value.trim();
   const date = $('f-date').value;
   const note = $('f-note').value.trim();
-  const twoshot = $('f-ts').value;
-  const member = twoshot === 'Ya' ? $('f-member').value.trim() : '';
+  const sesi = $('f-sesi').value;
+  const ex = {};
+  for (const K of KINDS) {
+    const on = $('f-' + K.k).value === 'Ya';
+    ex[K.f] = on ? 'Ya' : 'Tidak';
+    ex[K.t] = on ? $('t-' + K.k).value : '';
+    ex[K.m] = on ? $('m-' + K.k).value.trim() : '';
+    ex[K.p] = on ? cur[K.k] : '';
+  }
 
   if (!SEATS.has(seat)) return setMsg('Kursi tidak valid / tidak ada di peta. Contoh: A-19, B-7, J-23.');
   if (!setlist) return setMsg('Setlist wajib diisi.');
   if (!date) return setMsg('Tanggal wajib diisi.');
-  if (twoshot === 'Ya' && !member) return setMsg('Nama member 2-Shot wajib diisi.');
+  for (const K of KINDS) if (ex[K.f] === 'Ya' && !ex[K.m]) return setMsg(`Nama member ${K.name} wajib diisi.`);
 
   const dup = records.some(r => r.id !== id && r.seat === seat && r.date === date &&
-    r.setlist.toLowerCase() === setlist.toLowerCase());
-  if (dup && !await ask('Data dengan kursi, setlist, dan tanggal yang sama sudah ada. Tetap simpan?', 'Tetap simpan')) return;
+    r.setlist.toLowerCase() === setlist.toLowerCase() && r.sesi === sesi);
+  if (dup && !await ask('Data dengan kursi, setlist, tanggal, dan sesi yang sama sudah ada. Tetap simpan?', 'Tetap simpan')) return;
 
-  const rec = { id: id || Date.now(), seat, setlist, date, note, twoshot, member, photo: twoshot === 'Ya' ? curPhoto : '' };
+  const rec = { id: id || Date.now(), seat, setlist, date, sesi, note, ...ex };
   if (id) {
     const i = records.findIndex(r => r.id === id);
     if (i !== -1) records[i] = rec; else records.push(rec);
@@ -441,11 +480,17 @@ $('tbody').addEventListener('click', async e => {
     $('f-seat').value = rec.seat;
     $('f-setlist').value = rec.setlist;
     $('f-date').value = rec.date;
+    $('f-sesi').value = rec.sesi;
     $('f-note').value = rec.note;
-    $('f-ts').value = rec.twoshot;
-    toggleMember();
-    $('f-member').value = rec.member;
-    setPhoto(rec.photo);
+    KINDS.forEach(K => {
+      $('f-' + K.k).value = rec[K.f];
+      toggleBox(K.k);
+      if (rec[K.f] === 'Ya') {
+        $('t-' + K.k).value = rec[K.t] || 'roulette';
+        $('m-' + K.k).value = rec[K.m];
+        setPhoto(K.k, rec[K.p]);
+      }
+    });
     $('form-title').textContent = 'Edit Data Riwayat';
     $('btn-submit').textContent = 'Update Data';
     $('btn-cancel').style.display = 'block';
