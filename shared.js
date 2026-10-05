@@ -81,11 +81,15 @@ function renderChart() {
     return `<button type="button" class="seat${c ? ' visited' : ''}${on && all[code] && !c ? ' dim' : ''}" data-seat="${code}"${st} aria-label="Kursi ${code}${c ? `, ${c} kali` : ''}">
       <span>${code}</span>${c ? `<span class="seat-count">${c}</span>` : ''}</button>`;
   };
-  $('chart').innerHTML = [0, 1, 2, 3].map(j =>
+  $('chart').innerHTML = rowLabels() + [0, 1, 2, 3].map(j =>
     `<div class="seat-block block-${j + 1}">` +
-    LAYOUT.map(row => `<div class="seat-row">${row[j].map(seat).join('')}</div>`).join('') + '</div>').join('');
+    LAYOUT.map((row, i) => `<div class="seat-row" style="--r:${i}">${row[j].map(seat).join('')}</div>`).join('') + '</div>').join('') + rowLabels();
   $('total').textContent = records.length;
-  renderFilters(); renderStats(); renderSetlists(); syncUrl();
+  const first = !introDone && records.length > 0; // animasi masuk hanya sekali
+  introDone = introDone || first; intro = first;
+  $('chart').classList.toggle('intro', first);
+  renderFilters(); renderStats(); if (first) countUp($('stats'));
+  renderSetlists(); renderCal(); renderGallery(); syncUrl();
   requestAnimationFrame(centerChart);
 }
 
@@ -222,12 +226,13 @@ wrapEl.insertAdjacentHTML('beforebegin', `<div id="stats"></div>
     <button type="button" class="btn-s" id="flt-reset">Reset</button><span id="flt-info"></span>
   </div>`);
 wrapEl.insertAdjacentHTML('afterend', `<div id="legend"></div>
-  <h2 class="sec">Total kunjungan per setlist</h2><div id="sl-chart"></div>`);
+  <h2 class="sec">Total kunjungan per setlist</h2><div id="sl-chart"></div>
+  <h2 class="sec">Kalender kehadiran</h2><div id="cal-nav"></div><div id="cal"></div>`);
 $('flt-from').value = filter.from;
 $('flt-to').value = filter.to;
 $('legend').innerHTML = 'Jumlah kunjungan: ' + HEAT.map((h, i) =>
   `<span class="lg"><i style="background:${h.bg};border-color:${h.bd}"></i>${heatLabel(h, i)}</span>`).join('') +
-  '<button type="button" class="btn-s" id="png-btn">📷 Simpan peta (PNG)</button>';
+  '<button type="button" class="btn-s" id="png-btn">📷 Simpan peta (PNG)</button><button type="button" class="btn-s" id="wrap-btn">✨ Wrapped</button>';
 
 function renderFilters() {
   const opts = (id, vals, ph) => {
@@ -251,12 +256,8 @@ $('flt-reset').addEventListener('click', () => {
 // seri: pilih baris paling depan (A = dekat panggung), lalu nomor paling kanan
 const seatTie = (a, b) => a[0].localeCompare(b[0]) || parseInt(b.slice(2)) - parseInt(a.slice(2));
 function renderStats() {
-  const by = (fn, tie) => {
-    const o = {};
-    view().forEach(r => [].concat(fn(r)).forEach(k => k && (o[k] = (o[k] || 0) + 1)));
-    return Object.entries(o).sort((a, b) => b[1] - a[1] || (tie ? tie(a[0], b[0]) : 0))[0];
-  };
-  const card = (l, v, s) => `<div class="stat"><div class="sv">${esc(v)}</div><div class="sl">${l}</div>${s ? `<div class="ss">${esc(s)}</div>` : ''}</div>`;
+  const by = (fn, tie) => tally(view(), fn, tie);
+  const card = (l, v, s) => `<div class="stat"><div class="sv"${typeof v === 'number' ? ` data-n="${v}"` : ''}>${esc(v)}</div><div class="sl">${l}</div>${s ? `<div class="ss">${esc(s)}</div>` : ''}</div>`;
   const st = top => top ? [top[0], top[1] + '×'] : ['-', ''];
   $('stats').innerHTML = [
     card('Total show', view().length),
@@ -335,3 +336,118 @@ function trapTab(e) {
   if (!ov.contains(cur) || (e.shiftKey && cur === first)) { e.preventDefault(); (e.shiftKey ? last : first).focus(); }
   else if (!e.shiftKey && cur === last) { e.preventDefault(); first.focus(); }
 }
+
+// ================= Animasi, kalender, galeri, Wrapped =================
+let introDone = false, intro = false;
+const rowLabels = () => `<div class="row-labels" aria-hidden="true">${Object.keys(COUNTS).map((l, i) => `<div class="seat-row" style="--r:${i}">${l}</div>`).join('')}</div>`;
+
+function tally(list, fn, tie) {
+  const o = {};
+  list.forEach(r => [].concat(fn(r)).forEach(k => k && (o[k] = (o[k] || 0) + 1)));
+  return Object.entries(o).sort((a, b) => b[1] - a[1] || (tie ? tie(a[0], b[0]) : 0))[0];
+}
+
+// angka naik dari 0 (hanya saat pertama kali tampil)
+function countUp(root) {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  root.querySelectorAll('[data-n]').forEach(el => {
+    const n = +el.dataset.n, t0 = performance.now();
+    const step = t => {
+      const p = Math.min(1, (t - t0) / 800);
+      el.textContent = Math.round(n * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  });
+}
+
+// placeholder berkilau selagi data dimuat
+function skeleton() {
+  $('stats').innerHTML = '<div class="stat sk"></div>'.repeat(6);
+  $('sl-chart').innerHTML = '<div class="sk" style="height:30px;margin:6px 0"></div>'.repeat(5);
+}
+
+// kalender kehadiran per hari (ikut filter)
+let calYear = 0, calYears = [];
+function renderCal() {
+  calYears = [...new Set(records.map(r => r.date.slice(0, 4)).filter(y => /^\d{4}$/.test(y)))].sort();
+  if (!calYears.length) { $('cal-nav').innerHTML = ''; $('cal').innerHTML = '<div class="empty">Belum ada data</div>'; return; }
+  if (!calYears.includes(String(calYear))) calYear = +calYears[calYears.length - 1];
+  const i = calYears.indexOf(String(calYear));
+  $('cal-nav').innerHTML = `<button type="button" class="btn-s" data-cy="-1" ${i <= 0 ? 'disabled' : ''}>‹</button><b>${calYear}</b><button type="button" class="btn-s" data-cy="1" ${i >= calYears.length - 1 ? 'disabled' : ''}>›</button>`;
+  const cnt = {};
+  view().forEach(r => cnt[r.date] = (cnt[r.date] || 0) + 1);
+  const d = new Date(calYear, 0, 1);
+  let cells = '<i class="cd e"></i>'.repeat(d.getDay()); // kolom dimulai hari Minggu
+  for (; d.getFullYear() === calYear; d.setDate(d.getDate() + 1)) {
+    const k = `${calYear}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`, n = cnt[k] || 0;
+    cells += `<i class="cd${n ? ' on' + Math.min(n, 3) : ''}" title="${k}${n ? ': ' + n + ' show' : ''}"></i>`;
+  }
+  const mon = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  $('cal').innerHTML = `<div class="cal-m">${mon.map(m => `<span>${m}</span>`).join('')}</div><div class="cal-g">${cells}</div>`;
+}
+$('cal-nav').addEventListener('click', e => {
+  const b = e.target.closest('[data-cy]');
+  if (!b) return;
+  calYear = +calYears[calYears.indexOf(String(calYear)) + Number(b.dataset.cy)];
+  renderCal();
+});
+
+// galeri foto 2-Shot / Chekicha (hanya jika halaman punya #gallery)
+function renderGallery() {
+  const g = $('gallery');
+  if (!g) return;
+  const items = records.flatMap(r => extras(r).filter(x => x.photo).map(x => ({...x, r}))).sort((a, b) => cmp(a.r, b.r));
+  const sel = $('g-member'), cur = sel.value;
+  const mem = [...new Set(items.map(x => x.member).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="">Semua member</option>' + mem.map(m => `<option${m === cur ? ' selected' : ''}>${esc(m)}</option>`).join('');
+  const list = cur ? items.filter(x => x.member === cur) : items;
+  $('g-info').textContent = `${list.length} foto`;
+  if ($('g-tab')) $('g-tab').textContent = `Galeri (${items.length})`;
+  g.innerHTML = list.length ? list.map(x => `<figure class="gi"><img src="${esc(x.photo)}" data-photo alt="${esc(x.label)} dengan ${esc(x.member)}" loading="lazy">
+    <figcaption><b>${esc(x.member) || '-'}</b><span>${x.icon} ${esc(x.label)}</span><span>${esc(x.r.setlist)} · ${esc(x.r.date)}</span></figcaption></figure>`).join('')
+    : '<div class="empty">Belum ada foto</div>';
+}
+$('g-member')?.addEventListener('change', renderGallery);
+
+// kartu "Wrapped" untuk tahun terakhir yang ada di data, disimpan sebagai PNG
+function wrapped() {
+  const ys = records.map(r => r.date.slice(0, 4)).filter(y => /^\d{4}$/.test(y)).sort();
+  if (!ys.length) return alert('Belum ada data untuk dibuat Wrapped.');
+  const y = ys[ys.length - 1], rs = records.filter(r => r.date.startsWith(y));
+  const t = (fn, tie) => tally(rs, fn, tie) || ['-', 0];
+  const rows = [
+    ['Kursi favorit', ...t(r => r.seat, seatTie)],
+    ['Setlist terbanyak', ...t(r => r.setlist)],
+    ['Member teratas', ...t(r => extras(r).map(x => x.member))],
+    ['Baris favorit', ...t(r => r.seat[0], (a, b) => a.localeCompare(b))]
+  ];
+  const W = 1080, H = 1350, cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const c = cv.getContext('2d');
+  const bg = c.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, '#2a0612'); bg.addColorStop(1, '#0d090d');
+  c.fillStyle = bg; c.fillRect(0, 0, W, H);
+  const gl = c.createRadialGradient(W / 2, 0, 0, W / 2, 0, 700);
+  gl.addColorStop(0, 'rgba(255,42,95,.35)'); gl.addColorStop(1, 'rgba(255,42,95,0)');
+  c.fillStyle = gl; c.fillRect(0, 0, W, H);
+  const fit = (txt, max, size, wt) => { do { c.font = `${wt} ${size}px sans-serif`; size -= 2; } while (c.measureText(txt).width > max && size > 20); };
+  c.textBaseline = 'alphabetic'; c.textAlign = 'center';
+  c.fillStyle = '#a1a1aa'; c.font = '700 30px sans-serif'; c.fillText('T H E A T E R   W R A P P E D', W / 2, 120);
+  c.fillStyle = '#ff2a5f'; c.font = '900 150px sans-serif'; c.fillText(y, W / 2, 270);
+  c.fillStyle = '#ff8c00'; c.font = '900 200px sans-serif'; c.fillText(rs.length, W / 2, 480);
+  c.fillStyle = '#e4e4e7'; c.font = '600 34px sans-serif'; c.fillText('show ditonton', W / 2, 535);
+  rows.forEach(([label, val, n], i) => {
+    const y0 = 610 + i * 130;
+    c.strokeStyle = '#3d222e'; c.beginPath(); c.moveTo(90, y0 - 26); c.lineTo(W - 90, y0 - 26); c.stroke();
+    c.textAlign = 'left'; c.fillStyle = '#a1a1aa'; c.font = '600 26px sans-serif'; c.fillText(label, 90, y0 + 6);
+    c.fillStyle = '#fff'; fit(String(val), 700, 48, 800); c.fillText(val, 90, y0 + 60);
+    c.textAlign = 'right'; c.fillStyle = '#ff8c00'; c.font = '900 48px sans-serif'; c.fillText(n ? n + '×' : '', W - 90, y0 + 60);
+  });
+  c.textAlign = 'center'; c.fillStyle = '#e4e4e7'; c.font = '700 34px sans-serif';
+  c.fillText(`📸 ${rs.filter(r => r.twoshot === 'Ya').length} 2-Shot   ·   🎴 ${rs.filter(r => r.chekicha === 'Ya').length} Chekicha`, W / 2, 1240);
+  c.fillStyle = '#71717a'; c.font = '600 26px sans-serif'; c.fillText(document.querySelector('h1').textContent, W / 2, 1300);
+  const a = document.createElement('a');
+  a.download = `wrapped-${y}.png`; a.href = cv.toDataURL('image/png'); a.click();
+}
+$('wrap-btn').addEventListener('click', wrapped);
