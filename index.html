@@ -4,59 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>agaxx's Theater Stats</title>
+<link rel="stylesheet" href="shared.css">
 <style>
-body{margin:0;background:#0d090d;color:#fff;font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;display:flex;justify-content:center;min-height:100vh}
-button{font-family:inherit}
-.wrap{padding:40px 20px;display:flex;flex-direction:column;align-items:center;width:100%;max-width:1280px;box-sizing:border-box}
-.head{text-align:center;margin-bottom:20px;display:flex;flex-direction:column;align-items:center}
-h1{font-size:42px;font-weight:900;color:#ff2a5f;margin:0 0 8px;letter-spacing:-.5px;text-shadow:0 0 20px rgba(255,42,95,.3)}
-.sub{color:#a1a1aa;font-size:15px;margin:0 0 20px}
-.badge{background:#181115;border:1px solid #2d1820;padding:8px 20px;border-radius:9999px;font-size:15px;font-weight:600;color:#e4e4e7}
-.badge span{color:#ff2a5f;font-weight:800}
 #status{color:#f87171;font-size:14px;margin:12px 0;text-align:center;min-height:18px}
-:focus-visible{outline:2px solid #ff8c00;outline-offset:2px}
-#seating-wrapper{width:100%;overflow-x:auto;padding-bottom:20px;box-sizing:border-box;-webkit-overflow-scrolling:touch}
-#stage-container{width:max-content;margin:0 auto;display:flex;flex-direction:column;align-items:center}
-.stage{width:100%;background:linear-gradient(180deg,#380816,#17040a);border:1px solid #881337;border-bottom:none;border-radius:12px 12px 0 0;padding:14px 0;text-align:center;box-shadow:0 -4px 20px rgba(136,19,55,.3);box-sizing:border-box;color:#ff2a5f;font-weight:900;letter-spacing:5px;font-size:15px}
-.arena{display:flex;align-items:flex-start;gap:38px;width:100%;box-sizing:border-box;position:relative}
-.arena::before{content:'';position:absolute;top:0;left:38px;right:38px;border-top:1px solid #881337;box-shadow:0 2px 14px rgba(136,19,55,.45)}
-.catwalk{width:38px;height:318px;background:#17040a;border:1px solid #881337;border-top:none;border-radius:0 0 8px 8px;box-shadow:0 6px 15px rgba(136,19,55,.25);display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;color:#ff2a5f;font-size:11px;font-weight:800;letter-spacing:3px;box-sizing:border-box;flex-shrink:0;user-select:none}
-#chart{display:flex;gap:20px;margin-top:15px}
-.seat-block{display:flex;flex-direction:column;gap:6px}
-.block-1,.block-3{align-items:flex-end}.block-2,.block-4{align-items:flex-start}
-.seat-row{display:flex;gap:5px;height:48px;align-items:center}
-.seat{width:38px;height:46px;border-radius:6px;border:1px solid #3d0815;background:#1e050c;color:#f43f5e;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;font-weight:700;padding:0;cursor:pointer;transition:.2s;flex-shrink:0}
-.seat:hover{transform:translateY(-2px) scale(1.05);border-color:#ff2a5f;box-shadow:0 4px 12px rgba(255,42,95,.3);z-index:5}
-.seat.visited{background:#ff8c00;border-color:#ffaa00;color:#000;font-weight:900;box-shadow:0 0 12px rgba(255,140,0,.5)}
-.seat-count{font-size:11px;font-weight:900;margin-top:3px;background:#000;color:#fff;border-radius:99px;padding:1px 5px;line-height:1}
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(4px);z-index:100;justify-content:center;align-items:center;padding:15px;box-sizing:border-box}
-.overlay.open{display:flex}
-.modal{background:#140d11;border:1px solid #3d222e;border-radius:16px;width:100%;max-width:440px;padding:24px;position:relative;box-sizing:border-box}
-.x{position:absolute;top:16px;right:16px;background:none;border:none;color:#a1a1aa;font-size:22px;cursor:pointer}
-.seat-badge{background:#ff8c00;color:#000;padding:3px 8px;border-radius:6px;font-weight:800;font-size:14px}
-.hist{display:flex;flex-direction:column;gap:10px;max-height:300px;overflow-y:auto;margin-top:16px}
-.hi{background:#1d1318;padding:12px 14px;border-radius:8px;border-left:4px solid #ff8c00}
-.hi b{font-size:15px}.hd{font-size:13px;color:#ff2a5f;margin-top:2px}
-.hn{font-size:13px;color:#a1a1aa;margin-top:4px;font-style:italic}
-.ht{font-size:12px;color:#34d399;margin-top:4px;font-weight:600}
-.hi img{display:block;max-width:100%;max-height:160px;border-radius:8px;margin-top:8px;cursor:zoom-in}
-.empty{color:#71717a;font-size:14px;text-align:center;padding:16px 0}
-#lb-img{max-width:100%;max-height:90vh;border-radius:12px;box-shadow:0 0 30px rgba(0,0,0,.6)}
-#lightbox{cursor:zoom-out;z-index:200}
-@media(max-width:768px){
-h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
-.seat{width:32px;height:38px;font-size:10px}.seat-row{height:40px;gap:4px}
-#chart{gap:12px;margin-top:10px}
-.catwalk{width:30px;height:260px;font-size:9px;letter-spacing:2px}
-.arena::before{left:30px;right:30px}
-.stage{font-size:12px;letter-spacing:3px}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="head">
     <h1>agaxx's Theater Seating Stats</h1>
-    <p class="sub">Riwayat kursi teater yang pernah ditempati ((kursi bisa diklik))</p>
+    <p class="sub">Riwayat kursi teater yang pernah ditempati (kursi bisa diklik)</p>
     <div class="badge">Total Riwayat Show: <span id="total">0</span></div>
   </div>
   <div id="status" role="status">Memuat data...</div>
@@ -81,133 +38,23 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 </div>
 <div class="overlay" id="lightbox"><img id="lb-img" alt="Foto 2-shot"></div>
 
+<script src="shared.js"></script>
 <script>
-/* ====== KONFIGURASI ======
-   DATA_URL: file JSON (hasil Backup dari app admin) atau endpoint API backend.
-   Format: array [{seat,setlist,date,note,twoshot,member,photo}] atau {records:[...]}.
-   Catatan: kalau dibuka langsung dari file:// browser memblokir fetch -> pakai hosting / server lokal. */
+/* DATA_URL: file data.json hasil "Unduh data.json" dari admin.html (array, atau {records:[...]}).
+   Kalau dibuka langsung dari file:// browser memblokir fetch -> pakai hosting / server lokal. */
 const DATA_URL = './data.json';
 
-const $ = id => document.getElementById(id);
-const COUNTS = {
-  A:[4,6,6,5], B:[5,6,6,6], C:[6,6,6,7], D:[7,6,6,7], E:[7,6,6,7],
-  F:[7,6,6,7], G:[8,6,6,7], H:[8,6,6,7], I:[8,6,6,6], J:[7,6,6,4]
-};
-const LAYOUT = Object.entries(COUNTS).map(([row, counts]) => {
-  let n = 1;
-  return counts.map(c => Array.from({length: c}, () => row + '-' + n++));
-});
-
-const esc = s => String(s ?? '').replace(/[&<>"']/g,
-  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const normSeat = s => {
-  const m = String(s || '').trim().toUpperCase().match(/^([A-Z])\s*-?\s*(\d{1,2})$/);
-  return m ? m[1] + '-' + Number(m[2]) : '';
-};
-const okPhoto = p => typeof p === 'string' && (p.startsWith('data:image/') || /^https?:\/\//i.test(p));
-const KINDS = [
-  {k:'ts', q:'2-Shot?', name:'2-Shot', icon:'📸', f:'twoshot', t:'tsType', m:'member', p:'photo',
-   types:[['birthday','Birthday 2-Shot'],['roulette','2-Shot Roulette']], short:{birthday:'Birthday 2-Shot', roulette:'2-Shot'}},
-  {k:'ck', q:'Chekicha?', name:'Chekicha', icon:'🎴', f:'chekicha', t:'ckType', m:'ckMember', p:'ckPhoto',
-   types:[['birthday','Birthday Chekicha'],['roulette','Roulette Chekicha']], short:{birthday:'Birthday Chekicha', roulette:'Chekicha'}}
-];
-// daftar 2-Shot / Chekicha yang aktif di satu record (roulette ditampilkan singkat)
-const extras = r => KINDS.filter(K => r[K.f] === 'Ya')
-  .map(K => ({label: K.short[r[K.t]] || K.short.roulette, icon: K.icon, member: r[K.m], photo: r[K.p]}));
-const SO = {Malam: 2, Siang: 1};
-const cmp = (a, b) => b.date.localeCompare(a.date) || ((SO[b.sesi] || 0) - (SO[a.sesi] || 0));
-
-function sanitize(r, i) {
-  r = r || {};
-  const o = {
-    id: 0,
-    seat: normSeat(r.seat) || String(r.seat || '').toUpperCase(),
-    setlist: String(r.setlist || ''), date: String(r.date || ''),
-    sesi: ['Siang', 'Malam'].includes(r.sesi) ? r.sesi : '',
-    note: String(r.note || '')
-  };
-  for (const K of KINDS) {
-    const on = r[K.f] === 'Ya' || r[K.f] === true;
-    o[K.f] = on ? 'Ya' : 'Tidak';
-    o[K.t] = on ? (r[K.t] === 'birthday' ? 'birthday' : 'roulette') : '';
-    o[K.m] = on ? String(r[K.m] || '') : '';
-    o[K.p] = on && okPhoto(r[K.p]) ? r[K.p] : '';
-  }
-  return o;
-}
-
-let records = [];
-
-function render() {
-  const counts = {};
-  records.forEach(r => counts[r.seat] = (counts[r.seat] || 0) + 1);
-  const seat = code => {
-    const c = counts[code] || 0;
-    return `<button type="button" class="seat${c ? ' visited' : ''}" data-seat="${code}" aria-label="Kursi ${code}${c ? `, ${c} kali` : ''}">
-      <span>${code}</span>${c ? `<span class="seat-count">${c}</span>` : ''}</button>`;
-  };
-  $('chart').innerHTML = [0, 1, 2, 3].map(j =>
-    `<div class="seat-block block-${j + 1}">` +
-    LAYOUT.map(row => `<div class="seat-row">${row[j].map(seat).join('')}</div>`).join('') + '</div>').join('');
-  $('total').textContent = records.length;
-  requestAnimationFrame(centerChart);
-}
-
-function fitChart() {
-  const w = $('seating-wrapper'), c = $('stage-container');
-  c.style.zoom = '';
-  if (!w.clientWidth) return; // tab tersembunyi
-  if (window.innerWidth > 768 && c.scrollWidth > w.clientWidth) c.style.zoom = (w.clientWidth / c.scrollWidth).toFixed(3);
-}
-window.addEventListener('resize', () => { fitChart(); centerChart(); });
-function centerChart() {
-  fitChart();
-  const w = $('seating-wrapper'), c = $('stage-container');
-  w.scrollLeft = (c.scrollWidth - w.clientWidth) / 2;
-}
-
-function openSeat(code) {
-  $('modal-seat').textContent = code;
-  const list = records.filter(r => r.seat === code).sort(cmp);
-  $('modal-hist').innerHTML = list.length ? list.map(r => `
-    <div class="hi">
-      <b>${esc(r.setlist)}</b>
-      <div class="hd">${esc(r.date)}${r.sesi ? ' · ' + r.sesi : ''}</div>
-      ${r.note ? `<div class="hn">"${esc(r.note)}"</div>` : ''}
-      ${extras(r).map(x => `<div class="ht">${x.icon} ${esc(x.label)} dengan ${esc(x.member)}</div>${x.photo ? `<img src="${esc(x.photo)}" data-photo alt="Foto" loading="lazy">` : ''}`).join('')}
-    </div>`).join('') : `<div class="empty">Belum ada riwayat di kursi ${esc(code)}</div>`;
-  $('seat-modal').classList.add('open');
-  $('seat-close').focus();
-}
-
-$('chart').addEventListener('click', e => {
-  const b = e.target.closest('[data-seat]');
-  if (b) openSeat(b.dataset.seat);
-});
-$('seat-close').addEventListener('click', () => $('seat-modal').classList.remove('open'));
-$('seat-modal').addEventListener('click', e => { if (e.target.id === 'seat-modal') $('seat-modal').classList.remove('open'); });
-document.addEventListener('click', e => {
-  const im = e.target.closest('img[data-photo]');
-  if (im) { $('lb-img').src = im.src; $('lightbox').classList.add('open'); }
-});
-$('lightbox').addEventListener('click', () => $('lightbox').classList.remove('open'));
-document.addEventListener('keydown', e => {
-  if (e.key !== 'Escape') return;
-  if ($('lightbox').classList.contains('open')) $('lightbox').classList.remove('open');
-  else $('seat-modal').classList.remove('open');
-});
-
 async function init() {
-  render(); // peta kosong dulu biar layout langsung muncul
+  renderChart(); // peta kosong dulu biar layout langsung muncul
   try {
     const res = await fetch(DATA_URL + (DATA_URL.includes('?') ? '&' : '?') + 't=' + Date.now());
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const json = await res.json();
     const arr = Array.isArray(json) ? json : json.records;
     if (!Array.isArray(arr)) throw new Error('Format data tidak dikenali');
-    records = arr.map(sanitize).filter(r => r.seat);
+    records = arr.map(sanitize).filter(r => SEATS.has(r.seat)); // kursi di luar peta dilewati, jadi total = yang tampil di peta
     $('status').textContent = '';
-    render();
+    renderChart();
   } catch (err) {
     $('status').textContent = 'Gagal memuat data (' + err.message + '). Cek DATA_URL / pastikan dibuka lewat server, bukan file://.';
   }
