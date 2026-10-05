@@ -85,7 +85,7 @@ function renderChart() {
     `<div class="seat-block block-${j + 1}">` +
     LAYOUT.map(row => `<div class="seat-row">${row[j].map(seat).join('')}</div>`).join('') + '</div>').join('');
   $('total').textContent = records.length;
-  renderFilters(); renderStats(); renderSetlists();
+  renderFilters(); renderStats(); renderSetlists(); syncUrl();
   requestAnimationFrame(centerChart);
 }
 
@@ -186,6 +186,16 @@ document.addEventListener('keydown', e => {
 
 // ================= Statistik, filter, legenda, setlist, PNG =================
 const filter = {setlist: '', member: '', from: '', to: ''};
+// filter dibaca dari URL (?setlist=..&member=..&from=YYYY-MM-DD&to=..) supaya hasilnya bisa dibagikan
+new URLSearchParams(location.search).forEach((v, k) => {
+  if (!Object.keys(filter).includes(k)) return;
+  filter[k] = (k === 'from' || k === 'to') && !/^\d{4}-\d{2}-\d{2}$/.test(v) ? '' : v;
+});
+function syncUrl() {
+  const q = new URLSearchParams();
+  for (const k in filter) if (filter[k]) q.set(k, filter[k]);
+  try { history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); } catch (e) {} // file:// bisa menolak
+}
 const isFiltered = () => Object.values(filter).some(Boolean);
 const matchF = (r, skipSetlist) => (skipSetlist || !filter.setlist || r.setlist === filter.setlist)
   && (!filter.member || extras(r).some(x => x.member === filter.member))
@@ -206,48 +216,52 @@ const heatLabel = (h, i) => HEAT[i + 1] ? (HEAT[i + 1].min - 1 > h.min ? `${h.mi
 const wrapEl = $('seating-wrapper');
 wrapEl.insertAdjacentHTML('beforebegin', `<div id="stats"></div>
   <div id="filters">
-    <select id="f-setlist" aria-label="Filter setlist"></select>
-    <select id="f-member" aria-label="Filter member"></select>
-    <input type="date" id="f-from" aria-label="Dari tanggal"><input type="date" id="f-to" aria-label="Sampai tanggal">
-    <button type="button" class="btn-s" id="f-reset">Reset</button><span id="f-info"></span>
+    <select id="flt-setlist" aria-label="Filter setlist"></select>
+    <select id="flt-member" aria-label="Filter member"></select>
+    <input type="date" id="flt-from" aria-label="Dari tanggal"><input type="date" id="flt-to" aria-label="Sampai tanggal">
+    <button type="button" class="btn-s" id="flt-reset">Reset</button><span id="flt-info"></span>
   </div>`);
 wrapEl.insertAdjacentHTML('afterend', `<div id="legend"></div>
   <h2 class="sec">Total kunjungan per setlist</h2><div id="sl-chart"></div>`);
+$('flt-from').value = filter.from;
+$('flt-to').value = filter.to;
 $('legend').innerHTML = 'Jumlah kunjungan: ' + HEAT.map((h, i) =>
   `<span class="lg"><i style="background:${h.bg};border-color:${h.bd}"></i>${heatLabel(h, i)}</span>`).join('') +
   '<button type="button" class="btn-s" id="png-btn">📷 Simpan peta (PNG)</button>';
 
 function renderFilters() {
   const opts = (id, vals, ph) => {
-    const cur = filter[id.slice(2)];
-    $(id).innerHTML = `<option value="">${ph}</option>` + vals.map(v => `<option${v === cur ? ' selected' : ''}>${esc(v)}</option>`).join('');
+    const cur = filter[id.slice(4)];
+    $(id).innerHTML = `<option value="">${ph}</option>` + (cur && !vals.includes(cur) ? [...vals, cur] : vals).map(v => `<option${v === cur ? ' selected' : ''}>${esc(v)}</option>`).join('');
   };
-  opts('f-setlist', [...new Set(records.map(r => r.setlist).filter(Boolean))].sort(), 'Semua setlist');
-  opts('f-member', [...new Set(records.flatMap(r => extras(r).map(x => x.member)).filter(Boolean))].sort(), 'Semua member');
-  $('f-info').textContent = isFiltered() ? `${view().length} dari ${records.length} show cocok` : '';
+  opts('flt-setlist', [...new Set(records.map(r => r.setlist).filter(Boolean))].sort(), 'Semua setlist');
+  opts('flt-member', [...new Set(records.flatMap(r => extras(r).map(x => x.member)).filter(Boolean))].sort(), 'Semua member');
+  $('flt-info').textContent = isFiltered() ? `${view().length} dari ${records.length} show cocok` : '';
 }
 $('filters').addEventListener('change', e => {
-  const k = {'f-setlist': 'setlist', 'f-member': 'member', 'f-from': 'from', 'f-to': 'to'}[e.target.id];
+  const k = {'flt-setlist': 'setlist', 'flt-member': 'member', 'flt-from': 'from', 'flt-to': 'to'}[e.target.id];
   if (k) { filter[k] = e.target.value; renderChart(); }
 });
-$('f-reset').addEventListener('click', () => {
+$('flt-reset').addEventListener('click', () => {
   Object.keys(filter).forEach(k => filter[k] = '');
-  $('f-from').value = $('f-to').value = '';
+  $('flt-from').value = $('flt-to').value = '';
   renderChart();
 });
 
+// seri: pilih baris paling depan (A = dekat panggung), lalu nomor paling kanan
+const seatTie = (a, b) => a[0].localeCompare(b[0]) || parseInt(b.slice(2)) - parseInt(a.slice(2));
 function renderStats() {
-  const by = fn => {
+  const by = (fn, tie) => {
     const o = {};
     view().forEach(r => [].concat(fn(r)).forEach(k => k && (o[k] = (o[k] || 0) + 1)));
-    return Object.entries(o).sort((a, b) => b[1] - a[1])[0];
+    return Object.entries(o).sort((a, b) => b[1] - a[1] || (tie ? tie(a[0], b[0]) : 0))[0];
   };
   const card = (l, v, s) => `<div class="stat"><div class="sv">${esc(v)}</div><div class="sl">${l}</div>${s ? `<div class="ss">${esc(s)}</div>` : ''}</div>`;
   const st = top => top ? [top[0], top[1] + '×'] : ['-', ''];
   $('stats').innerHTML = [
     card('Total show', view().length),
-    card('Kursi favorit', ...st(by(r => r.seat))),
-    card('Baris favorit', ...st(by(r => r.seat[0]))),
+    card('Kursi favorit', ...st(by(r => r.seat, seatTie))),
+    card('Baris favorit', ...st(by(r => r.seat[0], (a, b) => a.localeCompare(b)))),
     card('2-Shot', view().filter(r => r.twoshot === 'Ya').length),
     card('Chekicha', view().filter(r => r.chekicha === 'Ya').length),
     card('Member terbanyak', ...st(by(r => extras(r).map(x => x.member))))
