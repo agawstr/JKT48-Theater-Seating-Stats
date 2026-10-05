@@ -239,17 +239,17 @@ $('f-reset').addEventListener('click', () => {
 function renderStats() {
   const by = fn => {
     const o = {};
-    records.forEach(r => [].concat(fn(r)).forEach(k => k && (o[k] = (o[k] || 0) + 1)));
+    view().forEach(r => [].concat(fn(r)).forEach(k => k && (o[k] = (o[k] || 0) + 1)));
     return Object.entries(o).sort((a, b) => b[1] - a[1])[0];
   };
   const card = (l, v, s) => `<div class="stat"><div class="sv">${esc(v)}</div><div class="sl">${l}</div>${s ? `<div class="ss">${esc(s)}</div>` : ''}</div>`;
   const st = top => top ? [top[0], top[1] + '×'] : ['-', ''];
   $('stats').innerHTML = [
-    card('Total show', records.length),
+    card('Total show', view().length),
     card('Kursi favorit', ...st(by(r => r.seat))),
     card('Baris favorit', ...st(by(r => r.seat[0]))),
-    card('2-Shot', records.filter(r => r.twoshot === 'Ya').length),
-    card('Chekicha', records.filter(r => r.chekicha === 'Ya').length),
+    card('2-Shot', view().filter(r => r.twoshot === 'Ya').length),
+    card('Chekicha', view().filter(r => r.chekicha === 'Ya').length),
     card('Member terbanyak', ...st(by(r => extras(r).map(x => x.member))))
   ].join('');
 }
