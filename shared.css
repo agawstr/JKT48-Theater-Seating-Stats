@@ -81,7 +81,7 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 .sl{font-size:12px;color:#a1a1aa;margin-top:2px}
 .ss{font-size:11px;color:#ff2a5f;font-weight:700;margin-top:2px}
 #filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;width:100%;margin-bottom:16px}
-#filters select,#filters input{width:auto;max-width:100%;background:#181115;color:#fff;border:1px solid #2d1820;border-radius:8px;padding:8px 10px;font:inherit;font-size:13px;color-scheme:dark}
+#filters select,#filters input,#gallery-bar select{width:auto;max-width:100%;background:#181115;color:#fff;border:1px solid #2d1820;border-radius:8px;padding:8px 10px;font:inherit;font-size:13px;color-scheme:dark}
 #flt-info{font-size:12px;color:#34d399;font-weight:600}
 .btn-s{background:#181115;color:#e4e4e7;border:1px solid #3d222e;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer}
 .btn-s:hover{border-color:#ff2a5f;color:#ff2a5f}
@@ -97,3 +97,43 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 .sl-bar{height:10px;background:#1e050c;border-radius:99px;overflow:hidden}
 .sl-bar i{display:block;height:100%;background:linear-gradient(90deg,#c96a00,#ffd23f);border-radius:99px}
 .sl-c{font-weight:800;color:#ff8c00;text-align:right}
+
+/* peta lebih realistis: label baris, garis lorong, cahaya panggung */
+#stage-container{position:relative;isolation:isolate}
+#stage-container::before{content:'';position:absolute;z-index:-1;top:40px;left:8%;right:8%;height:220px;background:radial-gradient(ellipse at 50% 0,rgba(255,42,95,.2),transparent 70%);pointer-events:none}
+.stage{text-shadow:0 0 14px rgba(255,42,95,.6)}
+.seat-block{position:relative}
+.seat-block+.seat-block::before{content:'';position:absolute;left:-10px;top:0;bottom:0;border-left:1px dashed #2d1820}
+.row-labels{display:flex;flex-direction:column;gap:6px;width:18px;flex-shrink:0}
+.row-labels .seat-row{justify-content:center;color:#71717a;font-size:12px;font-weight:800}
+
+/* animasi masuk & skeleton */
+@keyframes rise{from{opacity:0;transform:translateY(10px)}}
+@keyframes shimmer{to{background-position:-200% 0}}
+.intro .seat-row{animation:rise .45s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--r) * 45ms)}
+.sk{background:linear-gradient(90deg,#181115 25%,#2a1a22 50%,#181115 75%);background-size:200% 100%;animation:shimmer 1.2s linear infinite;border-radius:12px}
+.stat.sk{min-height:72px;border-color:transparent}
+@media(prefers-reduced-motion:reduce){.intro .seat-row,.sk{animation:none}}
+
+/* tab, kalender, galeri */
+[hidden]{display:none!important}
+#view-main,#view-gal{width:100%;display:flex;flex-direction:column;align-items:center}
+.tabbar{display:flex;gap:8px;margin:0 0 16px}
+.tab{padding:9px 22px;border-radius:9999px;border:1px solid #332128;background:#1a1014;color:#a1a1aa;font-size:14px;font-weight:600;cursor:pointer;transition:.25s}
+.tab:hover{border-color:#ff2a5f;color:#fff}
+.tab.on{background:#881337;border-color:#f43f5e;color:#fff;box-shadow:0 0 15px rgba(244,63,94,.3)}
+#cal-nav{display:flex;gap:12px;align-items:center;width:100%;margin-bottom:10px;color:#e4e4e7}
+#cal{width:100%;overflow-x:auto;padding-bottom:8px}
+.cal-m{display:flex;justify-content:space-between;width:845px;font-size:11px;color:#71717a;margin-bottom:4px}
+.cal-g{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,13px);grid-auto-columns:13px;gap:3px;width:max-content}
+.cd{background:#1e050c;border-radius:3px}
+.cd.e{background:none}
+.cd.on1{background:#c96a00}.cd.on2{background:#ff8c00}.cd.on3{background:#ffd23f}
+#gallery-bar{display:flex;gap:10px;align-items:center;margin-bottom:12px;width:100%}
+#g-info{font-size:12px;color:#34d399;font-weight:600}
+#gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;width:100%}
+.gi{margin:0;background:#181115;border:1px solid #2d1820;border-radius:12px;overflow:hidden}
+.gi img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;cursor:zoom-in}
+.gi figcaption{padding:8px 10px;font-size:12px;display:flex;flex-direction:column;gap:2px;color:#a1a1aa}
+.gi b{color:#fff;font-size:13px}
+@media(max-width:768px){.seat-block+.seat-block::before{left:-7px}}
