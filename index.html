@@ -22,7 +22,7 @@
     <p class="sub">Riwayat kursi teater yang pernah ditempati (arahkan kursor atau klik kursi)</p>
     <div class="badge">Total Riwayat Show: <span id="total">0</span></div>
   </div>
-  <div class="tabbar"><button type="button" class="tab on" data-tab="main">Peta &amp; Statistik</button><button type="button" class="tab" data-tab="gal" id="g-tab">Galeri</button></div>
+  <div class="tabbar"><button type="button" class="tab on" data-tab="main">Peta &amp; Statistik</button><button type="button" class="tab" data-tab="tl" id="t-tab">Riwayat</button><button type="button" class="tab" data-tab="gal" id="g-tab">Galeri</button></div>
   <div id="status" role="status">Memuat data...</div>
   <div id="view-main">
   <div id="seating-wrapper">
@@ -40,6 +40,7 @@
     <div id="gallery-bar"><select id="g-member" aria-label="Filter member galeri"></select><span id="g-info"></span></div>
     <div id="gallery"></div>
   </div>
+  <div id="view-tl" hidden><div id="timeline"></div></div>
 </div>
 
 <div class="overlay" id="seat-modal">
@@ -75,8 +76,7 @@ async function init() {
 }
 document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t === b));
-  $('view-main').hidden = b.dataset.tab !== 'main';
-  $('view-gal').hidden = b.dataset.tab !== 'gal';
+  ['main', 'gal', 'tl'].forEach(k => $('view-' + k).hidden = b.dataset.tab !== k);
   centerChart();
 }));
 init();
