@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JKT48 Theater Seating Stats</title>
+<meta name="theme-color" content="#0d090d">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%8E%AD%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="shared.css">
 <style>
 .tabs{display:flex;justify-content:center;gap:12px;margin-bottom:20px}
@@ -45,6 +47,9 @@ td{padding:12px 10px;border-bottom:1px solid #24151d;color:#e4e4e7}
 .pprev .btn{padding:6px 10px;font-size:12px}
 @media(max-width:900px){.crud{grid-template-columns:1fr}}
 td .seat-badge{font-size:12px}
+#backup-note{font-size:12px;color:#a1a1aa;margin:0 0 10px}
+#backup-note.warn{color:#fbbf24}
+#pager{display:flex;gap:12px;align-items:center;justify-content:center;margin-top:12px;font-size:13px;color:#a1a1aa}
 @media(max-width:768px){.tab-btn{padding:8px 18px;font-size:13px}}
 </style>
 </head>
@@ -108,12 +113,14 @@ td .seat-badge{font-size:12px}
           <button class="btn" id="btn-import">⬆ Restore (JSON)</button>
           <input type="file" id="file-import" accept=".json,application/json" hidden>
         </div>
+        <div id="backup-note"></div>
         <div class="scroll">
           <table>
             <thead><tr><th>Kursi</th><th>Setlist</th><th>Tanggal</th><th>Keterangan</th><th>2-Shot / Chekicha</th><th style="width:100px">Aksi</th></tr></thead>
             <tbody id="tbody"></tbody>
           </table>
         </div>
+        <div id="pager"></div>
       </div>
     </div>
   </div>
@@ -164,7 +171,21 @@ function load() {
   return [];
 }
 records = load();
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(records)); } catch (e) { alert('Gagal menyimpan (storage penuh?). Backup dulu lewat tombol Backup. ' + e.message); } };
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(records)); bumpDirty(); } catch (e) { alert('Gagal menyimpan (storage penuh?). Backup dulu lewat tombol Backup. ' + e.message); } };
+
+// ---------- Pengingat backup: hitung perubahan sejak terakhir diunduh ----------
+const DK = KEY + '_backup';
+const bk = () => { try { return JSON.parse(localStorage.getItem(DK)) || {}; } catch (e) { return {}; } };
+function bumpDirty() { const b = bk(); b.dirty = (b.dirty || 0) + 1; localStorage.setItem(DK, JSON.stringify(b)); renderBackup(); }
+function markExported() { localStorage.setItem(DK, JSON.stringify({at: Date.now(), dirty: 0})); renderBackup(); }
+function renderBackup() {
+  const b = bk(), d = b.at ? Math.floor((Date.now() - b.at) / 864e5) : null, el = $('backup-note');
+  const parts = [];
+  if (b.dirty) parts.push(`⚠ ${b.dirty} perubahan belum diunduh`);
+  parts.push(b.at ? `terakhir diunduh ${d ? d + ' hari lalu' : 'hari ini'}` : 'belum pernah diunduh ke data.json');
+  el.textContent = records.length ? parts.join(' · ') : '';
+  el.className = (b.dirty || !b.at || d >= 7) ? 'warn' : '';
+}
 
 // ---------- Modal ----------
 let askDone = null;
@@ -183,12 +204,18 @@ $('ask-ok').addEventListener('click', () => askDone && askDone(true));
 $('ask-no').addEventListener('click', () => askDone && askDone(false));
 $('ask-modal').addEventListener('click', e => { if (e.target.id === 'ask-modal' && askDone) askDone(false); });
 
+let page = 1;
+const PER = 25;
 function renderTable() {
   const q = $('search').value.toLowerCase();
   const list = [...records]
     .sort(cmp)
     .filter(r => [r.seat, r.setlist, r.note, r.member, r.ckMember, r.date, r.sesi].some(v => v.toLowerCase().includes(q)));
-  $('tbody').innerHTML = list.length ? list.map(r => `
+  const pages = Math.max(1, Math.ceil(list.length / PER));
+  page = Math.min(page, pages);
+  $('pager').innerHTML = pages > 1
+    ? `<button class="btn-s" data-pg="-1" ${page <= 1 ? 'disabled' : ''}>‹ Sebelumnya</button><span>Hal ${page}/${pages} · ${list.length} data</span><button class="btn-s" data-pg="1" ${page >= pages ? 'disabled' : ''}>Berikutnya ›</button>` : '';
+  $('tbody').innerHTML = list.length ? list.slice((page - 1) * PER, page * PER).map(r => `
     <tr>
       <td><span class="seat-badge${SEATS.has(r.seat) ? '' : ' bad'}" ${SEATS.has(r.seat) ? '' : 'title="Kursi tidak ada di peta — edit supaya muncul"'}>${esc(r.seat)}</span></td>
       <td><b>${esc(r.setlist)}</b></td>
@@ -360,14 +387,16 @@ $('tbody').addEventListener('click', async e => {
   }
 });
 
-$('search').addEventListener('input', renderTable);
+let searchT;
+$('search').addEventListener('input', () => { clearTimeout(searchT); searchT = setTimeout(() => { page = 1; renderTable(); }, 200); });
+$('pager').addEventListener('click', e => { const b = e.target.closest('[data-pg]'); if (b) { page += Number(b.dataset.pg); renderTable(); } });
 
 // ---------- Backup / Restore ----------
 $('btn-export').addEventListener('click', () => {
   const blob = new Blob([JSON.stringify(records, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'data.json';
+  a.download = 'data.json'; markExported();
   a.click();
   URL.revokeObjectURL(a.href);
 });
@@ -393,7 +422,7 @@ $('file-import').addEventListener('change', async e => {
 });
 
 // ---------- Init ----------
-renderAll();
+renderAll(); renderBackup();
 requestAnimationFrame(centerChart);
 </script>
 </body>
