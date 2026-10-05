@@ -87,7 +87,7 @@ td .seat-badge{font-size:12px}
           <div class="fg"><label for="f-seat">Nomor Kursi</label>
             <input id="f-seat" placeholder="A-19 (A19 juga boleh)" style="text-transform:uppercase" autocomplete="off"></div>
           <div class="fg"><label for="f-setlist">Setlist / Event</label>
-            <input id="f-setlist" placeholder="Pajama Drive" autocomplete="off"></div>
+            <input id="f-setlist" list="dl-setlist" placeholder="Pajama Drive" autocomplete="off"><datalist id="dl-setlist"></datalist><datalist id="dl-member"></datalist></div>
           <div class="fg"><label for="f-date">Tanggal Show</label>
             <input type="date" id="f-date"></div>
           <div class="fg"><label for="f-sesi">Sesi</label>
@@ -230,7 +230,13 @@ function renderTable() {
     : '<tr><td colspan="6" style="text-align:center;color:#71717a">Data tidak ditemukan</td></tr>';
 }
 
-const renderAll = () => { renderChart(); renderTable(); };
+// saran otomatis (datalist) dari setlist & member yang pernah diinput
+function renderLists() {
+  const dl = (id, vals) => $(id).innerHTML = [...new Set(vals.filter(Boolean))].sort().map(v => `<option value="${esc(v)}">`).join('');
+  dl('dl-setlist', records.map(r => r.setlist));
+  dl('dl-member', records.flatMap(r => extras(r).map(x => x.member)));
+}
+const renderAll = () => { renderChart(); renderTable(); renderLists(); };
 
 // ---------- Tab ----------
 function switchTab(name) {
@@ -250,7 +256,7 @@ $('extras').innerHTML = KINDS.map(K => `
     <div class="fg"><label for="t-${K.k}">Jenis ${K.name}</label>
       <select id="t-${K.k}">${K.types.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select></div>
     <div class="fg"><label for="m-${K.k}">${K.name} dengan</label>
-      <input id="m-${K.k}" placeholder="Nama Member" autocomplete="off"></div>
+      <input id="m-${K.k}" list="dl-member" placeholder="Nama Member" autocomplete="off"></div>
     <div class="fg"><label for="p-${K.k}">Foto ${K.name} (Opsional)</label>
       <input type="file" id="p-${K.k}" accept="image/*">
       <div class="pprev" id="pv-${K.k}"><img id="pi-${K.k}" alt="Preview foto"><button type="button" class="btn" id="pr-${K.k}">Hapus foto</button></div></div>
