@@ -35,7 +35,7 @@ const normSeat = s => {
   const m = String(s || '').trim().toUpperCase().match(/^([A-Z])\s*-?\s*(\d{1,2})$/);
   return m ? m[1] + '-' + Number(m[2]) : '';
 };
-const okPhoto = p => typeof p === 'string' && (p.startsWith('data:image/') || /^https?:\/\//i.test(p));
+const okPhoto = p => typeof p === 'string' && (p.startsWith('data:image/') || /^https?:\/\//i.test(p) || /^photos\/[\w.-]+$/.test(p)); // data URL, URL, atau file di folder photos/
 const KINDS = [
   {k:'ts', q:'2-Shot?', name:'2-Shot', icon:'📸', f:'twoshot', t:'tsType', m:'member', p:'photo',
    types:[['birthday','Birthday 2-Shot'],['roulette','2-Shot Roulette']], short:{birthday:'Birthday 2-Shot', roulette:'2-Shot'}},
@@ -78,7 +78,7 @@ function renderChart() {
   const seat = code => {
     const c = counts[code] || 0, h = c ? heat(c) : null;
     const st = h ? ` style="background:${h.bg};color:${h.fg};border-color:${h.bd}"` : '';
-    return `<button type="button" class="seat${c ? ' visited' : ''}${on && all[code] && !c ? ' dim' : ''}" data-seat="${code}"${st} aria-label="Kursi ${code}${c ? `, ${c} kali` : ''}">
+    return `<button type="button" class="seat${c ? ' visited' : ''}${on && all[code] && !c ? ' dim' : ''}${showUnv ? (c ? ' seen' : ' want') : ''}" data-seat="${code}"${st} aria-label="Kursi ${code}${c ? `, ${c} kali` : ''}">
       <span>${code}</span>${c ? `<span class="seat-count">${c}</span>` : ''}</button>`;
   };
   $('chart').innerHTML = rowLabels() + [0, 1, 2, 3].map(j =>
@@ -89,7 +89,7 @@ function renderChart() {
   introDone = introDone || first; intro = first;
   $('chart').classList.toggle('intro', first);
   renderFilters(); renderStats(); if (first) countUp($('stats'));
-  renderSetlists(); renderCal(); renderGallery(); syncUrl();
+  renderSetlists(); renderCal(); renderGallery(); renderTimeline(); renderCover(); syncUrl();
   requestAnimationFrame(centerChart);
 }
 
@@ -218,7 +218,7 @@ const heatLabel = (h, i) => HEAT[i + 1] ? (HEAT[i + 1].min - 1 > h.min ? `${h.mi
 
 // kontainer disisipkan lewat JS supaya index & admin otomatis sama
 const wrapEl = $('seating-wrapper');
-wrapEl.insertAdjacentHTML('beforebegin', `<div id="stats"></div>
+wrapEl.insertAdjacentHTML('beforebegin', `<div id="stats"></div><div id="cover"></div>
   <div id="filters">
     <select id="flt-setlist" aria-label="Filter setlist"></select>
     <select id="flt-member" aria-label="Filter member"></select>
@@ -446,8 +446,47 @@ function wrapped() {
   });
   c.textAlign = 'center'; c.fillStyle = '#e4e4e7'; c.font = '700 34px sans-serif';
   c.fillText(`📸 ${rs.filter(r => r.twoshot === 'Ya').length} 2-Shot   ·   🎴 ${rs.filter(r => r.chekicha === 'Ya').length} Chekicha`, W / 2, 1240);
-  c.fillStyle = '#71717a'; c.font = '600 26px sans-serif'; c.fillText(document.querySelector('h1').textContent, W / 2, 1300);
+  c.fillStyle = '#a1a1aa'; c.font = '600 26px sans-serif'; c.fillText(document.querySelector('h1').textContent, W / 2, 1300);
   const a = document.createElement('a');
   a.download = `wrapped-${y}.png`; a.href = cv.toDataURL('image/png'); a.click();
 }
 $('wrap-btn').addEventListener('click', wrapped);
+
+// ================= Riwayat (timeline) & cakupan kursi =================
+let showUnv = false;
+function renderCover() {
+  const got = new Set(view().map(r => r.seat).filter(s => SEATS.has(s))).size, tot = SEATS.size, pct = Math.round(got / tot * 100);
+  $('cover').innerHTML = `<div class="cov-t"><b>Kursi terisi ${got} dari ${tot}</b><span>${pct}%</span></div>
+    <div class="cov-bar"><i style="width:${pct}%"></i></div>
+    <div class="cov-s"><span>${tot - got} kursi belum pernah ditempati</span>
+    <button type="button" class="btn-s" id="cov-btn" aria-pressed="${showUnv}">${showUnv ? 'Tampilkan semua' : '🎯 Sorot yang belum'}</button></div>`;
+}
+$('cover').addEventListener('click', e => {
+  if (e.target.closest('#cov-btn')) { showUnv = !showUnv; renderChart(); }
+});
+
+function renderTimeline() {
+  const el = $('timeline');
+  if (!el) return;
+  const list = [...records].sort(cmp);
+  if ($('t-tab')) $('t-tab').textContent = `Riwayat (${list.length})`;
+  const mon = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+  let cur = '', html = '';
+  for (const r of list) {
+    const ym = r.date.slice(0, 7);
+    if (ym !== cur) {
+      cur = ym;
+      html += `<h3 class="tl-mh">${/^\d{4}-\d{2}$/.test(ym) ? mon[+ym.slice(5) - 1] + ' ' + ym.slice(0, 4) : 'Tanpa tanggal'}</h3>`;
+    }
+    html += `<div class="tl-i"><div class="tl-d"><b>${esc(r.date.slice(8)) || '–'}</b><span>${esc(r.sesi)}</span></div>
+      <div class="tl-b"><b>${esc(r.setlist) || '(tanpa setlist)'}</b>
+        ${extras(r).map(x => `<div class="ht">${x.icon} ${esc(x.label)} dengan ${esc(x.member)}</div>`).join('')}
+        ${r.note ? `<div class="hn">"${esc(r.note)}"</div>` : ''}</div>
+      <button type="button" class="seat-badge tl-s" data-seat="${esc(r.seat)}" aria-label="Lihat kursi ${esc(r.seat)}">${esc(r.seat)}</button></div>`;
+  }
+  el.innerHTML = html || '<div class="empty">Belum ada riwayat</div>';
+}
+$('timeline')?.addEventListener('click', e => {
+  const b = e.target.closest('[data-seat]');
+  if (b) openSeat(b.dataset.seat);
+});
