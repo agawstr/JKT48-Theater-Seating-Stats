@@ -82,7 +82,7 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 .ss{font-size:11px;color:#ff2a5f;font-weight:700;margin-top:2px}
 #filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;width:100%;margin-bottom:16px}
 #filters select,#filters input{width:auto;max-width:100%;background:#181115;color:#fff;border:1px solid #2d1820;border-radius:8px;padding:8px 10px;font:inherit;font-size:13px;color-scheme:dark}
-#f-info{font-size:12px;color:#34d399;font-weight:600}
+#flt-info{font-size:12px;color:#34d399;font-weight:600}
 .btn-s{background:#181115;color:#e4e4e7;border:1px solid #3d222e;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer}
 .btn-s:hover{border-color:#ff2a5f;color:#ff2a5f}
 .btn-s:disabled{opacity:.4;cursor:default;border-color:#3d222e;color:#e4e4e7}
