@@ -1,6 +1,6 @@
 # JKT48 Theater Seating Stats
 
-Web untuk mencatat kursi teater JKT48 yang pernah ditempati. Peta kursi menandai kursi yang sudah pernah diduduki beserta jumlahnya. Arahkan kursor ke kursi untuk melihat ringkasan, klik untuk melihat riwayat lengkap dan foto.
+Web untuk mencatat kursi teater JKT48 yang pernah kamu tempati. Peta kursi menandai kursi yang sudah pernah diduduki beserta jumlahnya. Arahkan kursor ke kursi untuk melihat ringkasan, klik untuk melihat riwayat lengkap dan foto.
 
 Tanpa backend dan tanpa proses build, cukup file HTML statis yang bisa di-hosting di GitHub Pages.
 
@@ -28,11 +28,11 @@ Tanpa backend dan tanpa proses build, cukup file HTML statis yang bisa di-hostin
 ## Cara memperbarui data
 
 1. Buka `admin.html`, tab **Tambah & Kelola Data**, lalu isi riwayat show baru.
-2. Klik **⬇ Unduh data.json**. Browser menyimpan file bernama `data.json`.
-3. Di GitHub, ganti `data.json` lama dengan file baru (**Add file → Upload files**, lalu commit).
+2. Klik **⬇ Unduh paket (ZIP)**, lalu ekstrak. Isinya `data.json` dan folder `photos/` (foto disimpan sebagai file terpisah, bukan di dalam JSON).
+3. Di GitHub, upload `data.json` dan folder `photos/` ke root repo (**Add file → Upload files**, drag keduanya, lalu commit). File bernama sama otomatis menimpa.
 4. Tunggu sekitar 1 menit sampai GitHub Pages selesai deploy, lalu muat ulang `index.html`.
 
-Data di admin tersimpan di browser yang dipakai untuk input. Kalau pindah perangkat atau browser, kosong dulu. Ambil `data.json` dari repo lalu klik **⬆ Restore (JSON)** untuk memuatnya kembali.
+Data di admin tersimpan di browser yang dipakai untuk input. Kalau pindah perangkat atau browser, kosong dulu. Gunakan **⬇ Backup lengkap (JSON)** (foto ikut di dalamnya) untuk menyimpan cadangan, lalu **⬆ Restore (JSON)** untuk memuatnya kembali.
 
 ## Format data
 
@@ -62,7 +62,7 @@ Data di admin tersimpan di browser yang dipakai untuk input. Kalau pindah perang
 - `seat`: kode kursi seperti `A-19`. Kursi yang tidak ada di peta dilewati di halaman publik.
 - `sesi`: `Siang`, `Malam`, atau kosong.
 - `tsType` / `ckType`: `birthday` atau `roulette`.
-- `photo` / `ckPhoto`: URL `http(s)` atau data URL gambar. Opsional.
+- `photo` / `ckPhoto`: path relatif seperti `photos/1700000000000-ts.jpg`, URL `http(s)`, atau data URL gambar. Opsional.
 
 ## Hosting di GitHub Pages
 
