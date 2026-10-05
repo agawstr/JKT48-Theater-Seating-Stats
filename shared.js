@@ -187,10 +187,10 @@ document.addEventListener('keydown', e => {
 // ================= Statistik, filter, legenda, setlist, PNG =================
 const filter = {setlist: '', member: '', from: '', to: ''};
 const isFiltered = () => Object.values(filter).some(Boolean);
-const matchF = r => (!filter.setlist || r.setlist === filter.setlist)
+const matchF = (r, skipSetlist) => (skipSetlist || !filter.setlist || r.setlist === filter.setlist)
   && (!filter.member || extras(r).some(x => x.member === filter.member))
   && (!filter.from || r.date >= filter.from) && (!filter.to || r.date <= filter.to);
-const view = () => records.filter(matchF); // record yang lolos filter (dipakai peta)
+const view = () => records.filter(r => matchF(r)); // record yang lolos filter (dipakai peta)
 
 // warna heatmap: makin sering makin terang
 const HEAT = [
@@ -257,7 +257,8 @@ function renderStats() {
 // bar horizontal: total kunjungan per setlist (klik = filter peta)
 function renderSetlists() {
   const o = {};
-  records.forEach(r => { const k = r.setlist || '(tanpa setlist)'; o[k] = (o[k] || 0) + 1; });
+  // ikut filter member & tanggal; filter setlist sendiri diabaikan supaya setlist lain tetap terlihat
+  records.filter(r => matchF(r, true)).forEach(r => { const k = r.setlist || '(tanpa setlist)'; o[k] = (o[k] || 0) + 1; });
   const rows = Object.entries(o).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
   const max = rows.length ? rows[0][1] : 1;
   $('sl-chart').innerHTML = rows.length ? rows.map(([k, n]) => `
