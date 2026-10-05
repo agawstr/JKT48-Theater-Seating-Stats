@@ -37,7 +37,7 @@ h1{font-size:42px;font-weight:900;color:#ff2a5f;margin:0 0 8px;letter-spacing:-.
 .hn{font-size:13px;color:#a1a1aa;margin-top:4px;font-style:italic}
 .ht{font-size:12px;color:#34d399;margin-top:4px;font-weight:600}
 .hi img{display:block;max-width:100%;max-height:160px;border-radius:8px;margin-top:8px;cursor:zoom-in}
-.empty{color:#71717a;font-size:14px;text-align:center;padding:16px 0}
+.empty{color:#9a9aa4;font-size:14px;text-align:center;padding:16px 0}
 #lb-img{max-width:100%;max-height:90vh;border-radius:12px;box-shadow:0 0 30px rgba(0,0,0,.6)}
 #lightbox{cursor:zoom-out;z-index:200}
 
@@ -55,7 +55,7 @@ h1{font-size:42px;font-weight:900;color:#ff2a5f;margin:0 0 8px;letter-spacing:-.
 .pop-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;color:#e4e4e7;font-weight:600}
 .pop-i{padding:8px 0;border-top:1px solid #24151d}
 .pop-i b{font-size:14px}
-.pop-m{margin-top:6px;color:#71717a;font-size:11px}
+.pop-m{margin-top:6px;color:#9a9aa4;font-size:11px}
 @media(hover:none){#pop{display:none!important}}
 
 @media(max-width:768px){
@@ -105,7 +105,7 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 .seat-block{position:relative}
 .seat-block+.seat-block::before{content:'';position:absolute;left:-10px;top:0;bottom:0;border-left:1px dashed #2d1820}
 .row-labels{display:flex;flex-direction:column;gap:6px;width:18px;flex-shrink:0}
-.row-labels .seat-row{justify-content:center;color:#71717a;font-size:12px;font-weight:800}
+.row-labels .seat-row{justify-content:center;color:#9a9aa4;font-size:12px;font-weight:800}
 
 /* animasi masuk & skeleton */
 @keyframes rise{from{opacity:0;transform:translateY(10px)}}
@@ -124,9 +124,9 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 .tab.on{background:#881337;border-color:#f43f5e;color:#fff;box-shadow:0 0 15px rgba(244,63,94,.3)}
 #cal-nav{display:flex;gap:12px;align-items:center;width:100%;margin-bottom:10px;color:#e4e4e7}
 #cal{width:100%;overflow-x:auto;padding-bottom:8px}
-.cal-m{display:flex;justify-content:space-between;width:845px;font-size:11px;color:#71717a;margin-bottom:4px}
+.cal-m{display:flex;justify-content:space-between;width:845px;font-size:12px;color:#9a9aa4;margin-bottom:4px}
 .cal-g{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,13px);grid-auto-columns:13px;gap:3px;width:max-content}
-.cd{background:#1e050c;border-radius:3px}
+.cd{background:#2a0f18;border-radius:3px}
 .cd.e{background:none}
 .cd.on1{background:#c96a00}.cd.on2{background:#ff8c00}.cd.on3{background:#ffd23f}
 #gallery-bar{display:flex;gap:10px;align-items:center;margin-bottom:12px;width:100%}
@@ -137,3 +137,23 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 .gi figcaption{padding:8px 10px;font-size:12px;display:flex;flex-direction:column;gap:2px;color:#a1a1aa}
 .gi b{color:#fff;font-size:13px}
 @media(max-width:768px){.seat-block+.seat-block::before{left:-7px}}
+
+/* cakupan kursi */
+#cover{width:100%;max-width:640px;margin:0 auto 16px;background:#181115;border:1px solid #2d1820;border-radius:12px;padding:12px 16px;box-sizing:border-box}
+.cov-t{display:flex;justify-content:space-between;color:#e4e4e7}
+.cov-t span{color:#ff8c00;font-weight:900}
+.cov-bar{height:10px;background:#1e050c;border-radius:99px;overflow:hidden;margin:8px 0}
+.cov-bar i{display:block;height:100%;background:linear-gradient(90deg,#c96a00,#ffd23f);border-radius:99px;transition:width .6s}
+.cov-s{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;color:#a1a1aa}
+.seat.seen{opacity:.3}
+.seat.want{border-color:#34d399;color:#34d399;box-shadow:0 0 10px rgba(52,211,153,.45)}
+
+/* riwayat (timeline) */
+#timeline{width:100%;max-width:760px}
+.tl-mh{color:#ff2a5f;font-size:15px;margin:22px 0 8px;position:sticky;top:0;background:#0d090d;padding:6px 0;z-index:2}
+.tl-i{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:start;background:#181115;border:1px solid #2d1820;border-left:4px solid #ff8c00;border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.tl-d{text-align:center;line-height:1.15}
+.tl-d b{font-size:22px;display:block}
+.tl-d span{font-size:11px;color:#a1a1aa}
+.tl-b b{font-size:15px}
+.tl-s{border:none;cursor:pointer;font-family:inherit}
