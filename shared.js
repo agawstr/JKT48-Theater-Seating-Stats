@@ -257,7 +257,7 @@ $('flt-reset').addEventListener('click', () => {
 const seatTie = (a, b) => a[0].localeCompare(b[0]) || parseInt(b.slice(2)) - parseInt(a.slice(2));
 function renderStats() {
   const by = (fn, tie) => tally(view(), fn, tie);
-  const card = (l, v, s) => `<div class="stat"><div class="sv"${typeof v === 'number' ? ` data-n="${v}"` : ''}>${esc(v)}</div><div class="sl">${l}</div>${s ? `<div class="ss">${esc(s)}</div>` : ''}</div>`;
+  const card = (l, v, s) => `<div class="stat"><div class="sv${String(v).length > 9 ? ' sm' : ''}"${typeof v === 'number' ? ` data-n="${v}"` : ''}>${esc(v)}</div><div class="sl">${l}</div>${s ? `<div class="ss">${esc(s)}</div>` : ''}</div>`;
   const st = top => top ? [top[0], top[1] + '×'] : ['-', ''];
   $('stats').innerHTML = [
     card('Total show', view().length),
@@ -378,14 +378,16 @@ function renderCal() {
   $('cal-nav').innerHTML = `<button type="button" class="btn-s" data-cy="-1" ${i <= 0 ? 'disabled' : ''}>‹</button><b>${calYear}</b><button type="button" class="btn-s" data-cy="1" ${i >= calYears.length - 1 ? 'disabled' : ''}>›</button>`;
   const cnt = {};
   view().forEach(r => cnt[r.date] = (cnt[r.date] || 0) + 1);
-  const d = new Date(calYear, 0, 1);
-  let cells = '<i class="cd e"></i>'.repeat(d.getDay()); // kolom dimulai hari Minggu
-  for (; d.getFullYear() === calYear; d.setDate(d.getDate() + 1)) {
+  const d = new Date(calYear, 0, 1), pad = d.getDay(); // kolom dimulai hari Minggu
+  const weeks = Math.ceil((pad + Math.round((new Date(calYear + 1, 0, 1) - d) / 864e5)) / 7);
+  const mon = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  let cells = '<i class="cd e"></i>'.repeat(pad), labels = '';
+  for (let idx = pad; d.getFullYear() === calYear; d.setDate(d.getDate() + 1), idx++) {
+    if (d.getDate() === 1) labels += `<span style="left:${Math.floor(idx / 7) / weeks * 100}%">${mon[d.getMonth()]}</span>`; // label tepat di minggu pertama bulan
     const k = `${calYear}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`, n = cnt[k] || 0;
     cells += `<i class="cd${n ? ' on' + Math.min(n, 3) : ''}" title="${k}${n ? ': ' + n + ' show' : ''}"></i>`;
   }
-  const mon = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-  $('cal').innerHTML = `<div class="cal-m">${mon.map(m => `<span>${m}</span>`).join('')}</div><div class="cal-g">${cells}</div>`;
+  $('cal').innerHTML = `<div class="cal-m">${labels}</div><div class="cal-g" style="--w:${weeks}">${cells}</div>`;
 }
 $('cal-nav').addEventListener('click', e => {
   const b = e.target.closest('[data-cy]');
