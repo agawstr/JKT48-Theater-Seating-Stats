@@ -2,8 +2,20 @@
    Butuh elemen: #chart, #total, #seating-wrapper, #stage-container,
    #seat-modal (+ #seat-close, #modal-seat, #modal-hist), #lightbox (+ #lb-img) */
 const $ = id => document.getElementById(id);
-const openEl = id => $(id).classList.add('open');
-const closeEl = id => $(id).classList.remove('open');
+const lastFocus = {}, timers = {};
+const openEl = id => {
+  const el = $(id);
+  clearTimeout(timers[id]);
+  el.classList.remove('closing');
+  lastFocus[id] = document.activeElement; // untuk dikembalikan saat ditutup
+  el.classList.add('open');
+};
+const closeEl = id => {
+  const el = $(id);
+  if (!el.classList.contains('open') || el.classList.contains('closing')) return;
+  el.classList.add('closing'); // animasi tutup dulu, baru disembunyikan
+  timers[id] = setTimeout(() => { el.classList.remove('open', 'closing'); lastFocus[id]?.focus?.(); }, 160);
+};
 
 // ---------- Layout kursi: jumlah kursi per blok (b1..b4) di tiap baris ----------
 const COUNTS = {
@@ -60,17 +72,20 @@ let records = []; // diisi oleh halaman (index: dari data.json, admin: dari loca
 // ---------- Render peta ----------
 function renderChart() {
   hidePop();
-  const counts = {};
-  records.forEach(r => counts[r.seat] = (counts[r.seat] || 0) + 1);
+  const counts = {}, all = {}, on = isFiltered();
+  records.forEach(r => all[r.seat] = 1);
+  view().forEach(r => counts[r.seat] = (counts[r.seat] || 0) + 1);
   const seat = code => {
-    const c = counts[code] || 0;
-    return `<button type="button" class="seat${c ? ' visited' : ''}" data-seat="${code}" aria-label="Kursi ${code}${c ? `, ${c} kali` : ''}">
+    const c = counts[code] || 0, h = c ? heat(c) : null;
+    const st = h ? ` style="background:${h.bg};color:${h.fg};border-color:${h.bd}"` : '';
+    return `<button type="button" class="seat${c ? ' visited' : ''}${on && all[code] && !c ? ' dim' : ''}" data-seat="${code}"${st} aria-label="Kursi ${code}${c ? `, ${c} kali` : ''}">
       <span>${code}</span>${c ? `<span class="seat-count">${c}</span>` : ''}</button>`;
   };
   $('chart').innerHTML = [0, 1, 2, 3].map(j =>
     `<div class="seat-block block-${j + 1}">` +
     LAYOUT.map(row => `<div class="seat-row">${row[j].map(seat).join('')}</div>`).join('') + '</div>').join('');
   $('total').textContent = records.length;
+  renderFilters(); renderStats(); renderSetlists();
   requestAnimationFrame(centerChart);
 }
 
@@ -163,7 +178,145 @@ $('lightbox').addEventListener('click', () => closeEl('lightbox'));
 // Escape: lightbox dulu, lalu hook halaman (mis. dialog konfirmasi admin), terakhir modal kursi
 const escHooks = [];
 document.addEventListener('keydown', e => {
+  if (e.key === 'Tab') return trapTab(e);
   if (e.key !== 'Escape') return;
   if ($('lightbox').classList.contains('open')) closeEl('lightbox');
   else if (!escHooks.some(h => h())) closeEl('seat-modal');
 });
+
+// ================= Statistik, filter, legenda, setlist, PNG =================
+const filter = {setlist: '', member: '', from: '', to: ''};
+const isFiltered = () => Object.values(filter).some(Boolean);
+const matchF = r => (!filter.setlist || r.setlist === filter.setlist)
+  && (!filter.member || extras(r).some(x => x.member === filter.member))
+  && (!filter.from || r.date >= filter.from) && (!filter.to || r.date <= filter.to);
+const view = () => records.filter(matchF); // record yang lolos filter (dipakai peta)
+
+// warna heatmap: makin sering makin terang
+const HEAT = [
+  {min:1, bg:'#5c2e0c', fg:'#ffd9b0', bd:'#8a4b1a'},
+  {min:2, bg:'#8f4a0a', fg:'#fff0dd', bd:'#b8620a'},
+  {min:3, bg:'#c96a00', fg:'#fff',    bd:'#e07a00'},
+  {min:5, bg:'#ff8c00', fg:'#000',    bd:'#ffaa00'},
+  {min:8, bg:'#ffd23f', fg:'#000',    bd:'#fff3b0'}];
+const heat = c => HEAT.filter(h => c >= h.min).pop();
+const heatLabel = (h, i) => HEAT[i + 1] ? (HEAT[i + 1].min - 1 > h.min ? `${h.min}–${HEAT[i + 1].min - 1}×` : `${h.min}×`) : `${h.min}+×`;
+
+// kontainer disisipkan lewat JS supaya index & admin otomatis sama
+const wrapEl = $('seating-wrapper');
+wrapEl.insertAdjacentHTML('beforebegin', `<div id="stats"></div>
+  <div id="filters">
+    <select id="f-setlist" aria-label="Filter setlist"></select>
+    <select id="f-member" aria-label="Filter member"></select>
+    <input type="date" id="f-from" aria-label="Dari tanggal"><input type="date" id="f-to" aria-label="Sampai tanggal">
+    <button type="button" class="btn-s" id="f-reset">Reset</button><span id="f-info"></span>
+  </div>`);
+wrapEl.insertAdjacentHTML('afterend', `<div id="legend"></div>
+  <h2 class="sec">Total kunjungan per setlist</h2><div id="sl-chart"></div>`);
+$('legend').innerHTML = 'Jumlah kunjungan: ' + HEAT.map((h, i) =>
+  `<span class="lg"><i style="background:${h.bg};border-color:${h.bd}"></i>${heatLabel(h, i)}</span>`).join('') +
+  '<button type="button" class="btn-s" id="png-btn">📷 Simpan peta (PNG)</button>';
+
+function renderFilters() {
+  const opts = (id, vals, ph) => {
+    const cur = filter[id.slice(2)];
+    $(id).innerHTML = `<option value="">${ph}</option>` + vals.map(v => `<option${v === cur ? ' selected' : ''}>${esc(v)}</option>`).join('');
+  };
+  opts('f-setlist', [...new Set(records.map(r => r.setlist).filter(Boolean))].sort(), 'Semua setlist');
+  opts('f-member', [...new Set(records.flatMap(r => extras(r).map(x => x.member)).filter(Boolean))].sort(), 'Semua member');
+  $('f-info').textContent = isFiltered() ? `${view().length} dari ${records.length} show cocok` : '';
+}
+$('filters').addEventListener('change', e => {
+  const k = {'f-setlist': 'setlist', 'f-member': 'member', 'f-from': 'from', 'f-to': 'to'}[e.target.id];
+  if (k) { filter[k] = e.target.value; renderChart(); }
+});
+$('f-reset').addEventListener('click', () => {
+  Object.keys(filter).forEach(k => filter[k] = '');
+  $('f-from').value = $('f-to').value = '';
+  renderChart();
+});
+
+function renderStats() {
+  const by = fn => {
+    const o = {};
+    records.forEach(r => [].concat(fn(r)).forEach(k => k && (o[k] = (o[k] || 0) + 1)));
+    return Object.entries(o).sort((a, b) => b[1] - a[1])[0];
+  };
+  const card = (l, v, s) => `<div class="stat"><div class="sv">${esc(v)}</div><div class="sl">${l}</div>${s ? `<div class="ss">${esc(s)}</div>` : ''}</div>`;
+  const st = top => top ? [top[0], top[1] + '×'] : ['-', ''];
+  $('stats').innerHTML = [
+    card('Total show', records.length),
+    card('Kursi favorit', ...st(by(r => r.seat))),
+    card('Baris favorit', ...st(by(r => r.seat[0]))),
+    card('2-Shot', records.filter(r => r.twoshot === 'Ya').length),
+    card('Chekicha', records.filter(r => r.chekicha === 'Ya').length),
+    card('Member terbanyak', ...st(by(r => extras(r).map(x => x.member))))
+  ].join('');
+}
+
+// bar horizontal: total kunjungan per setlist (klik = filter peta)
+function renderSetlists() {
+  const o = {};
+  records.forEach(r => { const k = r.setlist || '(tanpa setlist)'; o[k] = (o[k] || 0) + 1; });
+  const rows = Object.entries(o).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  const max = rows.length ? rows[0][1] : 1;
+  $('sl-chart').innerHTML = rows.length ? rows.map(([k, n]) => `
+    <button type="button" class="sl-row${filter.setlist === k ? ' on' : ''}" data-setlist="${esc(k)}" title="Klik untuk filter peta">
+      <span class="sl-n">${esc(k)}</span><span class="sl-bar"><i style="width:${n / max * 100}%"></i></span><span class="sl-c">${n}×</span>
+    </button>`).join('') : '<div class="empty">Belum ada data</div>';
+}
+$('sl-chart').addEventListener('click', e => {
+  const b = e.target.closest('[data-setlist]');
+  if (!b) return;
+  filter.setlist = filter.setlist === b.dataset.setlist ? '' : b.dataset.setlist;
+  renderChart();
+});
+
+// simpan peta sebagai PNG (digambar langsung di canvas, tanpa library)
+function savePng() {
+  const S = 2, cw = 38, ch = 46, g = 5, rp = 52, bg = 20, pad = 28, top = 88;
+  const bw = [0, 1, 2, 3].map(j => Math.max(...LAYOUT.map(r => r[j].length)) * (cw + g) - g);
+  const W = bw.reduce((a, b) => a + b) + bg * 3 + pad * 2, H = top + LAYOUT.length * rp + pad;
+  const cv = document.createElement('canvas');
+  cv.width = W * S; cv.height = H * S;
+  const c = cv.getContext('2d');
+  c.scale(S, S);
+  c.fillStyle = '#0d090d'; c.fillRect(0, 0, W, H);
+  c.textAlign = 'center'; c.textBaseline = 'middle';
+  c.fillStyle = '#ff2a5f'; c.font = '900 20px sans-serif'; c.fillText(document.querySelector('h1').textContent, W / 2, 26);
+  c.fillStyle = '#a1a1aa'; c.font = '600 13px sans-serif'; c.fillText(`Total riwayat show: ${view().length}`, W / 2, 48);
+  c.fillStyle = '#380816'; c.fillRect(pad, 62, W - pad * 2, 18);
+  c.fillStyle = '#ff2a5f'; c.font = '900 11px sans-serif'; c.fillText('S T A G E', W / 2, 71);
+  const counts = {};
+  view().forEach(r => counts[r.seat] = (counts[r.seat] || 0) + 1);
+  let x0 = pad;
+  for (let j = 0; j < 4; j++) {
+    LAYOUT.forEach((row, i) => {
+      const w = row[j].length * (cw + g) - g, y = top + i * rp;
+      row[j].forEach((code, k) => {
+        const x = (j % 2 ? x0 : x0 + bw[j] - w) + k * (cw + g), n = counts[code], h = n ? heat(n) : null;
+        c.beginPath(); c.roundRect(x, y, cw, ch, 6);
+        c.fillStyle = h ? h.bg : '#1e050c'; c.fill();
+        c.strokeStyle = h ? h.bd : '#3d0815'; c.stroke();
+        c.fillStyle = h ? h.fg : '#f43f5e'; c.font = '700 11px sans-serif';
+        c.fillText(code, x + cw / 2, y + (n ? 15 : ch / 2));
+        if (n) { c.font = '900 14px sans-serif'; c.fillText(n + '×', x + cw / 2, y + 32); }
+      });
+    });
+    x0 += bw[j] + bg;
+  }
+  const a = document.createElement('a');
+  a.download = 'peta-kursi.png'; a.href = cv.toDataURL('image/png'); a.click();
+}
+$('png-btn').addEventListener('click', savePng);
+
+// focus trap: Tab tidak keluar dari modal yang sedang terbuka
+function trapTab(e) {
+  const ov = [...document.querySelectorAll('.overlay.open')].pop();
+  if (!ov) return;
+  const f = [...ov.querySelectorAll('button,[href],input,select,textarea')].filter(el => !el.disabled && el.offsetParent !== null);
+  if (!f.length) return e.preventDefault();
+  const first = f[0], last = f[f.length - 1], cur = document.activeElement;
+  if (!ov.contains(cur) || (e.shiftKey && cur === first)) { e.preventDefault(); (e.shiftKey ? last : first).focus(); }
+  else if (!e.shiftKey && cur === last) { e.preventDefault(); first.focus(); }
+}
