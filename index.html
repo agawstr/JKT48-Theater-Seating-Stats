@@ -22,7 +22,9 @@
     <p class="sub">Riwayat kursi teater yang pernah ditempati (arahkan kursor atau klik kursi)</p>
     <div class="badge">Total Riwayat Show: <span id="total">0</span></div>
   </div>
+  <div class="tabbar"><button type="button" class="tab on" data-tab="main">Peta &amp; Statistik</button><button type="button" class="tab" data-tab="gal" id="g-tab">Galeri</button></div>
   <div id="status" role="status">Memuat data...</div>
+  <div id="view-main">
   <div id="seating-wrapper">
     <div id="stage-container">
       <div class="stage">STAGE</div>
@@ -32,6 +34,11 @@
         <div class="catwalk">DERMAGA</div>
       </div>
     </div>
+  </div>
+  </div>
+  <div id="view-gal" hidden>
+    <div id="gallery-bar"><select id="g-member" aria-label="Filter member galeri"></select><span id="g-info"></span></div>
+    <div id="gallery"></div>
   </div>
 </div>
 
@@ -51,7 +58,7 @@
 const DATA_URL = './data.json';
 
 async function init() {
-  renderChart(); // peta kosong dulu biar layout langsung muncul
+  renderChart(); skeleton(); // peta kosong dulu biar layout langsung muncul
   try {
     const res = await fetch(DATA_URL + (DATA_URL.includes('?') ? '&' : '?') + 't=' + Date.now());
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -62,9 +69,16 @@ async function init() {
     $('status').textContent = '';
     renderChart();
   } catch (err) {
+    renderChart();
     $('status').textContent = 'Gagal memuat data (' + err.message + '). Cek DATA_URL / pastikan dibuka lewat server, bukan file://.';
   }
 }
+document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t === b));
+  $('view-main').hidden = b.dataset.tab !== 'main';
+  $('view-gal').hidden = b.dataset.tab !== 'gal';
+  centerChart();
+}));
 init();
 </script>
 </body>
