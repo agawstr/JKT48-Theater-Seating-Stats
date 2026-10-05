@@ -1,6 +1,6 @@
 # JKT48 Theater Seating Stats
 
-Web untuk mencatat kursi teater JKT48 yang pernah kamu tempati. Peta kursi menandai kursi yang sudah pernah diduduki beserta jumlahnya. Arahkan kursor ke kursi untuk melihat ringkasan, klik untuk melihat riwayat lengkap dan foto.
+Web untuk mencatat kursi teater JKT48 yang pernah ditempati. Peta kursi menandai kursi yang sudah pernah diduduki beserta jumlahnya. Arahkan kursor ke kursi untuk melihat ringkasan, klik untuk melihat riwayat lengkap dan foto.
 
 Tanpa backend dan tanpa proses build, cukup file HTML statis yang bisa di-hosting di GitHub Pages.
 
