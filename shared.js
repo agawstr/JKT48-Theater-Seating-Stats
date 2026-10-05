@@ -227,7 +227,8 @@ wrapEl.insertAdjacentHTML('beforebegin', `<div id="stats"></div><div id="cover">
   </div>`);
 wrapEl.insertAdjacentHTML('afterend', `<div id="legend"></div>
   <h2 class="sec">Total kunjungan per setlist</h2><div id="sl-chart"></div>
-  <h2 class="sec">Kalender kehadiran</h2><div id="cal-nav"></div><div id="cal"></div>`);
+  <h2 class="sec">Kalender kehadiran</h2><div id="cal-nav"></div><div id="cal"></div>
+  <h2 class="sec" id="mc-h">Kunjungan per bulan</h2><div id="mchart"></div>`);
 $('flt-from').value = filter.from;
 $('flt-to').value = filter.to;
 $('legend').innerHTML = 'Jumlah kunjungan: ' + HEAT.map((h, i) =>
@@ -371,7 +372,7 @@ function skeleton() {
 let calYear = 0, calYears = [];
 function renderCal() {
   calYears = [...new Set(records.map(r => r.date.slice(0, 4)).filter(y => /^\d{4}$/.test(y)))].sort();
-  if (!calYears.length) { $('cal-nav').innerHTML = ''; $('cal').innerHTML = '<div class="empty">Belum ada data</div>'; return; }
+  if (!calYears.length) { $('cal-nav').innerHTML = ''; $('mchart').innerHTML = ''; $('cal').innerHTML = '<div class="empty">Belum ada data</div>'; return; }
   if (!calYears.includes(String(calYear))) calYear = +calYears[calYears.length - 1];
   const i = calYears.indexOf(String(calYear));
   $('wrap-btn').textContent = `✨ Wrapped ${calYear}`;
@@ -388,6 +389,12 @@ function renderCal() {
     cells += `<i class="cd${n ? ' on' + Math.min(n, 3) : ''}" title="${k}${n ? ': ' + n + ' show' : ''}"></i>`;
   }
   $('cal').innerHTML = `<div class="cal-m">${labels}</div><div class="cal-g" style="--w:${weeks}">${cells}</div>`;
+  // kunjungan per bulan di tahun yang sama (ikut filter)
+  const mc = Array(12).fill(0);
+  view().forEach(r => { if (r.date.startsWith(calYear + '-')) mc[+r.date.slice(5, 7) - 1]++; });
+  const mx = Math.max(...mc, 1);
+  $('mc-h').textContent = `Kunjungan per bulan (${calYear})`;
+  $('mchart').innerHTML = mc.map((n, i) => `<div class="mc"><span class="mc-n">${n || ''}</span><div class="mc-b"><i style="height:${n / mx * 100}%"></i></div><span class="mc-l">${mon[i]}</span></div>`).join('');
 }
 $('cal-nav').addEventListener('click', e => {
   const b = e.target.closest('[data-cy]');
@@ -470,8 +477,12 @@ $('cover').addEventListener('click', e => {
 function renderTimeline() {
   const el = $('timeline');
   if (!el) return;
-  const list = [...records].sort(cmp);
-  if ($('t-tab')) $('t-tab').textContent = `Riwayat (${list.length})`;
+  const all = [...records].sort(cmp);
+  if ($('t-tab')) $('t-tab').textContent = `Riwayat (${all.length})`;
+  const q = ($('tl-q')?.value || '').trim().toLowerCase();
+  const hay = r => [r.setlist, r.seat, r.date, r.sesi, r.note, ...extras(r).flatMap(x => [x.member, x.label])].join(' ').toLowerCase();
+  const list = q ? all.filter(r => q.split(/\s+/).every(w => hay(r).includes(w))) : all; // semua kata harus cocok
+  if ($('tl-info')) $('tl-info').textContent = q ? `${list.length} dari ${all.length} show` : '';
   const mon = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
   let cur = '', html = '';
   for (const r of list) {
@@ -486,9 +497,12 @@ function renderTimeline() {
         ${r.note ? `<div class="hn">"${esc(r.note)}"</div>` : ''}</div>
       <button type="button" class="seat-badge tl-s" data-seat="${esc(r.seat)}" aria-label="Lihat kursi ${esc(r.seat)}">${esc(r.seat)}</button></div>`;
   }
-  el.innerHTML = html || '<div class="empty">Belum ada riwayat</div>';
+  el.innerHTML = html || `<div class="empty">${q ? 'Tidak ada show yang cocok' : 'Belum ada riwayat'}</div>`;
 }
 $('timeline')?.addEventListener('click', e => {
   const b = e.target.closest('[data-seat]');
   if (b) openSeat(b.dataset.seat);
 });
+
+let tlT; // jeda singkat supaya tidak render ulang di setiap ketikan
+$('tl-q')?.addEventListener('input', () => { clearTimeout(tlT); tlT = setTimeout(renderTimeline, 150); });
