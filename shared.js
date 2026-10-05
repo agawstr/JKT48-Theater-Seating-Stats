@@ -374,6 +374,7 @@ function renderCal() {
   if (!calYears.length) { $('cal-nav').innerHTML = ''; $('cal').innerHTML = '<div class="empty">Belum ada data</div>'; return; }
   if (!calYears.includes(String(calYear))) calYear = +calYears[calYears.length - 1];
   const i = calYears.indexOf(String(calYear));
+  $('wrap-btn').textContent = `✨ Wrapped ${calYear}`;
   $('cal-nav').innerHTML = `<button type="button" class="btn-s" data-cy="-1" ${i <= 0 ? 'disabled' : ''}>‹</button><b>${calYear}</b><button type="button" class="btn-s" data-cy="1" ${i >= calYears.length - 1 ? 'disabled' : ''}>›</button>`;
   const cnt = {};
   view().forEach(r => cnt[r.date] = (cnt[r.date] || 0) + 1);
@@ -412,9 +413,8 @@ $('g-member')?.addEventListener('change', renderGallery);
 
 // kartu "Wrapped" untuk tahun terakhir yang ada di data, disimpan sebagai PNG
 function wrapped() {
-  const ys = records.map(r => r.date.slice(0, 4)).filter(y => /^\d{4}$/.test(y)).sort();
-  if (!ys.length) return alert('Belum ada data untuk dibuat Wrapped.');
-  const y = ys[ys.length - 1], rs = records.filter(r => r.date.startsWith(y));
+  if (!calYear) return alert('Belum ada data untuk dibuat Wrapped.');
+  const y = String(calYear), rs = records.filter(r => r.date.startsWith(y)); // tahun yang dipilih di kalender
   const t = (fn, tie) => tally(rs, fn, tie) || ['-', 0];
   const rows = [
     ['Kursi favorit', ...t(r => r.seat, seatTie)],
