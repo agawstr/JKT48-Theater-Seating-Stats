@@ -76,13 +76,15 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 /* statistik, filter, legenda, grafik setlist */
 .seat.dim{opacity:.25}
 #stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;width:100%;margin-bottom:16px}
-.stat{background:#181115;border:1px solid #2d1820;border-radius:12px;padding:12px 14px;text-align:center}
-.sv{font-size:22px;font-weight:900;color:#ff8c00}
+.stat{display:flex;flex-direction:column;justify-content:center;background:#181115;border:1px solid #2d1820;border-radius:12px;padding:12px 14px;text-align:center}
+.sv{font-size:22px;font-weight:900;color:#ff8c00;line-height:1.15;overflow-wrap:anywhere}
+.sv.sm{font-size:17px}
 .sl{font-size:12px;color:#a1a1aa;margin-top:2px}
 .ss{font-size:11px;color:#ff2a5f;font-weight:700;margin-top:2px}
 #filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;width:100%;margin-bottom:16px}
-#filters select,#filters input,#gallery-bar select{width:auto;max-width:100%;background:#181115;color:#fff;border:1px solid #2d1820;border-radius:8px;padding:8px 10px;font:inherit;font-size:13px;color-scheme:dark}
-#flt-info{font-size:12px;color:#34d399;font-weight:600}
+#filters select,#filters input,#gallery-bar select{flex:1 1 150px;width:auto;min-width:0;max-width:100%;background:#181115;color:#fff;border:1px solid #2d1820;border-radius:8px;padding:8px 10px;font:inherit;font-size:13px;color-scheme:dark}
+#flt-info:empty{display:none}
+#flt-info{flex-basis:100%;text-align:center;font-size:12px;color:#34d399;font-weight:600}
 .btn-s{background:#181115;color:#e4e4e7;border:1px solid #3d222e;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer}
 .btn-s:hover{border-color:#ff2a5f;color:#ff2a5f}
 .btn-s:disabled{opacity:.4;cursor:default;border-color:#3d222e;color:#e4e4e7}
@@ -124,9 +126,11 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 .tab.on{background:#881337;border-color:#f43f5e;color:#fff;box-shadow:0 0 15px rgba(244,63,94,.3)}
 #cal-nav{display:flex;gap:12px;align-items:center;width:100%;margin-bottom:10px;color:#e4e4e7}
 #cal{width:100%;overflow-x:auto;padding-bottom:8px}
-.cal-m{display:flex;justify-content:space-between;width:845px;font-size:12px;color:#9a9aa4;margin-bottom:4px}
+.cal-m,.cal-g{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,auto);grid-template-columns:repeat(var(--w),1fr);gap:3px}
+.cal-m{position:relative;height:18px;font-size:12px;color:#9a9aa4}
+.cal-m span{position:absolute;top:0}
 .cal-g{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,13px);grid-auto-columns:13px;gap:3px;width:max-content}
-.cd{background:#2a0f18;border-radius:3px}
+.cd{aspect-ratio:1;background:#2a0f18;border-radius:3px}
 .cd.e{background:none}
 .cd.on1{background:#c96a00}.cd.on2{background:#ff8c00}.cd.on3{background:#ffd23f}
 #gallery-bar{display:flex;gap:10px;align-items:center;margin-bottom:12px;width:100%}
@@ -139,7 +143,7 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 @media(max-width:768px){.seat-block+.seat-block::before{left:-7px}}
 
 /* cakupan kursi */
-#cover{width:100%;max-width:640px;margin:0 auto 16px;background:#181115;border:1px solid #2d1820;border-radius:12px;padding:12px 16px;box-sizing:border-box}
+#cover{width:100%;margin:0 0 16px;background:#181115;border:1px solid #2d1820;border-radius:12px;padding:12px 16px;box-sizing:border-box}
 .cov-t{display:flex;justify-content:space-between;color:#e4e4e7}
 .cov-t span{color:#ff8c00;font-weight:900}
 .cov-bar{height:10px;background:#1e050c;border-radius:99px;overflow:hidden;margin:8px 0}
