@@ -430,42 +430,74 @@ function renderGallery() {
 }
 $('g-member')?.addEventListener('change', renderGallery);
 
-// kartu "Wrapped" untuk tahun terakhir yang ada di data, disimpan sebagai PNG
+// peta mini di canvas: counts = kode->jumlah (warna heatmap), hl = kursi yang disorot (opsional)
+function drawMiniMap(c, cx, y0, cw, g, counts, hl) {
+  const gap = 18, ch = cw * 1.1;
+  const bw = [0, 1, 2, 3].map(j => Math.max(...LAYOUT.map(r => r[j].length)) * (cw + g) - g);
+  let x0 = cx - (bw.reduce((a, b) => a + b) + gap * 3) / 2;
+  for (let j = 0; j < 4; j++) {
+    LAYOUT.forEach((row, i) => {
+      const w = row[j].length * (cw + g) - g, y = y0 + i * (ch + g);
+      row[j].forEach((code, k) => {
+        const x = (j % 2 ? x0 : x0 + bw[j] - w) + k * (cw + g), n = counts[code], h = n ? heat(n) : null;
+        c.beginPath(); c.roundRect(x, y, cw, ch, 5);
+        if (code === hl) { c.shadowColor = '#ff8c00'; c.shadowBlur = 36; }
+        c.fillStyle = code === hl ? '#ffd23f' : h ? h.bg : '#2a0f18';
+        c.fill(); c.shadowBlur = 0;
+      });
+    });
+    x0 += bw[j] + gap;
+  }
+}
+
+// kartu "Wrapped" untuk tahun yang dipilih di kalender, disimpan sebagai PNG
 function wrapped() {
   if (!calYear) return alert('Belum ada data untuk dibuat Wrapped.');
-  const y = String(calYear), rs = records.filter(r => r.date.startsWith(y)); // tahun yang dipilih di kalender
+  const y = String(calYear), rs = records.filter(r => r.date.startsWith(y));
+  if (!rs.length) return alert('Tidak ada show di tahun ' + y + '.');
   const t = (fn, tie) => tally(rs, fn, tie) || ['-', 0];
   const rows = [
-    ['Kursi favorit', ...t(r => r.seat, seatTie)],
-    ['Setlist terbanyak', ...t(r => r.setlist)],
-    ['Member teratas', ...t(r => extras(r).map(x => x.member))],
-    ['Baris favorit', ...t(r => r.seat[0], (a, b) => a.localeCompare(b))]
+    ['KURSI FAVORIT', ...t(r => r.seat, seatTie)],
+    ['SETLIST TERBANYAK', ...t(r => r.setlist)],
+    ['MEMBER TERATAS', ...t(r => extras(r).map(x => x.member))],
+    ['BARIS FAVORIT', ...t(r => r.seat[0], (a, b) => a.localeCompare(b))]
   ];
+  const counts = {};
+  rs.forEach(r => counts[r.seat] = (counts[r.seat] || 0) + 1);
   const W = 1080, H = 1350, cv = document.createElement('canvas');
   cv.width = W; cv.height = H;
   const c = cv.getContext('2d');
   const bg = c.createLinearGradient(0, 0, W, H);
   bg.addColorStop(0, '#2a0612'); bg.addColorStop(1, '#0d090d');
   c.fillStyle = bg; c.fillRect(0, 0, W, H);
-  const gl = c.createRadialGradient(W / 2, 0, 0, W / 2, 0, 700);
-  gl.addColorStop(0, 'rgba(255,42,95,.35)'); gl.addColorStop(1, 'rgba(255,42,95,0)');
+  const gl = c.createRadialGradient(W / 2, 120, 0, W / 2, 120, 650);
+  gl.addColorStop(0, 'rgba(255,42,95,.38)'); gl.addColorStop(1, 'rgba(255,42,95,0)');
   c.fillStyle = gl; c.fillRect(0, 0, W, H);
-  const fit = (txt, max, size, wt) => { do { c.font = `${wt} ${size}px sans-serif`; size -= 2; } while (c.measureText(txt).width > max && size > 20); };
-  c.textBaseline = 'alphabetic'; c.textAlign = 'center';
-  c.fillStyle = '#a1a1aa'; c.font = '700 30px sans-serif'; c.fillText('T H E A T E R   W R A P P E D', W / 2, 120);
-  c.fillStyle = '#ff2a5f'; c.font = '900 150px sans-serif'; c.fillText(y, W / 2, 270);
-  c.fillStyle = '#ff8c00'; c.font = '900 200px sans-serif'; c.fillText(rs.length, W / 2, 480);
-  c.fillStyle = '#e4e4e7'; c.font = '600 34px sans-serif'; c.fillText('show ditonton', W / 2, 535);
+  c.textAlign = 'center'; c.textBaseline = 'alphabetic';
+  c.fillStyle = 'rgba(255,255,255,.08)'; c.beginPath(); c.roundRect(W / 2 - 240, 50, 480, 56, 28); c.fill();
+  c.fillStyle = '#e4e4e7'; c.font = '700 24px sans-serif'; c.fillText('T H E A T E R   W R A P P E D', W / 2, 86);
+  const gt = c.createLinearGradient(W / 2 - 320, 0, W / 2 + 320, 0);
+  gt.addColorStop(0, '#ff2a5f'); gt.addColorStop(1, '#ffb347');
+  c.fillStyle = gt; c.shadowColor = 'rgba(255,42,95,.6)'; c.shadowBlur = 40;
+  c.font = '900 210px sans-serif'; c.fillText(y, W / 2, 290);
+  c.shadowBlur = 0;
+  c.fillStyle = '#fff'; c.font = '800 44px sans-serif';
+  c.fillText(`${rs.length} show · ${Object.keys(counts).length} kursi berbeda`, W / 2, 358);
+  c.fillStyle = '#ff2a5f'; c.font = '800 20px sans-serif'; c.fillText('S T A G E', W / 2, 410);
+  drawMiniMap(c, W / 2, 428, 26, 3, counts, null);
   rows.forEach(([label, val, n], i) => {
-    const y0 = 610 + i * 130;
-    c.strokeStyle = '#3d222e'; c.beginPath(); c.moveTo(90, y0 - 26); c.lineTo(W - 90, y0 - 26); c.stroke();
-    c.textAlign = 'left'; c.fillStyle = '#a1a1aa'; c.font = '600 26px sans-serif'; c.fillText(label, 90, y0 + 6);
-    c.fillStyle = '#fff'; fit(String(val), 700, 48, 800); c.fillText(val, 90, y0 + 60);
-    c.textAlign = 'right'; c.fillStyle = '#ff8c00'; c.font = '900 48px sans-serif'; c.fillText(n ? n + '×' : '', W - 90, y0 + 60);
+    const x = 90 + (i % 2) * 460, yy = 780 + Math.floor(i / 2) * 200;
+    c.fillStyle = 'rgba(255,255,255,.06)'; c.strokeStyle = 'rgba(255,255,255,.14)'; c.lineWidth = 2;
+    c.beginPath(); c.roundRect(x, yy, 440, 180, 24); c.fill(); c.stroke();
+    c.textAlign = 'left';
+    c.fillStyle = '#a1a1aa'; c.font = '700 22px sans-serif'; c.fillText(label, x + 30, yy + 48);
+    c.fillStyle = '#fff'; fitFont(c, String(val), 380, 46, 800); c.fillText(val, x + 30, yy + 108);
+    c.fillStyle = '#ff8c00'; c.font = '900 34px sans-serif'; c.fillText(n ? n + '×' : '', x + 30, yy + 155);
   });
-  c.textAlign = 'center'; c.fillStyle = '#e4e4e7'; c.font = '700 34px sans-serif';
-  c.fillText(`📸 ${rs.filter(r => r.twoshot === 'Ya').length} 2-Shot   ·   🎴 ${rs.filter(r => r.chekicha === 'Ya').length} Chekicha`, W / 2, 1240);
-  c.fillStyle = '#a1a1aa'; c.font = '600 26px sans-serif'; c.fillText(document.querySelector('h1').textContent, W / 2, 1300);
+  const paid = rs.reduce((a, r) => a + (r.harga || 0), 0);
+  c.textAlign = 'center'; c.fillStyle = '#e4e4e7'; c.font = '700 32px sans-serif';
+  c.fillText(`📸 ${rs.filter(r => r.twoshot === 'Ya').length} 2-Shot  ·  🎴 ${rs.filter(r => r.chekicha === 'Ya').length} Chekicha${paid ? '  ·  🎟️ ' + rupiah(paid) : ''}`, W / 2, 1230);
+  c.fillStyle = '#9a9aa4'; c.font = '600 26px sans-serif'; c.fillText(document.querySelector('h1').textContent, W / 2, 1300);
   const a = document.createElement('a');
   a.download = `wrapped-${y}.png`; a.href = cv.toDataURL('image/png'); a.click();
 }
@@ -568,10 +600,11 @@ function shareCard(id) {
     if (img) {
       const s = Math.max(w / img.width, h / img.height);
       c.drawImage(img, x + (w - img.width * s) / 2, y + (h - img.height * s) / 2, img.width * s, img.height * s);
-    } else {
-      c.fillStyle = '#1e050c'; c.fillRect(x, y, w, h);
-      c.fillStyle = '#ff8c00'; c.font = '900 240px sans-serif'; c.textBaseline = 'middle'; c.fillText(r.seat, W / 2, y + h / 2);
-      c.textBaseline = 'alphabetic';
+    } else { // tanpa foto: peta mini dengan kursi ini menyala
+      c.fillStyle = '#180a10'; c.fillRect(x, y, w, h);
+      c.fillStyle = '#ff2a5f'; c.font = '800 22px sans-serif'; c.fillText('S T A G E', W / 2, y + 50);
+      drawMiniMap(c, W / 2, y + 72, 26, 3, {}, r.seat);
+      c.fillStyle = '#ffd23f'; c.font = '900 150px sans-serif'; c.fillText(r.seat, W / 2, y + h - 56);
     }
     c.restore();
     c.fillStyle = '#fff'; fitFont(c, r.setlist, w, 64, 900); c.fillText(r.setlist, W / 2, 870);
