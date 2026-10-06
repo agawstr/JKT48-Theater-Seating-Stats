@@ -92,6 +92,11 @@ td .seat-badge{font-size:12px}
             <input type="date" id="f-date"></div>
           <div class="fg"><label for="f-sesi">Sesi</label>
             <select id="f-sesi"><option value="">-</option><option value="Siang">Siang</option><option value="Malam">Malam</option></select></div>
+          <div class="fg"><label for="f-harga">Harga tiket (Rp, opsional)</label>
+            <input id="f-harga" type="number" min="0" step="1000" inputmode="numeric" placeholder="150000"></div>
+          <div class="fg"><label for="f-tiket">Jenis tiket (opsional)</label>
+            <input id="f-tiket" list="dl-tiket" placeholder="Reguler / Lotre / Roulette" autocomplete="off">
+            <datalist id="dl-tiket"><option value="Reguler"><option value="Lotre"><option value="Roulette"><option value="Birthday"><option value="Lainnya"></datalist></div>
           <div class="fg"><label for="f-note">Keterangan / Momen (Opsional)</label>
             <textarea id="f-note" rows="2" placeholder="STS / diwaro member"></textarea></div>
           <div id="extras"></div>
@@ -117,7 +122,7 @@ td .seat-badge{font-size:12px}
         <div id="backup-note"></div>
         <div class="scroll">
           <table>
-            <thead><tr><th>Kursi</th><th>Setlist</th><th>Tanggal</th><th>Keterangan</th><th>2-Shot / Chekicha</th><th style="width:100px">Aksi</th></tr></thead>
+            <thead><tr><th>Kursi</th><th>Setlist</th><th>Tanggal</th><th>Harga</th><th>Keterangan</th><th>2-Shot / Chekicha</th><th style="width:100px">Aksi</th></tr></thead>
             <tbody id="tbody"></tbody>
           </table>
         </div>
@@ -211,7 +216,7 @@ function renderTable() {
   const q = $('search').value.toLowerCase();
   const list = [...records]
     .sort(cmp)
-    .filter(r => [r.seat, r.setlist, r.note, r.member, r.ckMember, r.date, r.sesi].some(v => v.toLowerCase().includes(q)));
+    .filter(r => [r.seat, r.setlist, r.note, r.member, r.ckMember, r.date, r.sesi, r.tiket].some(v => v.toLowerCase().includes(q)));
   const pages = Math.max(1, Math.ceil(list.length / PER));
   page = Math.min(page, pages);
   $('pager').innerHTML = pages > 1
@@ -221,14 +226,14 @@ function renderTable() {
       <td><span class="seat-badge${SEATS.has(r.seat) ? '' : ' bad'}" ${SEATS.has(r.seat) ? '' : 'title="Kursi tidak ada di peta — edit supaya muncul"'}>${esc(r.seat)}</span></td>
       <td><b>${esc(r.setlist)}</b></td>
       <td>${esc(r.date)}${r.sesi ? ' · ' + r.sesi : ''}</td>
-      <td>${esc(r.note) || '-'}</td>
+      <td>${r.harga ? esc(rupiah(r.harga)) + (r.tiket ? '<br><small>' + esc(r.tiket) + '</small>' : '') : '-'}</td><td>${esc(r.note) || '-'}</td>
       <td>${exCell(r)}</td>
       <td>
         <button class="act edit" data-act="edit" data-id="${r.id}">Edit</button>
         <button class="act del" data-act="del" data-id="${r.id}">Hapus</button>
       </td>
     </tr>`).join('')
-    : '<tr><td colspan="6" style="text-align:center;color:#71717a">Data tidak ditemukan</td></tr>';
+    : '<tr><td colspan="7" style="text-align:center;color:#71717a">Data tidak ditemukan</td></tr>';
 }
 
 // saran otomatis (datalist) dari setlist & member yang pernah diinput
@@ -329,6 +334,7 @@ $('form').addEventListener('submit', async e => {
   const date = $('f-date').value;
   const note = $('f-note').value.trim();
   const sesi = $('f-sesi').value;
+  const harga = Math.max(0, Number($('f-harga').value) || 0), tiket = $('f-tiket').value.trim();
   const ex = {};
   for (const K of KINDS) {
     const on = $('f-' + K.k).value === 'Ya';
@@ -347,7 +353,7 @@ $('form').addEventListener('submit', async e => {
     r.setlist.toLowerCase() === setlist.toLowerCase() && r.sesi === sesi);
   if (dup && !await ask('Data dengan kursi, setlist, tanggal, dan sesi yang sama sudah ada. Tetap simpan?', 'Tetap simpan')) return;
 
-  const rec = { id: id || Date.now(), seat, setlist, date, sesi, note, ...ex };
+  const rec = { id: id || Date.now(), seat, setlist, date, sesi, note, harga, tiket, ...ex };
   if (id) {
     const i = records.findIndex(r => r.id === id);
     if (i !== -1) records[i] = rec; else records.push(rec);
@@ -373,6 +379,8 @@ $('tbody').addEventListener('click', async e => {
     $('f-date').value = rec.date;
     $('f-sesi').value = rec.sesi;
     $('f-note').value = rec.note;
+    $('f-harga').value = rec.harga || '';
+    $('f-tiket').value = rec.tiket || '';
     KINDS.forEach(K => {
       $('f-' + K.k).value = rec[K.f];
       toggleBox(K.k);
