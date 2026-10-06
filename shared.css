@@ -175,3 +175,40 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 #rchart{grid-template-columns:repeat(10,1fr)}
 #rsum{width:100%;font-size:13px;color:#a1a1aa;margin-top:10px;text-align:center}
 .share{margin-top:10px;font-size:12px;padding:6px 10px}
+
+/* sorot cahaya mengikuti kursor di peta */
+#stage-container::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:1;opacity:var(--sp,0);transition:opacity .3s;mix-blend-mode:screen;background:radial-gradient(circle 170px at var(--mx,50%) var(--my,50%),rgba(255,190,110,.22),transparent 70%)}
+
+/* kartu terakhir nonton */
+#last{width:100%}
+.last-c{display:flex;align-items:center;gap:16px;background:linear-gradient(100deg,rgba(255,42,95,.18),rgba(255,140,0,.08));border:1px solid #3d222e;border-radius:14px;padding:14px 18px;margin-bottom:16px;width:100%;box-sizing:border-box}
+.last-c img,.last-s{width:64px;height:64px;border-radius:12px;object-fit:cover;flex-shrink:0}
+.last-c img{cursor:zoom-in}
+.last-s{display:flex;align-items:center;justify-content:center;background:#1e050c;color:#ffd23f;font-weight:900;font-size:18px}
+.last-b{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;font-size:13px;color:#a1a1aa}
+.last-b b{color:#fff;font-size:18px}
+.last-l{color:#ff2a5f;font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase}
+.last-a{font-size:22px;font-weight:900;color:#ff8c00;text-align:right}
+@media(max-width:600px){.last-c{flex-wrap:wrap}.last-a{width:100%;text-align:left;font-size:18px}}
+
+/* galeri polaroid */
+#gallery{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:28px 22px;padding:10px 6px}
+.gi{position:relative;overflow:visible;background:#f5efe6;border:none;border-radius:4px;padding:10px 10px 0;box-shadow:0 8px 22px rgba(0,0,0,.55);transform:rotate(var(--rot,0deg));transition:transform .25s,box-shadow .25s}
+.gi:nth-child(3n+1){--rot:-2.2deg}.gi:nth-child(3n+2){--rot:1.6deg}.gi:nth-child(3n){--rot:-.8deg}
+.gi:hover{transform:rotate(0) scale(1.05) translateY(-4px);box-shadow:0 14px 30px rgba(0,0,0,.7);z-index:3}
+.gi::before{content:'';position:absolute;top:-9px;left:50%;width:64px;height:18px;background:rgba(255,220,150,.5);transform:translateX(-50%) rotate(-3deg)}
+.gi img{aspect-ratio:1;border-radius:2px}
+.gi figcaption{color:#5a4a50;font-family:"Segoe Print","Bradley Hand","Comic Sans MS",cursive;text-align:center;align-items:center;padding:10px 4px 14px}
+.gi b{color:#2a1a1f;font-size:16px}
+@media(prefers-reduced-motion:reduce){.gi{transition:none}}
+
+/* timeline bergaris waktu */
+#timeline{position:relative;padding-left:34px}
+#timeline::before{content:'';position:absolute;left:11px;top:0;bottom:0;width:2px;background:linear-gradient(#ff2a5f,#3d222e)}
+.tl-yh{font-size:30px;font-weight:900;background:linear-gradient(90deg,#ff2a5f,#ffb347);-webkit-background-clip:text;background-clip:text;color:transparent;margin:24px 0 0;width:max-content}
+.tl-mh::before{content:'';position:absolute;left:-29px;top:50%;width:10px;height:10px;border:2px solid #ff2a5f;border-radius:50%;background:#0d090d;transform:translateY(-50%)}
+.tl-i{position:relative;border-left:1px solid #2d1820}
+.tl-i::before{content:'';position:absolute;left:-28px;top:18px;width:12px;height:12px;border-radius:50%;background:#ff8c00;box-shadow:0 0 0 4px #0d090d}
+.tl-i.ms::before{left:-31px;top:15px;width:18px;height:18px;background:#ffd23f;box-shadow:0 0 0 4px #0d090d,0 0 18px #ffd23f}
+.tl-i.ms{border-color:#6b4a12;background:linear-gradient(100deg,rgba(255,210,63,.1),#181115 60%)}
+.tl-star{color:#ffd23f;font-size:12px;font-weight:800;margin-top:2px}
