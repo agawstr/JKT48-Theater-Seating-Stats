@@ -91,7 +91,7 @@ function renderChart() {
   introDone = introDone || first; intro = first;
   $('chart').classList.toggle('intro', first);
   renderFilters(); renderStats(); if (first) countUp($('stats'));
-  renderSetlists(); renderRows(); renderCal(); renderGallery(); renderTimeline(); renderCover(); syncUrl();
+  renderSetlists(); renderRows(); renderCal(); renderGallery(); renderTimeline(); renderCover(); renderLast(); syncUrl();
   requestAnimationFrame(centerChart);
 }
 
@@ -225,7 +225,7 @@ const heatLabel = (h, i) => HEAT[i + 1] ? (HEAT[i + 1].min - 1 > h.min ? `${h.mi
 
 // kontainer disisipkan lewat JS supaya index & admin otomatis sama
 const wrapEl = $('seating-wrapper');
-wrapEl.insertAdjacentHTML('beforebegin', `<div id="stats"></div><div id="cover"></div>
+wrapEl.insertAdjacentHTML('beforebegin', `<div id="last"></div><div id="stats"></div><div id="cover"></div>
   <div id="filters">
     <select id="flt-setlist" aria-label="Filter setlist"></select>
     <select id="flt-member" aria-label="Filter member"></select>
@@ -526,15 +526,17 @@ function renderTimeline() {
   const list = q ? all.filter(r => q.split(/\s+/).every(w => hay(r).includes(w))) : all; // semua kata harus cocok
   if ($('tl-info')) $('tl-info').textContent = q ? `${list.length} dari ${all.length} show` : '';
   const mon = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-  let cur = '', html = '';
+  const numOf = new Map(all.slice().reverse().map((r, i) => [r.id, i + 1])); // nomor urut show sepanjang masa
+  let cur = '', curY = '', html = '';
   for (const r of list) {
-    const ym = r.date.slice(0, 7);
+    const ym = r.date.slice(0, 7), n = numOf.get(r.id), ms = n === 1 || n === 10 || n % 25 === 0; // milestone
+    if (r.date.slice(0, 4) !== curY) { curY = r.date.slice(0, 4); html += `<div class="tl-yh">${esc(curY) || '–'}</div>`; }
     if (ym !== cur) {
       cur = ym;
       html += `<h3 class="tl-mh">${/^\d{4}-\d{2}$/.test(ym) ? mon[+ym.slice(5) - 1] + ' ' + ym.slice(0, 4) : 'Tanpa tanggal'}</h3>`;
     }
-    html += `<div class="tl-i"><div class="tl-d"><b>${esc(r.date.slice(8)) || '–'}</b><span>${esc(r.sesi)}</span></div>
-      <div class="tl-b"><b>${esc(r.setlist) || '(tanpa setlist)'}</b>${r.harga ? `<div class="hn">🎟️ ${esc(rupiah(r.harga))}${r.tiket ? ' · ' + esc(r.tiket) : ''}</div>` : ''}
+    html += `<div class="tl-i${ms ? ' ms' : ''}"><div class="tl-d"><b>${esc(r.date.slice(8)) || '–'}</b><span>${esc(r.sesi)}</span></div>
+      <div class="tl-b"><b>${esc(r.setlist) || '(tanpa setlist)'}</b>${ms ? `<div class="tl-star">⭐ Show ke-${n}</div>` : ''}${r.harga ? `<div class="hn">🎟️ ${esc(rupiah(r.harga))}${r.tiket ? ' · ' + esc(r.tiket) : ''}</div>` : ''}
         ${extras(r).map(x => `<div class="ht">${x.icon} ${esc(x.label)} dengan ${esc(x.member)}</div>`).join('')}
         ${r.note ? `<div class="hn">"${esc(r.note)}"</div>` : ''}</div>
       <button type="button" class="seat-badge tl-s" data-seat="${esc(r.seat)}" aria-label="Lihat kursi ${esc(r.seat)}">${esc(r.seat)}</button></div>`;
@@ -624,10 +626,39 @@ function shareCard(id) {
   if (!pic) return draw(null);
   const im = new Image();
   if (/^https?:/i.test(pic.photo)) im.crossOrigin = 'anonymous';
-  im.onload = () => draw(im); im.onerror = () => draw(null);
+  im.onload = () => draw(im);
+  im.onerror = () => { alert('Foto show ini gagal dimuat, jadi kartu dibuat tanpa foto. Cek apakah folder photos/ sudah di-upload ke repo.'); draw(null); };
   im.src = pic.photo;
 }
 $('modal-hist').addEventListener('click', e => {
   const b = e.target.closest('[data-share]');
   if (b) shareCard(+b.dataset.share);
+});
+
+// ================= Sorot cahaya peta & kartu "terakhir nonton" =================
+const stg = $('stage-container');
+stg.addEventListener('mousemove', e => { // posisi dalam persen supaya aman dari efek zoom
+  if (!canHover.matches) return;
+  const b = stg.getBoundingClientRect();
+  stg.style.setProperty('--mx', (e.clientX - b.left) / b.width * 100 + '%');
+  stg.style.setProperty('--my', (e.clientY - b.top) / b.height * 100 + '%');
+  stg.style.setProperty('--sp', 1);
+});
+stg.addEventListener('mouseleave', () => stg.style.setProperty('--sp', 0));
+
+function renderLast() {
+  const r = [...records].sort(cmp)[0], el = $('last');
+  if (!r) { el.innerHTML = ''; return; }
+  const d = Math.round((new Date().setHours(0, 0, 0, 0) - new Date(r.date + 'T00:00:00')) / 864e5);
+  const ago = isNaN(d) ? '' : d < 0 ? `${-d} hari lagi` : d === 0 ? 'Hari ini' : `${d} hari yang lalu`;
+  const ph = extras(r).find(x => x.photo);
+  el.innerHTML = `<div class="last-c">
+    ${ph ? `<img src="${esc(ph.photo)}" alt="Foto show terakhir" data-photo>` : `<div class="last-s">${esc(r.seat)}</div>`}
+    <div class="last-b"><span class="last-l">Terakhir nonton</span><b>${esc(r.setlist) || '(tanpa setlist)'}</b>
+      <span>${esc(r.date)}${r.sesi ? ' · ' + esc(r.sesi) : ''} · Kursi <button type="button" class="seat-badge tl-s" data-seat="${esc(r.seat)}">${esc(r.seat)}</button></span></div>
+    <div class="last-a">${esc(ago)}</div></div>`;
+}
+$('last').addEventListener('click', e => {
+  const b = e.target.closest('[data-seat]');
+  if (b) openSeat(b.dataset.seat);
 });
