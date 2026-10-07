@@ -46,6 +46,8 @@ const KINDS = [
 const extras = r => KINDS.filter(K => r[K.f] === 'Ya')
   .map(K => ({label: K.short[r[K.t]] || K.short.roulette, icon: K.icon, member: r[K.m], photo: r[K.p]}));
 const SO = {Malam: 2, Siang: 1};
+const MON_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+const fmtDate = d => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || ''); return m ? `${+m[3]} ${MON_ID[+m[2] - 1]} ${m[1]}` : (d || ''); }; // 2026-09-25 -> 25 Sep 2026
 const cmp = (a, b) => b.date.localeCompare(a.date) || ((SO[b.sesi] || 0) - (SO[a.sesi] || 0));
 
 function sanitize(r, i) {
@@ -116,7 +118,7 @@ function openSeat(code) {
   $('modal-hist').innerHTML = list.length ? list.map(r => `
     <div class="hi">
       <b>${esc(r.setlist)}</b>
-      <div class="hd">${esc(r.date)}${r.sesi ? ' · ' + r.sesi : ''}</div>
+      <div class="hd">${esc(fmtDate(r.date))}${r.sesi ? ' · ' + r.sesi : ''}</div>
       ${r.note ? `<div class="hn">"${esc(r.note)}"</div>` : ''}
       ${extras(r).map(x => `<div class="ht">${x.icon} ${esc(x.label)} dengan ${esc(x.member)}</div>${x.photo ? `<img src="${esc(x.photo)}" data-photo alt="Foto" loading="lazy">` : ''}`).join('')}
       ${r.harga ? `<div class="hn">🎟️ ${esc(rupiah(r.harga))}${r.tiket ? ' · ' + esc(r.tiket) : ''}</div>` : ''}
@@ -143,7 +145,7 @@ function showPop(btn) {
     pop.innerHTML = `<div class="pop-h"><span class="seat-badge">${esc(code)}</span><span>${list.length}× duduk</span></div>` +
       list.slice(0, 3).map(r => `
         <div class="pop-i"><b>${esc(r.setlist)}</b>
-          <div class="hd">${esc(r.date)}${r.sesi ? ' · ' + r.sesi : ''}</div>
+          <div class="hd">${esc(fmtDate(r.date))}${r.sesi ? ' · ' + r.sesi : ''}</div>
           ${extras(r).map(x => `<div class="ht">${x.icon} ${esc(x.label)} dengan ${esc(x.member)}</div>`).join('')}
         </div>`).join('') +
       `<div class="pop-m">${list.length > 3 ? `+${list.length - 3} lainnya · ` : ''}klik untuk detail & foto</div>`;
@@ -396,7 +398,7 @@ function renderCal() {
   for (let idx = pad; d.getFullYear() === calYear; d.setDate(d.getDate() + 1), idx++) {
     if (d.getDate() === 1) labels += `<span style="left:${Math.floor(idx / 7) / weeks * 100}%">${mon[d.getMonth()]}</span>`; // label tepat di minggu pertama bulan
     const k = `${calYear}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`, n = cnt[k] || 0;
-    cells += `<i class="cd${n ? ' on' + Math.min(n, 3) : ''}" title="${k}${n ? ': ' + n + ' show' : ''}"></i>`;
+    cells += `<i class="cd${n ? ' on' + Math.min(n, 3) : ''}" title="${fmtDate(k)}${n ? ': ' + n + ' show' : ''}"></i>`;
   }
   $('cal').innerHTML = `<div class="cal-m">${labels}</div><div class="cal-g" style="--w:${weeks}">${cells}</div>`;
   // kunjungan per bulan di tahun yang sama (ikut filter)
@@ -425,7 +427,7 @@ function renderGallery() {
   $('g-info').textContent = `${list.length} foto`;
   if ($('g-tab')) $('g-tab').textContent = `Galeri (${items.length})`;
   g.innerHTML = list.length ? list.map(x => `<figure class="gi"><img src="${esc(x.photo)}" data-photo alt="${esc(x.label)} dengan ${esc(x.member)}" loading="lazy">
-    <figcaption><b>${esc(x.member) || '-'}</b><span>${x.icon} ${esc(x.label)}</span><span>${esc(x.r.setlist)} · ${esc(x.r.date)}</span></figcaption></figure>`).join('')
+    <figcaption><b>${esc(x.member) || '-'}</b><span>${x.icon} ${esc(x.label)}</span><span>${esc(x.r.setlist)} · ${esc(fmtDate(x.r.date))}</span></figcaption></figure>`).join('')
     : '<div class="empty">Belum ada foto</div>';
 }
 $('g-member')?.addEventListener('change', renderGallery);
@@ -567,7 +569,7 @@ function replay() { // peta terisi satu per satu sesuai urutan tanggal
   replayT = setInterval(() => {
     if (++replayN > list.length) return stopReplay();
     renderChart();
-    $('rp-btn').textContent = `⏹ ${replayN}/${list.length} · ${list[replayN - 1].date}`;
+    $('rp-btn').textContent = `⏹ ${replayN}/${list.length} · ${fmtDate(list[replayN - 1].date)}`;
   }, Math.min(400, Math.max(60, 4000 / list.length)));
 }
 $('rp-btn').addEventListener('click', replay);
@@ -655,7 +657,7 @@ function renderLast() {
   el.innerHTML = `<div class="last-c">
     ${ph ? `<img src="${esc(ph.photo)}" alt="Foto show terakhir" data-photo>` : `<div class="last-s">${esc(r.seat)}</div>`}
     <div class="last-b"><span class="last-l">Terakhir nonton</span><b>${esc(r.setlist) || '(tanpa setlist)'}</b>
-      <span>${esc(r.date)}${r.sesi ? ' · ' + esc(r.sesi) : ''} · Kursi <button type="button" class="seat-badge tl-s" data-seat="${esc(r.seat)}">${esc(r.seat)}</button></span></div>
+      <span>${esc(fmtDate(r.date))}${r.sesi ? ' · ' + esc(r.sesi) : ''} · Kursi <button type="button" class="seat-badge tl-s" data-seat="${esc(r.seat)}">${esc(r.seat)}</button></span></div>
     <div class="last-a">${esc(ago)}</div></div>`;
 }
 $('last').addEventListener('click', e => {
