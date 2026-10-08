@@ -137,7 +137,7 @@ summary{cursor:pointer;color:#ff8c00;font-size:13px;font-weight:600}
           <button class="btn" id="btn-export">⬇ Backup lengkap (JSON)</button>
           <button class="btn" id="btn-import">⬆ Restore (JSON)</button>
           <button class="btn" id="btn-jk">🎫 Impor dari jkt48.com</button>
-          <button class="btn" id="btn-cat">🏷️ Kategori tiket</button>
+          <button class="btn" id="btn-cat">🏷️ Kategori &amp; status tiket</button>
           <input type="file" id="file-import" accept=".json,application/json" hidden>
         </div>
         <div id="backup-note"></div>
@@ -257,9 +257,12 @@ summary{cursor:pointer;color:#ff8c00;font-size:13px;font-weight:600}
 <div class="overlay" id="cat-modal">
   <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="cat-title">
     <button class="x" id="cat-close" aria-label="Tutup">&times;</button>
-    <h3 id="cat-title" style="margin:0 0 6px">Kategori tiket</h3>
+    <h3 id="cat-title" style="margin:0 0 6px">Kategori &amp; status tiket</h3>
     <p class="jk-help">Kategori ditebak otomatis dari nama tiket. Ubah di sini kalau salah; pilihan berlaku untuk semua tiket dengan nama yang sama. Yang belum dikategorikan ada di paling atas.</p>
     <div id="cat-list"></div>
+    <h4 style="margin:18px 0 4px">Menang undian tapi tidak terpakai</h4>
+    <p class="jk-help">Tiket show yang tidak berstatus kalah, tidak terpakai, dan tanggalnya sudah lewat. Tandai kalau show dibatalkan dan di-refund.</p>
+    <div id="ref-list"></div>
   </div>
 </div>
 <script src="shared.js"></script>
@@ -634,8 +637,8 @@ $('jk-parse').addEventListener('click', () => {
   }
   list.sort((a, b) => b.date.localeCompare(a.date));
   jkNew = list.filter(x => !x.dup);
-  const ls = lotteryStats(jkTk), ev = jkTk.filter(t => t.type !== 'SHOW').length, tk = $('jk-tk').checked && jkTk.length;
-  $('jk-out').innerHTML = `<p><b>${list.length}</b> show terpakai: <b>${jkNew.length}</b> baru, ${list.length - jkNew.length} sudah ada.<br>Tiket: <b>${jkTk.length}</b> (exclusive &amp; event: ${ev}) · Lotre: ${ls.win} menang / ${ls.lose} kalah</p>` +
+  const ls = lotteryStats(jkTk), ev = jkTk.filter(t => t.type !== 'SHOW').length, evUsed = jkTk.filter(t => t.type === 'EVENT' && t.used > 0).length, tk = $('jk-tk').checked && jkTk.length;
+  $('jk-out').innerHTML = `<p><b>${list.length}</b> show teater terpakai${evUsed ? ` (belum termasuk ${evUsed} tiket event terpakai, mis. JKT48 School)` : ''}: <b>${jkNew.length}</b> baru, ${list.length - jkNew.length} sudah ada.<br>Tiket: <b>${jkTk.length}</b> (exclusive &amp; event: ${ev}) · Lotre: ${ls.win} menang / ${ls.lose} kalah</p>` +
     list.slice(0, 150).map(x => `<div class="jk-r${x.dup ? ' dup' : ''}"><span>${esc(fmtDate(x.date))}</span><span>${esc(x.sesi)}</span><span>${esc(x.setlist)}</span><i>${x.dup ? 'sudah ada' : 'baru'}</i></div>`).join('');
   $('jk-add').disabled = !(jkNew.length || tk);
   $('jk-add').textContent = `Tambahkan ${jkNew.length} show` + (tk ? ` + ${jkTk.length} tiket` : '');
@@ -643,7 +646,7 @@ $('jk-parse').addEventListener('click', () => {
 const tkey = t => t.k || [t.type, t.date, t.name, t.start, t.member, t.lane, t.session].join('|');
 function mergeTickets(list) { // tiket dengan kunci sama diperbarui, sisanya ditambah
   const m = new Map(tickets.map(t => [tkey(t), t]));
-  list.map(sanitizeTicket).filter(t => t.date).forEach(t => { const o = m.get(tkey(t)); if (o && o.cat && !t.cat) t.cat = o.cat; m.set(tkey(t), t); });
+  list.map(sanitizeTicket).filter(t => t.date).forEach(t => { const o = m.get(tkey(t)); if (o && o.cat && !t.cat) t.cat = o.cat; if (o && o.status && !t.status) t.status = o.status; m.set(tkey(t), t); });
   tickets = [...m.values()];
   try { localStorage.setItem(KEY + '_tickets', JSON.stringify(tickets)); } catch (e) { alert('Gagal menyimpan data tiket (penyimpanan penuh?)'); }
   bumpDirty();
@@ -673,7 +676,18 @@ function renderCats() {
     <select data-name="${esc(k)}" aria-label="Kategori ${esc(k)}"><option value="">Otomatis (${esc(autoCat(ts[0]))})</option>${TK_CATS.map(c => `<option${c === ts[0].cat ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select></div>`).join('')
     : '<div class="empty">Belum ada tiket event. Impor dulu dari jkt48.com.</div>';
 }
-$('btn-cat').addEventListener('click', () => { renderCats(); openEl('cat-modal'); });
+function renderRefs() {
+  const today = new Date().toISOString().slice(0, 10);
+  const c = tickets.filter(t => t.type === 'SHOW' && !t.raffle && !t.used && t.date <= today).sort((a, b) => b.date.localeCompare(a.date));
+  $('ref-list').innerHTML = c.length ? c.map(t => `<div class="cat-r"><span class="cat-n">${esc(t.name)}<small>${esc(fmtDate(t.date))} · ${esc(t.start)}</small></span>
+    <select data-k="${esc(tkey(t))}" aria-label="Status ${esc(t.name)} ${esc(t.date)}"><option value="">Belum diberi keterangan</option><option value="refund"${t.status === 'refund' ? ' selected' : ''}>Dibatalkan &amp; di-refund</option></select></div>`).join('')
+    : '<div class="empty">Tidak ada tiket menang yang tidak terpakai.</div>';
+}
+$('ref-list').addEventListener('change', e => {
+  const s = e.target.closest('select[data-k]'), t = s && tickets.find(x => tkey(x) === s.dataset.k);
+  if (t) { t.status = s.value; persistTickets(); }
+});
+$('btn-cat').addEventListener('click', () => { renderCats(); renderRefs(); openEl('cat-modal'); });
 $('cat-close').addEventListener('click', () => closeEl('cat-modal'));
 $('cat-modal').addEventListener('click', e => { if (e.target.id === 'cat-modal') closeEl('cat-modal'); });
 escHooks.push(() => $('cat-modal').classList.contains('open') ? (closeEl('cat-modal'), true) : false);
