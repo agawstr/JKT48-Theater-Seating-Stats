@@ -93,7 +93,7 @@ function renderChart() {
   introDone = introDone || first; intro = first;
   $('chart').classList.toggle('intro', first);
   renderFilters(); renderStats(); if (first) countUp($('stats'));
-  renderSetlists(); renderRows(); renderCal(); renderGallery(); renderTimeline(); renderCover(); renderLast(); syncUrl();
+  renderSetlists(); renderRows(); renderCal(); renderGallery(); renderTimeline(); renderCover(); renderLast(); renderTickets(); syncUrl();
   requestAnimationFrame(centerChart);
 }
 
@@ -664,3 +664,62 @@ $('last').addEventListener('click', e => {
   const b = e.target.closest('[data-seat]');
   if (b) openSeat(b.dataset.seat);
 });
+
+// ================= Tiket, lotre, & event (EXCLUSIVE / EVENT) =================
+let tickets = []; // diisi halaman: index dari data.json, admin dari localStorage
+const sanitizeTicket = t => {
+  t = t || {};
+  const up = s => String(s ?? '').trim();
+  return {
+    k: up(t.k), type: ['SHOW', 'EXCLUSIVE', 'EVENT'].includes(t.type) ? t.type : 'EVENT',
+    date: /^\d{4}-\d{2}-\d{2}$/.test(t.date) ? t.date : '', name: up(t.name), start: up(t.start).slice(0, 5),
+    used: Math.max(0, Number(t.used) || 0), raffle: up(t.raffle).toUpperCase(),
+    member: up(t.member), lane: up(t.lane), session: up(t.session), bought: Math.max(1, Number(t.bought) || 1)
+  };
+};
+const raffleOf = s => !s ? '' : /WIN|WON|MENANG/.test(s) ? 'win' : /LOSE|LOST|KALAH/.test(s) ? 'lose' : 'other';
+function lotteryStats(list) { // persentase menang = menang / (menang + kalah); status lain tidak dihitung
+  const s = {win: 0, lose: 0, other: 0, raw: {}, by: {}};
+  list.forEach(t => {
+    const c = raffleOf(t.raffle);
+    if (!c) return;
+    s[c]++;
+    (s.by[t.type] = s.by[t.type] || {win: 0, lose: 0, other: 0})[c]++;
+    if (c === 'other') s.raw[t.raffle] = (s.raw[t.raffle] || 0) + 1;
+  });
+  s.total = s.win + s.lose + s.other;
+  s.pct = s.win + s.lose ? s.win / (s.win + s.lose) * 100 : 0;
+  return s;
+}
+
+function renderTickets() {
+  const box = $('lot');
+  if (!box) return;
+  $('ev-tab').hidden = !tickets.length;
+  const ls = lotteryStats(tickets), done = ls.win + ls.lose;
+  const names = {SHOW: 'Show teater', EXCLUSIVE: 'Exclusive / M&G', EVENT: 'Event'};
+  const card = (l, v, s) => `<div class="stat"><div class="sv">${esc(v)}</div><div class="sl">${l}</div>${s ? `<div class="ss">${esc(s)}</div>` : ''}</div>`;
+  box.innerHTML = !ls.total ? '<div class="empty">Belum ada data lotre</div>' :
+    `<div class="lot-cards">${card('Entri lotre', ls.total)}${card('Menang', ls.win)}${card('Kalah', ls.lose)}${card('Persentase menang', done ? ls.pct.toFixed(1) + '%' : '-', done ? `${ls.win} dari ${done} yang sudah diundi` : '')}</div>` +
+    Object.entries(ls.by).map(([ty, b]) => {
+      const d = b.win + b.lose, p = d ? b.win / d * 100 : 0;
+      return `<div class="lot-r"><span>${names[ty] || esc(ty)}</span><span class="sl-bar"><i style="width:${p}%"></i></span><span>${b.win} menang · ${b.lose} kalah${d ? ` (${p.toFixed(0)}%)` : ''}</span></div>`;
+    }).join('') +
+    (ls.other ? `<p class="lot-n">Status lain (belum diundi / tidak dikenali): ${Object.entries(ls.raw).map(([k, n]) => `${esc(k)} ×${n}`).join(', ')}</p>` : '');
+
+  const ev = tickets.filter(t => t.type !== 'SHOW');
+  $('ev-tab').textContent = `Tiket & Event (${ev.length})`;
+  const sel = $('ev-member'), cur = sel.value, ty = $('ev-type').value, st = $('ev-status').value;
+  sel.innerHTML = '<option value="">Semua member</option>' + [...new Set(ev.map(t => t.member).filter(Boolean))].sort().map(m => `<option${m === cur ? ' selected' : ''}>${esc(m)}</option>`).join('');
+  const list = ev.filter(t => (!ty || t.type === ty) && (!cur || t.member === cur) && (!st || (st === 'used' ? t.used > 0 : t.used === 0)))
+    .sort((a, b) => b.date.localeCompare(a.date) || b.start.localeCompare(a.start));
+  $('ev-info').textContent = `${list.length} tiket`;
+  $('ev-list').innerHTML = list.length ? list.map(t => {
+    const c = raffleOf(t.raffle);
+    const chip = t.used > 0 ? '<span class="chip ok">Terpakai</span>' : c === 'lose' ? '<span class="chip lose">Kalah lotre</span>' : c === 'win' ? '<span class="chip win">Menang lotre</span>' : '<span class="chip no">Tidak terpakai</span>';
+    const meta = [t.member, t.lane, t.session].filter(Boolean).join(' · ');
+    return `<div class="ev-i"><div class="tl-d"><b>${esc(t.date.slice(8))}</b><span>${MON_ID[+t.date.slice(5, 7) - 1]} ${esc(t.date.slice(2, 4))}</span></div>
+      <div class="tl-b"><b>${esc(t.name)}</b>${meta ? `<div class="ht">👤 ${esc(meta)}</div>` : ''}<div class="hn">${t.type === 'EXCLUSIVE' ? 'Exclusive' : 'Event'}${t.start ? ' · ' + esc(t.start) : ''}${t.bought > 1 ? ' · ' + t.bought + ' tiket' : ''}</div></div>${chip}</div>`;
+  }).join('') : '<div class="empty">Tidak ada tiket yang cocok</div>';
+}
+['ev-type', 'ev-member', 'ev-status'].forEach(id => $(id)?.addEventListener('change', renderTickets));
