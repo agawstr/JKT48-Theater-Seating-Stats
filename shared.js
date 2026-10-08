@@ -667,6 +667,9 @@ $('last').addEventListener('click', e => {
 
 // ================= Tiket, lotre, & event (EXCLUSIVE / EVENT) =================
 let tickets = []; // diisi halaman: index dari data.json, admin dari localStorage
+// nama kategori lama -> baru, supaya pilihan manual yang sudah tersimpan tidak rusak ('' = kembali otomatis)
+const CAT_OLD = {'Meet & Greet (Event)': '2S & MnG Event', '2-Shot (Event)': '2S & MnG Event', 'Meet & Greet Theater Sementara': '2S & MnG Theater Sementara', '2-Shot Theater Sementara': '2S & MnG Theater Sementara', 'Event OFC / School': ''};
+const fixCat = c => Object.hasOwn(CAT_OLD, c) ? CAT_OLD[c] : c;
 const sanitizeTicket = t => {
   t = t || {};
   const up = s => String(s ?? '').trim();
@@ -674,7 +677,7 @@ const sanitizeTicket = t => {
     k: up(t.k), type: ['SHOW', 'EXCLUSIVE', 'EVENT'].includes(t.type) ? t.type : 'EVENT',
     date: /^\d{4}-\d{2}-\d{2}$/.test(t.date) ? t.date : '', name: up(t.name), start: up(t.start).slice(0, 5),
     used: Math.max(0, Number(t.used) || 0), raffle: up(t.raffle).toUpperCase(),
-    member: up(t.member), lane: up(t.lane), session: up(t.session), bought: Math.max(1, Number(t.bought) || 1), cat: up(t.cat), status: up(t.status)
+    member: up(t.member), lane: up(t.lane), session: up(t.session), bought: Math.max(1, Number(t.bought) || 1), cat: fixCat(up(t.cat)), status: up(t.status)
   };
 };
 const raffleOf = s => !s ? '' : /WIN|WON|MENANG/.test(s) ? 'win' : /LOSE|LOST|KALAH/.test(s) ? 'lose' : 'other';
@@ -703,16 +706,15 @@ function lotteryStats(list) { // persentase menang = menang / (menang + kalah); 
 }
 
 // kategori tiket: ditebak dari nama (data jkt48.com tidak punya kolom kategori); bisa diatur manual lewat t.cat
-const TK_CATS = ['Video Call', 'Meet & Greet (Event)', '2-Shot (Event)', 'Meet & Greet Theater Sementara', '2-Shot Theater Sementara', 'Event OFC / School', 'Belum dikategorikan'];
+const TK_CATS = ['Video Call', '2S & MnG Event', '2S & MnG Theater Sementara', 'OFC Event', 'Theater Event', 'Belum dikategorikan'];
 const VC_NAMES = /cheerful little wishes|think donut|heart & harmony|code journal|cake a wish|the first snow|youthful days|we are love/i;
 function autoCat(t) {
   const n = (t.name || '').toLowerCase();
-  const two = /2[- ]?shot/.test(n), mg = /meet\s*(and|&)\s*greet/.test(n);
-  if (/video call|digital photobook/.test(n) || VC_NAMES.test(n)) return 'Video Call';
-  if (/theater sementara/.test(n)) return two ? '2-Shot Theater Sementara' : 'Meet & Greet Theater Sementara';
-  if (two && !/greet\s*&\s*2/.test(n)) return '2-Shot (Event)';
-  if (mg || two) return 'Meet & Greet (Event)';
-  if (t.type === 'EVENT') return 'Event OFC / School';
+  if (/video call|digital photobook|theater sementara/.test(n) || VC_NAMES.test(n)) return 'Video Call'; // tiket bernama "Theater Sementara" ternyata video call
+  if (/ofc event/.test(n)) return 'OFC Event';
+  if (t.type === 'EVENT') return 'Theater Event'; // sisa tiket berjenis EVENT (mis. JKT48 School)
+  if (/team passion/.test(n)) return '2S & MnG Theater Sementara'; // M&G dan 2-Shot Team Passion (Yogyakarta)
+  if (/2[- ]?shot|meet\s*(and|&)\s*greet/.test(n)) return '2S & MnG Event';
   if (/ - \d{1,2}(st|nd|rd|th) [a-z]{3}/.test(n)) return 'Video Call'; // pola nama seri video call (tebakan)
   return 'Belum dikategorikan';
 }
