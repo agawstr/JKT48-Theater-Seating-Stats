@@ -674,7 +674,7 @@ const sanitizeTicket = t => {
     k: up(t.k), type: ['SHOW', 'EXCLUSIVE', 'EVENT'].includes(t.type) ? t.type : 'EVENT',
     date: /^\d{4}-\d{2}-\d{2}$/.test(t.date) ? t.date : '', name: up(t.name), start: up(t.start).slice(0, 5),
     used: Math.max(0, Number(t.used) || 0), raffle: up(t.raffle).toUpperCase(),
-    member: up(t.member), lane: up(t.lane), session: up(t.session), bought: Math.max(1, Number(t.bought) || 1)
+    member: up(t.member), lane: up(t.lane), session: up(t.session), bought: Math.max(1, Number(t.bought) || 1), cat: up(t.cat)
   };
 };
 const raffleOf = s => !s ? '' : /WIN|WON|MENANG/.test(s) ? 'win' : /LOSE|LOST|KALAH/.test(s) ? 'lose' : 'other';
@@ -687,10 +687,35 @@ function lotteryStats(list) { // persentase menang = menang / (menang + kalah); 
     (s.by[t.type] = s.by[t.type] || {win: 0, lose: 0, other: 0})[c]++;
     if (c === 'other') s.raw[t.raffle] = (s.raw[t.raffle] || 0) + 1;
   });
+  // jkt48.com hanya memberi status kalah (LOSE). Di jenis yang punya lotre, tiket tanpa status dihitung menang (perkiraan).
+  const lt = new Set(list.filter(t => raffleOf(t.raffle)).map(t => t.type));
+  s.inferred = 0;
+  list.forEach(t => {
+    if (raffleOf(t.raffle) || !lt.has(t.type)) return;
+    s.win++; s.inferred++;
+    (s.by[t.type] = s.by[t.type] || {win: 0, lose: 0, other: 0}).win++;
+  });
   s.total = s.win + s.lose + s.other;
   s.pct = s.win + s.lose ? s.win / (s.win + s.lose) * 100 : 0;
   return s;
 }
+
+// kategori tiket: ditebak dari nama (data jkt48.com tidak punya kolom kategori); bisa diatur manual lewat t.cat
+const TK_CATS = ['Video Call', 'Meet & Greet (Event)', '2-Shot (Event)', 'Meet & Greet Theater Sementara', '2-Shot Theater Sementara', 'Event OFC / School', 'Belum dikategorikan'];
+const VC_NAMES = /cheerful little wishes|think donut|heart & harmony|code journal|cake a wish|the first snow|youthful days|we are love/i;
+function autoCat(t) {
+  const n = (t.name || '').toLowerCase();
+  const two = /2[- ]?shot/.test(n), mg = /meet\s*(and|&)\s*greet/.test(n);
+  if (/video call|digital photobook/.test(n) || VC_NAMES.test(n)) return 'Video Call';
+  if (/theater sementara/.test(n)) return two ? '2-Shot Theater Sementara' : 'Meet & Greet Theater Sementara';
+  if (two && !/greet\s*&\s*2/.test(n)) return '2-Shot (Event)';
+  if (mg || two) return 'Meet & Greet (Event)';
+  if (t.type === 'EVENT') return 'Event OFC / School';
+  if (/ - \d{1,2}(st|nd|rd|th) [a-z]{3}/.test(n)) return 'Video Call'; // pola nama seri video call (tebakan)
+  return 'Belum dikategorikan';
+}
+const tcat = t => t.cat || (t.type === 'SHOW' ? 'Show Teater' : autoCat(t));
+const tname = t => t.name.replace(/\s*[-,]\s*\d{1,2}(st|nd|rd|th)?\s+[A-Za-z]{3,}(\s+\d{4})?\s*$/, '').trim() || t.name; // nama tanpa tanggal
 
 function renderTickets() {
   const box = $('lot');
@@ -700,18 +725,22 @@ function renderTickets() {
   const names = {SHOW: 'Show teater', EXCLUSIVE: 'Exclusive / M&G', EVENT: 'Event'};
   const card = (l, v, s) => `<div class="stat"><div class="sv">${esc(v)}</div><div class="sl">${l}</div>${s ? `<div class="ss">${esc(s)}</div>` : ''}</div>`;
   box.innerHTML = !ls.total ? '<div class="empty">Belum ada data lotre</div>' :
-    `<div class="lot-cards">${card('Entri lotre', ls.total)}${card('Menang', ls.win)}${card('Kalah', ls.lose)}${card('Persentase menang', done ? ls.pct.toFixed(1) + '%' : '-', done ? `${ls.win} dari ${done} yang sudah diundi` : '')}</div>` +
+    `<div class="lot-cards">${card('Entri lotre', ls.total)}${card(ls.inferred ? 'Menang (perkiraan)' : 'Menang', ls.win)}${card('Kalah', ls.lose)}${card('Persentase menang', done ? ls.pct.toFixed(1) + '%' : '-', done ? `${ls.win} dari ${done} yang sudah diundi` : '')}</div>` +
     Object.entries(ls.by).map(([ty, b]) => {
       const d = b.win + b.lose, p = d ? b.win / d * 100 : 0;
       return `<div class="lot-r"><span>${names[ty] || esc(ty)}</span><span class="sl-bar"><i style="width:${p}%"></i></span><span>${b.win} menang · ${b.lose} kalah${d ? ` (${p.toFixed(0)}%)` : ''}</span></div>`;
     }).join('') +
+    (ls.inferred ? '<p class="lot-n">Menang dihitung dari tiket tanpa status kalah, karena jkt48.com tidak memberi status menang. Tiket yang dibeli langsung tanpa lotre ikut terhitung.</p>' : '') +
     (ls.other ? `<p class="lot-n">Status lain (belum diundi / tidak dikenali): ${Object.entries(ls.raw).map(([k, n]) => `${esc(k)} ×${n}`).join(', ')}</p>` : '');
 
   const ev = tickets.filter(t => t.type !== 'SHOW');
   $('ev-tab').textContent = `Tiket & Event (${ev.length})`;
-  const sel = $('ev-member'), cur = sel.value, ty = $('ev-type').value, st = $('ev-status').value;
+  const tsel = $('ev-type'), ty = tsel.value, cc = {};
+  ev.forEach(t => { const c = tcat(t); cc[c] = (cc[c] || 0) + 1; });
+  tsel.innerHTML = '<option value="">Semua kategori</option>' + TK_CATS.filter(c => cc[c]).map(c => `<option value="${esc(c)}"${c === ty ? ' selected' : ''}>${esc(c)} (${cc[c]})</option>`).join('');
+  const sel = $('ev-member'), cur = sel.value, st = $('ev-status').value;
   sel.innerHTML = '<option value="">Semua member</option>' + [...new Set(ev.map(t => t.member).filter(Boolean))].sort().map(m => `<option${m === cur ? ' selected' : ''}>${esc(m)}</option>`).join('');
-  const list = ev.filter(t => (!ty || t.type === ty) && (!cur || t.member === cur) && (!st || (st === 'used' ? t.used > 0 : t.used === 0)))
+  const list = ev.filter(t => (!ty || tcat(t) === ty) && (!cur || t.member === cur) && (!st || (st === 'used' ? t.used > 0 : t.used === 0)))
     .sort((a, b) => b.date.localeCompare(a.date) || b.start.localeCompare(a.start));
   $('ev-info').textContent = `${list.length} tiket`;
   $('ev-list').innerHTML = list.length ? list.map(t => {
@@ -719,7 +748,7 @@ function renderTickets() {
     const chip = t.used > 0 ? '<span class="chip ok">Terpakai</span>' : c === 'lose' ? '<span class="chip lose">Kalah lotre</span>' : c === 'win' ? '<span class="chip win">Menang lotre</span>' : '<span class="chip no">Tidak terpakai</span>';
     const meta = [t.member, t.lane, t.session].filter(Boolean).join(' · ');
     return `<div class="ev-i"><div class="tl-d"><b>${esc(t.date.slice(8))}</b><span>${MON_ID[+t.date.slice(5, 7) - 1]} ${esc(t.date.slice(2, 4))}</span></div>
-      <div class="tl-b"><b>${esc(t.name)}</b>${meta ? `<div class="ht">👤 ${esc(meta)}</div>` : ''}<div class="hn">${t.type === 'EXCLUSIVE' ? 'Exclusive' : 'Event'}${t.start ? ' · ' + esc(t.start) : ''}${t.bought > 1 ? ' · ' + t.bought + ' tiket' : ''}</div></div>${chip}</div>`;
+      <div class="tl-b"><b>${esc(t.name)}</b>${meta ? `<div class="ht">👤 ${esc(meta)}</div>` : ''}<div class="hn">${esc(tcat(t))}${t.start ? ' · ' + esc(t.start) : ''}${t.bought > 1 ? ' · ' + t.bought + ' tiket' : ''}</div></div>${chip}</div>`;
   }).join('') : '<div class="empty">Tidak ada tiket yang cocok</div>';
 }
 ['ev-type', 'ev-member', 'ev-status'].forEach(id => $(id)?.addEventListener('change', renderTickets));
