@@ -181,22 +181,21 @@ summary{cursor:pointer;color:#ff8c00;font-size:13px;font-weight:600}
     }
   }
   if (!token) {
-    console.log('Token belum ditemukan. Klik halaman berikutnya / muat ulang daftar tiket di situs ini...');
+    console.log('Token belum ditemukan. Di halaman tiket, klik halaman berikutnya atau ubah filter tanggal (JANGAN refresh/F5 halaman)...');
+    const f = window.fetch, sh = XMLHttpRequest.prototype.setRequestHeader;
     token = await new Promise(resolve => {
-      const f = window.fetch, sh = XMLHttpRequest.prototype.setRequestHeader;
-      const grab = (k, v) => {
-        if (/^authorization$/i.test(k) && /^Bearer /i.test(v)) {
-          window.fetch = f; XMLHttpRequest.prototype.setRequestHeader = sh;
-          resolve(v.replace(/^Bearer /i, ''));
-        }
-      };
+      const done = v => { window.fetch = f; XMLHttpRequest.prototype.setRequestHeader = sh; resolve(v); };
+      const grab = (k, v) => { if (/^authorization$/i.test(k) && /^Bearer /i.test(v)) done(v.replace(/^Bearer /i, '')); };
       window.fetch = function (u, o) {
         const h = (o && o.headers) || (u && u.headers);
         if (h) { if (h.forEach && !Array.isArray(h)) h.forEach((v, k) => grab(k, v)); else for (const k in h) grab(k, h[k]); }
         return f.apply(this, arguments);
       };
       XMLHttpRequest.prototype.setRequestHeader = function (k, v) { grab(k, v); return sh.apply(this, arguments); };
+      setTimeout(() => done(''), 25000); // menyerah setelah 25 detik
     });
+    if (!token) token = (prompt('Token tidak tertangkap. Salin nilai header Authorization dari tab Network (tanpa kata Bearer), lalu tempel di sini:') || '').trim().replace(/^Bearer\s+/i, '');
+    if (!token) { console.error('Dibatalkan: token kosong.'); return; }
   }
   // ambil semua halaman; hanya tiket SHOW, tanpa kode tiket / nomor transaksi
   const byRef = new Map();
