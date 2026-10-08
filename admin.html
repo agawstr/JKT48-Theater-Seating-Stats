@@ -65,6 +65,11 @@ summary{cursor:pointer;color:#ff8c00;font-size:13px;font-weight:600}
 .jk-r.dup i{color:#a1a1aa}
 .jk-act{display:flex;gap:8px;justify-content:flex-end}
 .btn:disabled{opacity:.4;cursor:default}
+#cat-list{max-height:55vh;overflow-y:auto}
+.cat-r{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #24151d}
+.cat-n{flex:1;min-width:0;font-size:13px}
+.cat-n small{display:block;color:#a1a1aa;font-size:11px}
+.cat-r select{width:auto;max-width:55%}
 </style>
 </head>
 <body>
@@ -132,6 +137,7 @@ summary{cursor:pointer;color:#ff8c00;font-size:13px;font-weight:600}
           <button class="btn" id="btn-export">⬇ Backup lengkap (JSON)</button>
           <button class="btn" id="btn-import">⬆ Restore (JSON)</button>
           <button class="btn" id="btn-jk">🎫 Impor dari jkt48.com</button>
+          <button class="btn" id="btn-cat">🏷️ Kategori tiket</button>
           <input type="file" id="file-import" accept=".json,application/json" hidden>
         </div>
         <div id="backup-note"></div>
@@ -231,6 +237,14 @@ summary{cursor:pointer;color:#ff8c00;font-size:13px;font-weight:600}
     <label class="jk-opt"><input type="checkbox" id="jk-tk" checked> Simpan juga data tiket (lotre, meet &amp; greet, event) untuk tab Tiket &amp; Event</label>
     <div id="jk-out" role="status"></div>
     <div class="jk-act"><button class="btn" id="jk-parse" type="button">Analisis</button><button class="btn" id="jk-add" type="button" disabled>Tambahkan</button></div>
+  </div>
+</div>
+<div class="overlay" id="cat-modal">
+  <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="cat-title">
+    <button class="x" id="cat-close" aria-label="Tutup">&times;</button>
+    <h3 id="cat-title" style="margin:0 0 6px">Kategori tiket</h3>
+    <p class="jk-help">Kategori ditebak otomatis dari nama tiket. Ubah di sini kalau salah; pilihan berlaku untuk semua tiket dengan nama yang sama. Yang belum dikategorikan ada di paling atas.</p>
+    <div id="cat-list"></div>
   </div>
 </div>
 <script src="shared.js"></script>
@@ -614,7 +628,7 @@ $('jk-parse').addEventListener('click', () => {
 const tkey = t => t.k || [t.type, t.date, t.name, t.start, t.member, t.lane, t.session].join('|');
 function mergeTickets(list) { // tiket dengan kunci sama diperbarui, sisanya ditambah
   const m = new Map(tickets.map(t => [tkey(t), t]));
-  list.map(sanitizeTicket).filter(t => t.date).forEach(t => m.set(tkey(t), t));
+  list.map(sanitizeTicket).filter(t => t.date).forEach(t => { const o = m.get(tkey(t)); if (o && o.cat && !t.cat) t.cat = o.cat; m.set(tkey(t), t); });
   tickets = [...m.values()];
   try { localStorage.setItem(KEY + '_tickets', JSON.stringify(tickets)); } catch (e) { alert('Gagal menyimpan data tiket (penyimpanan penuh?)'); }
   bumpDirty();
@@ -628,6 +642,31 @@ $('jk-add').addEventListener('click', () => {
   jkNew = []; jkTk = []; $('jk-add').disabled = true; $('jk-out').textContent = ''; $('jk-in').value = '';
   closeEl('jk-modal');
   alert(`${n} show dan ${nt} tiket ditambahkan.` + (n ? ' Kursi show baru masih "?" karena data tiket tidak memuat kursi. Cari "?" di tabel lalu isi lewat tombol edit; sebelum itu belum tampil di halaman publik.' : ''));
+});
+
+// ---------- Kategori tiket (diatur per nama tiket) ----------
+function persistTickets() {
+  try { localStorage.setItem(KEY + '_tickets', JSON.stringify(tickets)); } catch (e) { alert('Gagal menyimpan data tiket (penyimpanan penuh?)'); }
+  bumpDirty();
+}
+function renderCats() {
+  const groups = new Map();
+  tickets.filter(t => t.type !== 'SHOW').forEach(t => { const k = tname(t); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(t); });
+  const unk = g => tcat(g[1][0]) === 'Belum dikategorikan' ? 0 : 1;
+  const rows = [...groups].sort((a, b) => unk(a) - unk(b) || a[0].localeCompare(b[0]));
+  $('cat-list').innerHTML = rows.length ? rows.map(([k, ts]) => `<div class="cat-r"><span class="cat-n">${esc(k)}<small>${ts.length} tiket · sekarang: ${esc(tcat(ts[0]))}</small></span>
+    <select data-name="${esc(k)}" aria-label="Kategori ${esc(k)}"><option value="">Otomatis (${esc(autoCat(ts[0]))})</option>${TK_CATS.map(c => `<option${c === ts[0].cat ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select></div>`).join('')
+    : '<div class="empty">Belum ada tiket event. Impor dulu dari jkt48.com.</div>';
+}
+$('btn-cat').addEventListener('click', () => { renderCats(); openEl('cat-modal'); });
+$('cat-close').addEventListener('click', () => closeEl('cat-modal'));
+$('cat-modal').addEventListener('click', e => { if (e.target.id === 'cat-modal') closeEl('cat-modal'); });
+escHooks.push(() => $('cat-modal').classList.contains('open') ? (closeEl('cat-modal'), true) : false);
+$('cat-list').addEventListener('change', e => {
+  const s = e.target.closest('select[data-name]');
+  if (!s) return;
+  tickets.forEach(t => { if (t.type !== 'SHOW' && tname(t) === s.dataset.name) t.cat = s.value; });
+  persistTickets(); renderCats();
 });
 
 // ---------- Init ----------
