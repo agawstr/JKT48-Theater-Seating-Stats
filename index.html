@@ -22,7 +22,7 @@
     <p class="sub">Riwayat kursi teater yang pernah ditempati (arahkan kursor atau klik kursi)</p>
     <div class="badge">Total Riwayat Show: <span id="total">0</span></div>
   </div>
-  <div class="tabbar"><button type="button" class="tab on" data-tab="main">Peta &amp; Statistik</button><button type="button" class="tab" data-tab="tl" id="t-tab">Riwayat</button><button type="button" class="tab" data-tab="gal" id="g-tab">Galeri</button></div>
+  <div class="tabbar"><button type="button" class="tab on" data-tab="main">Peta &amp; Statistik</button><button type="button" class="tab" data-tab="tl" id="t-tab">Riwayat</button><button type="button" class="tab" data-tab="gal" id="g-tab">Galeri</button><button type="button" class="tab" data-tab="ev" id="ev-tab" hidden>Tiket &amp; Event</button></div>
   <div id="status" role="status">Memuat data...</div>
   <div id="view-main">
   <div id="seating-wrapper">
@@ -43,6 +43,18 @@
   <div id="view-tl" hidden>
     <div id="tl-bar"><input type="search" id="tl-q" placeholder="Cari setlist, member, kursi, tanggal, atau catatan..." aria-label="Cari riwayat" autocomplete="off"><span id="tl-info"></span></div>
     <div id="timeline"></div>
+  </div>
+  <div id="view-ev" hidden>
+    <h2 class="sec" style="margin-top:0">Statistik lotre</h2>
+    <div id="lot"></div>
+    <h2 class="sec">Meet &amp; greet, special show, dan event</h2>
+    <div id="ev-bar">
+      <select id="ev-type" aria-label="Jenis"><option value="">Semua jenis</option><option value="EXCLUSIVE">Exclusive (M&amp;G, special show)</option><option value="EVENT">Event</option></select>
+      <select id="ev-member" aria-label="Member"></select>
+      <select id="ev-status" aria-label="Status"><option value="">Semua status</option><option value="used">Terpakai</option><option value="unused">Tidak terpakai</option></select>
+      <span id="ev-info"></span>
+    </div>
+    <div id="ev-list"></div>
   </div>
 </div>
 
@@ -70,6 +82,7 @@ async function init() {
     const arr = Array.isArray(json) ? json : json.records;
     if (!Array.isArray(arr)) throw new Error('Format data tidak dikenali');
     records = arr.map(sanitize).filter(r => SEATS.has(r.seat)); // kursi di luar peta dilewati, jadi total = yang tampil di peta
+    tickets = (Array.isArray(json.tickets) ? json.tickets : []).map(sanitizeTicket).filter(t => t.date);
     $('status').textContent = '';
     renderChart();
   } catch (err) {
@@ -79,7 +92,7 @@ async function init() {
 }
 document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t === b));
-  ['main', 'gal', 'tl'].forEach(k => $('view-' + k).hidden = b.dataset.tab !== k);
+  ['main', 'gal', 'tl', 'ev'].forEach(k => $('view-' + k).hidden = b.dataset.tab !== k);
   centerChart();
 }));
 init();
