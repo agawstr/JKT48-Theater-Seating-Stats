@@ -22,7 +22,7 @@
     <p class="sub">Riwayat kursi teater yang pernah ditempati (arahkan kursor atau klik kursi)</p>
     <div class="badge">Total Riwayat Show: <span id="total">0</span></div>
   </div>
-  <div class="tabbar"><button type="button" class="tab on" data-tab="main">Peta &amp; Statistik</button><button type="button" class="tab" data-tab="tl" id="t-tab">Riwayat</button><button type="button" class="tab" data-tab="gal" id="g-tab">Galeri</button><button type="button" class="tab" data-tab="ev" id="ev-tab" hidden>Tiket &amp; Event</button></div>
+  <div class="tabbar"><button type="button" class="tab on" data-tab="main">Peta &amp; Statistik</button><button type="button" class="tab" data-tab="tl" id="t-tab">Riwayat</button><button type="button" class="tab" data-tab="gal" id="g-tab">Galeri</button><button type="button" class="tab" data-tab="ev" id="ev-tab">Tiket &amp; Event</button></div>
   <div id="status" role="status">Memuat data...</div>
   <div id="view-main">
   <div id="seating-wrapper">
@@ -83,6 +83,7 @@ async function init() {
     if (!Array.isArray(arr)) throw new Error('Format data tidak dikenali');
     records = arr.map(sanitize).filter(r => SEATS.has(r.seat)); // kursi di luar peta dilewati, jadi total = yang tampil di peta
     tickets = (Array.isArray(json.tickets) ? json.tickets : []).map(sanitizeTicket).filter(t => t.date);
+    dataLoaded = true;
     $('status').textContent = '';
     renderChart();
   } catch (err) {
