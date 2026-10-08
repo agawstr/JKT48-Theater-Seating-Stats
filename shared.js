@@ -683,22 +683,23 @@ const sanitizeTicket = t => {
 const raffleOf = s => !s ? '' : /WIN|WON|MENANG/.test(s) ? 'win' : /LOSE|LOST|KALAH/.test(s) ? 'lose' : 'other';
 function lotteryStats(list) { // persentase menang = menang / (menang + kalah); status lain tidak dihitung
   const s = {win: 0, lose: 0, other: 0, raw: {}, by: {}};
+  // kelompok lotre: show teater (termasuk Theater Event seperti JKT48 School) dan kategori event lain
+  const grp = t => (t.type === 'SHOW' || tcat(t) === 'Theater Event') ? 'Show teater' : tcat(t);
   list.forEach(t => {
     const c = raffleOf(t.raffle);
     if (!c) return;
     s[c]++;
-    (s.by[t.type] = s.by[t.type] || {win: 0, lose: 0, other: 0})[c]++;
+    (s.by[grp(t)] = s.by[grp(t)] || {win: 0, lose: 0, other: 0})[c]++;
     if (c === 'other') s.raw[t.raffle] = (s.raw[t.raffle] || 0) + 1;
   });
   // jkt48.com hanya memberi status kalah (LOSE). Di jenis yang punya lotre, tiket tanpa status dihitung menang (perkiraan).
-  // kelompok lotre: semua tiket SHOW; untuk jenis lain per nama tiket (jadi JKT48 School & tiket Exclusive tidak ikut)
-  const lotKey = t => t.type === 'SHOW' ? 'SHOW' : t.type + '|' + tname(t);
-  const lt = new Set(list.filter(t => raffleOf(t.raffle)).map(lotKey));
+  // hanya kelompok yang punya entri kalah yang diperkirakan; tiket Exclusive (video call, M&G) tidak dihitung sebagai lotre
+  const lt = new Set(list.filter(t => raffleOf(t.raffle)).map(grp));
   s.inferred = 0;
   list.forEach(t => {
-    if (raffleOf(t.raffle) || !lt.has(lotKey(t))) return;
+    if (raffleOf(t.raffle) || t.type === 'EXCLUSIVE' || !lt.has(grp(t))) return;
     s.win++; s.inferred++;
-    (s.by[t.type] = s.by[t.type] || {win: 0, lose: 0, other: 0}).win++;
+    (s.by[grp(t)] = s.by[grp(t)] || {win: 0, lose: 0, other: 0}).win++;
   });
   s.total = s.win + s.lose + s.other;
   s.pct = s.win + s.lose ? s.win / (s.win + s.lose) * 100 : 0;
