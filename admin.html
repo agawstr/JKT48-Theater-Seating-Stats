@@ -51,6 +51,20 @@ td .seat-badge{font-size:12px}
 #backup-note.warn{color:#fbbf24}
 #pager{display:flex;gap:12px;align-items:center;justify-content:center;margin-top:12px;font-size:13px;color:#a1a1aa}
 @media(max-width:768px){.tab-btn{padding:8px 18px;font-size:13px}}
+.modal.wide{max-width:680px;max-height:90vh;overflow-y:auto}
+.jk-help{color:#a1a1aa;font-size:13px;margin:0 0 10px;line-height:1.5}
+#jk-in,#jk-code{font-family:monospace;font-size:12px;margin:8px 0}
+details{margin:8px 0}
+summary{cursor:pointer;color:#ff8c00;font-size:13px;font-weight:600}
+.jk-opt{display:flex;gap:8px;align-items:center;font-size:13px;margin:8px 0}
+.jk-opt input{width:auto}
+#jk-out{margin:12px 0;max-height:240px;overflow-y:auto;font-size:13px;color:#e4e4e7}
+.jk-r{display:grid;grid-template-columns:100px 56px 1fr auto;gap:8px;padding:6px 8px;border-bottom:1px solid #24151d}
+.jk-r.dup{opacity:.55}
+.jk-r i{font-style:normal;font-size:11px;font-weight:800;color:#34d399}
+.jk-r.dup i{color:#a1a1aa}
+.jk-act{display:flex;gap:8px;justify-content:flex-end}
+.btn:disabled{opacity:.4;cursor:default}
 </style>
 </head>
 <body>
@@ -117,6 +131,7 @@ td .seat-badge{font-size:12px}
           <button class="btn" id="btn-zip">⬇ Unduh paket (ZIP)</button>
           <button class="btn" id="btn-export">⬇ Backup lengkap (JSON)</button>
           <button class="btn" id="btn-import">⬆ Restore (JSON)</button>
+          <button class="btn" id="btn-jk">🎫 Impor dari jkt48.com</button>
           <input type="file" id="file-import" accept=".json,application/json" hidden>
         </div>
         <div id="backup-note"></div>
@@ -155,6 +170,68 @@ td .seat-badge{font-size:12px}
   </div>
 </div>
 
+<script type="text/plain" id="jk-src">(async () => {
+  const API = '/api/v1/accounts/my-tickets', LIMIT = 50, wait = ms => new Promise(r => setTimeout(r, ms));
+  let token = '';
+  // 1) cari token di penyimpanan situs; 2) kalau tidak ada, tangkap dari request yang dikirim situs
+  for (const st of [localStorage, sessionStorage]) {
+    for (let i = 0; i < st.length && !token; i++) {
+      const m = (st.getItem(st.key(i)) || '').match(/eyJ[\w-]+\.[\w-]+\.[\w-]+/);
+      if (m) token = m[0];
+    }
+  }
+  if (!token) {
+    console.log('Token belum ditemukan. Klik halaman berikutnya / muat ulang daftar tiket di situs ini...');
+    token = await new Promise(resolve => {
+      const f = window.fetch, sh = XMLHttpRequest.prototype.setRequestHeader;
+      const grab = (k, v) => {
+        if (/^authorization$/i.test(k) && /^Bearer /i.test(v)) {
+          window.fetch = f; XMLHttpRequest.prototype.setRequestHeader = sh;
+          resolve(v.replace(/^Bearer /i, ''));
+        }
+      };
+      window.fetch = function (u, o) {
+        const h = (o && o.headers) || (u && u.headers);
+        if (h) { if (h.forEach && !Array.isArray(h)) h.forEach((v, k) => grab(k, v)); else for (const k in h) grab(k, h[k]); }
+        return f.apply(this, arguments);
+      };
+      XMLHttpRequest.prototype.setRequestHeader = function (k, v) { grab(k, v); return sh.apply(this, arguments); };
+    });
+  }
+  // ambil semua halaman; hanya tiket SHOW, tanpa kode tiket / nomor transaksi
+  const byRef = new Map();
+  for (let p = 1, total = 1; p <= total; p++) {
+    const res = await fetch(API + '?lang=id&limit=' + LIMIT + '&page=' + p, { headers: { Authorization: 'Bearer ' + token } });
+    const j = await res.json();
+    if (!j.status) { console.error('Gagal: ' + j.message); return; }
+    total = (j._meta && j._meta.total_page) || 1;
+    console.log('Halaman ' + p + ' / ' + total);
+    for (const t of j.data) {
+      if (t.ticket_type !== 'SHOW') continue;
+      const k = t.reference_code + '|' + t.date, used = +t.used_count || 0, old = byRef.get(k);
+      if (old) old.used = Math.max(old.used, used);
+      else byRef.set(k, { date: t.date, name: t.name, start: t.start_time, used });
+    }
+    await wait(300);
+  }
+  const s = JSON.stringify([...byRef.values()]);
+  if (typeof copy === 'function') copy(s); else console.log(s);
+  console.log('Selesai: ' + byRef.size + ' tiket SHOW disalin ke clipboard. Tempel di admin.');
+})();</script>
+<div class="overlay" id="jk-modal">
+  <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="jk-title">
+    <button class="x" id="jk-close" aria-label="Tutup">&times;</button>
+    <h3 id="jk-title" style="margin:0 0 6px">Impor dari jkt48.com</h3>
+    <p class="jk-help">1) Buka jkt48.com dalam keadaan login. 2) Tekan F12, buka tab <b>Console</b>, tempel kode di bawah, lalu Enter (Chrome mungkin meminta mengetik <i>allow pasting</i> dulu). 3) Tempel hasilnya di kotak kedua. Token tetap di tab jkt48.com dan tidak dikirim ke mana pun.</p>
+    <details><summary>Lihat / salin kode untuk Console</summary>
+      <textarea id="jk-code" readonly rows="7"></textarea>
+      <button class="btn" id="jk-copy" type="button">Salin kode</button></details>
+    <textarea id="jk-in" rows="4" placeholder="Tempel hasil dari Console di sini..."></textarea>
+    <label class="jk-opt"><input type="checkbox" id="jk-all"> Sertakan juga tiket yang belum terpakai</label>
+    <div id="jk-out" role="status"></div>
+    <div class="jk-act"><button class="btn" id="jk-parse" type="button">Analisis</button><button class="btn" id="jk-add" type="button" disabled>Tambahkan</button></div>
+  </div>
+</div>
 <script src="shared.js"></script>
 <script>
 const KEY = 'jkt48_theater_stats_v5';
@@ -472,6 +549,58 @@ $('file-import').addEventListener('change', async e => {
   } catch (err) {
     alert('File tidak valid: ' + err.message);
   }
+});
+
+// ---------- Impor dari jkt48.com ----------
+let jkNew = [];
+$('btn-jk').addEventListener('click', () => {
+  $('jk-code').value = $('jk-src').textContent.trim();
+  openEl('jk-modal');
+  $('jk-in').focus();
+});
+$('jk-close').addEventListener('click', () => closeEl('jk-modal'));
+$('jk-modal').addEventListener('click', e => { if (e.target.id === 'jk-modal') closeEl('jk-modal'); });
+escHooks.push(() => $('jk-modal').classList.contains('open') ? (closeEl('jk-modal'), true) : false);
+$('jk-copy').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText($('jk-code').value); $('jk-copy').textContent = 'Tersalin ✓'; }
+  catch (e) { $('jk-code').select(); }
+});
+$('jk-parse').addEventListener('click', () => {
+  let rows;
+  try {
+    const j = JSON.parse($('jk-in').value);
+    rows = Array.isArray(j) ? j : j.data;
+    if (!Array.isArray(rows)) throw 0;
+  } catch (e) { $('jk-out').textContent = 'Format tidak dikenali. Tempel hasil dari kode Console (atau respons API mentah).'; return; }
+  const all = $('jk-all').checked, seen = new Set(), list = [];
+  for (const t of rows) {
+    if (t.ticket_type && t.ticket_type !== 'SHOW') continue;
+    const date = String(t.date || ''), used = +(t.used ?? t.used_count) || 0;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || (!used && !all)) continue;
+    const h = parseInt(String(t.start || t.start_time || '').slice(0, 2));
+    const x = {date, setlist: String(t.name || '').trim(), sesi: isNaN(h) ? '' : h < 17 ? 'Siang' : 'Malam'};
+    const key = date + '|' + x.sesi;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    // sudah ada jika tanggal sama dan (sesi sama atau setlist sama)
+    x.dup = records.some(r => r.date === date && (r.sesi === x.sesi || r.setlist.toLowerCase() === x.setlist.toLowerCase()));
+    list.push(x);
+  }
+  list.sort((a, b) => b.date.localeCompare(a.date));
+  jkNew = list.filter(x => !x.dup);
+  $('jk-out').innerHTML = `<p><b>${list.length}</b> show ditemukan: <b>${jkNew.length}</b> baru, ${list.length - jkNew.length} sudah ada.</p>` +
+    list.slice(0, 150).map(x => `<div class="jk-r${x.dup ? ' dup' : ''}"><span>${esc(fmtDate(x.date))}</span><span>${esc(x.sesi)}</span><span>${esc(x.setlist)}</span><i>${x.dup ? 'sudah ada' : 'baru'}</i></div>`).join('');
+  $('jk-add').disabled = !jkNew.length;
+  $('jk-add').textContent = jkNew.length ? `Tambahkan ${jkNew.length} show` : 'Tambahkan';
+});
+$('jk-add').addEventListener('click', () => {
+  const now = Date.now();
+  jkNew.forEach((x, i) => records.push(sanitize({id: now + i, seat: '?', setlist: x.setlist, date: x.date, sesi: x.sesi}, i)));
+  save(); renderAll();
+  const n = jkNew.length;
+  jkNew = []; $('jk-add').disabled = true; $('jk-out').textContent = ''; $('jk-in').value = '';
+  closeEl('jk-modal');
+  alert(`${n} show ditambahkan. Kursinya masih "?" karena data tiket tidak memuat kursi. Cari "?" di tabel, lalu isi lewat tombol edit. Sebelum itu show tersebut belum tampil di halaman publik.`);
 });
 
 // ---------- Init ----------
