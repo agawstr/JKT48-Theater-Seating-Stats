@@ -674,7 +674,7 @@ const sanitizeTicket = t => {
     k: up(t.k), type: ['SHOW', 'EXCLUSIVE', 'EVENT'].includes(t.type) ? t.type : 'EVENT',
     date: /^\d{4}-\d{2}-\d{2}$/.test(t.date) ? t.date : '', name: up(t.name), start: up(t.start).slice(0, 5),
     used: Math.max(0, Number(t.used) || 0), raffle: up(t.raffle).toUpperCase(),
-    member: up(t.member), lane: up(t.lane), session: up(t.session), bought: Math.max(1, Number(t.bought) || 1), cat: up(t.cat)
+    member: up(t.member), lane: up(t.lane), session: up(t.session), bought: Math.max(1, Number(t.bought) || 1), cat: up(t.cat), status: up(t.status)
   };
 };
 const raffleOf = s => !s ? '' : /WIN|WON|MENANG/.test(s) ? 'win' : /LOSE|LOST|KALAH/.test(s) ? 'lose' : 'other';
@@ -688,10 +688,12 @@ function lotteryStats(list) { // persentase menang = menang / (menang + kalah); 
     if (c === 'other') s.raw[t.raffle] = (s.raw[t.raffle] || 0) + 1;
   });
   // jkt48.com hanya memberi status kalah (LOSE). Di jenis yang punya lotre, tiket tanpa status dihitung menang (perkiraan).
-  const lt = new Set(list.filter(t => raffleOf(t.raffle)).map(t => t.type));
+  // kelompok lotre: semua tiket SHOW; untuk jenis lain per nama tiket (jadi JKT48 School & tiket Exclusive tidak ikut)
+  const lotKey = t => t.type === 'SHOW' ? 'SHOW' : t.type + '|' + tname(t);
+  const lt = new Set(list.filter(t => raffleOf(t.raffle)).map(lotKey));
   s.inferred = 0;
   list.forEach(t => {
-    if (raffleOf(t.raffle) || !lt.has(t.type)) return;
+    if (raffleOf(t.raffle) || !lt.has(lotKey(t))) return;
     s.win++; s.inferred++;
     (s.by[t.type] = s.by[t.type] || {win: 0, lose: 0, other: 0}).win++;
   });
@@ -722,15 +724,17 @@ function renderTickets() {
   if (!box) return;
   $('ev-tab').hidden = !tickets.length;
   const ls = lotteryStats(tickets), done = ls.win + ls.lose;
+  const refs = tickets.filter(t => t.status === 'refund'); // menang undian tapi show dibatalkan & di-refund
   const names = {SHOW: 'Show teater', EXCLUSIVE: 'Exclusive / M&G', EVENT: 'Event'};
   const card = (l, v, s) => `<div class="stat"><div class="sv">${esc(v)}</div><div class="sl">${l}</div>${s ? `<div class="ss">${esc(s)}</div>` : ''}</div>`;
   box.innerHTML = !ls.total ? '<div class="empty">Belum ada data lotre</div>' :
-    `<div class="lot-cards">${card('Entri lotre', ls.total)}${card(ls.inferred ? 'Menang (perkiraan)' : 'Menang', ls.win)}${card('Kalah', ls.lose)}${card('Persentase menang', done ? ls.pct.toFixed(1) + '%' : '-', done ? `${ls.win} dari ${done} yang sudah diundi` : '')}</div>` +
+    `<div class="lot-cards">${card('Entri lotre', ls.total)}${card(ls.inferred ? 'Menang (perkiraan)' : 'Menang', ls.win, refs.length ? `${refs.length} dibatalkan & di-refund` : '')}${card('Kalah', ls.lose)}${card('Persentase menang', done ? ls.pct.toFixed(1) + '%' : '-', done ? `${ls.win} dari ${done} yang sudah diundi` : '')}</div>` +
     Object.entries(ls.by).map(([ty, b]) => {
       const d = b.win + b.lose, p = d ? b.win / d * 100 : 0;
       return `<div class="lot-r"><span>${names[ty] || esc(ty)}</span><span class="sl-bar"><i style="width:${p}%"></i></span><span>${b.win} menang · ${b.lose} kalah${d ? ` (${p.toFixed(0)}%)` : ''}</span></div>`;
     }).join('') +
-    (ls.inferred ? '<p class="lot-n">Menang dihitung dari tiket tanpa status kalah, karena jkt48.com tidak memberi status menang. Tiket yang dibeli langsung tanpa lotre ikut terhitung.</p>' : '') +
+    (ls.inferred ? '<p class="lot-n">Menang dihitung dari tiket tanpa status kalah pada show/event yang punya lotre, karena jkt48.com tidak memberi status menang. Tiket yang dibeli langsung tanpa lotre ikut terhitung.</p>' : '') +
+    (refs.length ? `<p class="lot-n">Menang undian tapi dibatalkan dan di-refund: ${refs.map(t => esc(fmtDate(t.date) + ' ' + t.name)).join(', ')}.</p>` : '') +
     (ls.other ? `<p class="lot-n">Status lain (belum diundi / tidak dikenali): ${Object.entries(ls.raw).map(([k, n]) => `${esc(k)} ×${n}`).join(', ')}</p>` : '');
 
   const ev = tickets.filter(t => t.type !== 'SHOW');
