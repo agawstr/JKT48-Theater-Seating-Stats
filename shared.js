@@ -378,6 +378,8 @@ function countUp(root) {
 function skeleton() {
   $('stats').innerHTML = '<div class="stat sk"></div>'.repeat(6);
   $('sl-chart').innerHTML = '<div class="sk" style="height:30px;margin:6px 0"></div>'.repeat(5);
+  if ($('lot')) $('lot').innerHTML = '<div class="lot-cards">' + '<div class="stat sk"></div>'.repeat(4) + '</div>'; // tab Tiket & Event
+  if ($('ev-list')) $('ev-list').innerHTML = '<div class="sk" style="height:64px;margin:8px 0"></div>'.repeat(4);
 }
 
 // kalender kehadiran per hari (ikut filter)
@@ -425,7 +427,7 @@ function renderGallery() {
   sel.innerHTML = '<option value="">Semua member</option>' + mem.map(m => `<option${m === cur ? ' selected' : ''}>${esc(m)}</option>`).join('');
   const list = cur ? items.filter(x => x.member === cur) : items;
   $('g-info').textContent = `${list.length} foto`;
-  if ($('g-tab')) $('g-tab').textContent = `Galeri (${items.length})`;
+  if ($('g-tab') && dataLoaded) $('g-tab').textContent = `Galeri (${items.length})`;
   g.innerHTML = list.length ? list.map(x => `<figure class="gi"><img src="${esc(x.photo)}" data-photo alt="${esc(x.label)} dengan ${esc(x.member)}" loading="lazy">
     <figcaption><b>${esc(x.member) || '-'}</b><span>${x.icon} ${esc(x.label)}</span><span>${esc(x.r.setlist)} · ${esc(fmtDate(x.r.date))}</span></figcaption></figure>`).join('')
     : '<div class="empty">Belum ada foto</div>';
@@ -522,7 +524,7 @@ function renderTimeline() {
   const el = $('timeline');
   if (!el) return;
   const all = [...records].sort(cmp);
-  if ($('t-tab')) $('t-tab').textContent = `Riwayat (${all.length})`;
+  if ($('t-tab') && dataLoaded) $('t-tab').textContent = `Riwayat (${all.length})`;
   const q = ($('tl-q')?.value || '').trim().toLowerCase();
   const hay = r => [r.setlist, r.seat, r.date, r.sesi, r.note, ...extras(r).flatMap(x => [x.member, x.label])].join(' ').toLowerCase();
   const list = q ? all.filter(r => q.split(/\s+/).every(w => hay(r).includes(w))) : all; // semua kata harus cocok
@@ -722,10 +724,11 @@ function autoCat(t) {
 const tcat = t => t.cat || (t.type === 'SHOW' ? 'Show Teater' : autoCat(t));
 const tname = t => t.name.replace(/\s*[-,]\s*\d{1,2}(st|nd|rd|th)?\s+[A-Za-z]{3,}(\s+\d{4})?\s*$/, '').trim() || t.name; // nama tanpa tanggal
 
+let dataLoaded = false; // false selama data masih dimuat
 function renderTickets() {
   const box = $('lot');
   if (!box) return;
-  $('ev-tab').hidden = !tickets.length;
+  $('ev-tab').hidden = dataLoaded && !tickets.length; // tetap tampil selama data dimuat; disembunyikan hanya jika data.json memang tanpa tiket
   const ls = lotteryStats(tickets), done = ls.win + ls.lose;
   const refs = tickets.filter(t => t.status === 'refund'); // menang undian tapi show dibatalkan & di-refund
   const names = {SHOW: 'Show teater', EXCLUSIVE: 'Exclusive / M&G', EVENT: 'Event'};
@@ -741,7 +744,7 @@ function renderTickets() {
     (ls.other ? `<p class="lot-n">Status lain (belum diundi / tidak dikenali): ${Object.entries(ls.raw).map(([k, n]) => `${esc(k)} ×${n}`).join(', ')}</p>` : '');
 
   const ev = tickets.filter(t => t.type !== 'SHOW');
-  $('ev-tab').textContent = `Tiket & Event (${ev.length})`;
+  if (dataLoaded) $('ev-tab').textContent = `Tiket & Event (${ev.length})`;
   const tsel = $('ev-type'), ty = tsel.value, cc = {};
   ev.forEach(t => { const c = tcat(t); cc[c] = (cc[c] || 0) + 1; });
   tsel.innerHTML = '<option value="">Semua kategori</option>' + TK_CATS.filter(c => cc[c]).map(c => `<option value="${esc(c)}"${c === ty ? ' selected' : ''}>${esc(c)} (${cc[c]})</option>`).join('');
