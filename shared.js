@@ -725,7 +725,7 @@ function autoCat(t) {
 const tcat = t => t.cat || (t.type === 'SHOW' ? 'Show Teater' : autoCat(t));
 const tname = t => t.name.replace(/\s*[-,]\s*\d{1,2}(st|nd|rd|th)?\s+[A-Za-z]{3,}(\s+\d{4})?\s*$/, '').trim() || t.name; // nama tanpa tanggal
 
-let evCat = '', evLimit = 12;
+let evCat = '', evLimit = 12, rkAll = false;
 const EV_PAGE = 12; // jumlah seri per tampilan
 let dataLoaded = false; // false selama data masih dimuat
 function renderTickets() {
@@ -735,9 +735,11 @@ function renderTickets() {
   const ls = lotteryStats(tickets), done = ls.win + ls.lose;
   const refs = tickets.filter(t => t.status === 'refund'); // menang undian tapi show dibatalkan & di-refund
   const names = {SHOW: 'Show teater', EXCLUSIVE: 'Exclusive / M&G', EVENT: 'Event'};
-  const card = (l, v, s) => `<div class="stat"><div class="sv">${esc(v)}</div><div class="sl">${l}</div>${s ? `<div class="ss">${esc(s)}</div>` : ''}</div>`;
+  const card = (l, v, s, c = '') => `<div class="stat${c}"><div class="sv">${esc(v)}</div><div class="sl">${l}</div>${s ? `<div class="ss">${esc(s)}</div>` : ''}</div>`;
+  const sh = ls.by['Show teater'], shDone = sh ? sh.win + sh.lose : 0;
+  const shCard = shDone ? card('Persentase menang (show teater)', (sh.win / shDone * 100).toFixed(1).replace(/\.0$/, '') + '%', `${sh.win} dari ${shDone} yang sudah diundi`, ' main') : '';
   box.innerHTML = !ls.total ? '<div class="empty">Belum ada data lotre</div>' :
-    `<div class="lot-cards">${card('Entri lotre', ls.total)}${card(ls.inferred ? 'Menang (perkiraan)' : 'Menang', ls.win, refs.length ? `${refs.length} dibatalkan & di-refund` : '')}${card('Kalah', ls.lose)}${card('Persentase menang', done ? ls.pct.toFixed(1) + '%' : '-', done ? `${ls.win} dari ${done} yang sudah diundi` : '')}</div>` +
+    `<div class="lot-cards">${card('Entri lotre', ls.total)}${card(ls.inferred ? 'Menang (perkiraan)' : 'Menang', ls.win, refs.length ? `${refs.length} dibatalkan & di-refund` : '')}${card('Kalah', ls.lose)}${shCard}${card('Persentase menang (semua jenis)', done ? ls.pct.toFixed(1) + '%' : '-', done ? `${ls.win} dari ${done} yang sudah diundi` : '')}</div>` +
     Object.entries(ls.by).map(([ty, b]) => {
       const d = b.win + b.lose, p = d ? b.win / d * 100 : 0;
       return `<div class="lot-r"><span>${names[ty] || esc(ty)}</span><span class="sl-bar"><i style="width:${p}%"></i></span><span>${b.win ? b.win + ' menang' : '0 menang terdeteksi'} · ${b.lose} kalah${d && b.win ? ` (${p.toFixed(0)}%)` : ''}</span></div>`;
@@ -755,7 +757,9 @@ function renderTickets() {
   // kartu kategori = ringkasan sekaligus filter
   const stat = {};
   ev.forEach(t => { const c = tcat(t), o = stat[c] || (stat[c] = {n: 0, s: new Set()}); o.n++; o.s.add(tname(t)); });
-  $('ev-cats').innerHTML = [['', 'Semua', ev.length, new Set(ev.map(tname)).size], ...TK_CATS.filter(c => stat[c]).map(c => [c, c, stat[c].n, stat[c].s.size])]
+  const cards = [['', 'Semua', ev.length, new Set(ev.map(tname)).size], ...TK_CATS.filter(c => stat[c]).map(c => [c, c, stat[c].n, stat[c].s.size])], cn = cards.length;
+  $('ev-cats').style.setProperty('--cols', cn <= 4 ? cn : cn === 5 ? 5 : cn % 3 === 0 ? 3 : 4); // mis. 6 kartu = 3 x 2, 7 kartu = 4 + 3
+  $('ev-cats').innerHTML = cards
     .map(([k, l, n, z]) => `<button type="button" class="ev-c${k === evCat ? ' on' : ''}" data-cat="${esc(k)}" aria-pressed="${k === evCat}"><b>${n}</b><span>${esc(l)}</span><small>${z} seri</small></button>`).join('');
 
   // kelompokkan tiket per seri (kategori + nama tanpa tanggal)
@@ -792,9 +796,9 @@ function renderTickets() {
   const scope = ev.filter(t => t.date <= td && (!evCat || tcat(t) === evCat));
   const mc = {}, mt = {};
   scope.forEach(t => { if (t.member) { mc[t.member] = (mc[t.member] || 0) + 1; mt[t.member] = (mt[t.member] || 0) + t.bought; } });
-  const rank = Object.entries(mc).sort((a, b) => b[1] - a[1]).slice(0, 8), mx = rank.length ? rank[0][1] : 1;
+  const rankAll = Object.entries(mc).sort((a, b) => b[1] - a[1]), rank = rkAll ? rankAll : rankAll.slice(0, 5), mx = rankAll.length ? rankAll[0][1] : 1;
   $('ev-rank').innerHTML = rank.length ? `<h3 class="sec2">Peringkat member${evCat ? ' · ' + esc(evCat) : ''}</h3>` + rank.map(([m, c], i) =>
-    `<button type="button" class="rk${m === cur ? ' on' : ''}" data-m="${esc(m)}" title="${mt[m]} tiket"><span class="rn">${i + 1}</span><span class="rm">${esc(m)}</span><span class="sl-bar"><i style="width:${c / mx * 100}%"></i></span><span class="rc">${c} sesi</span></button>`).join('') : '';
+    `<button type="button" class="rk${m === cur ? ' on' : ''}" data-m="${esc(m)}" title="${mt[m]} tiket"><span class="rn">${i + 1}</span><span class="rm">${esc(m)}</span><span class="sl-bar"><i style="width:${c / mx * 100}%"></i></span><span class="rc">${c} sesi</span></button>`).join('') + (rankAll.length > 5 ? `<button type="button" class="btn-s" id="ev-rkmore">${rkAll ? 'Tampilkan 5 teratas' : `Lihat semua (${rankAll.length})`}</button>` : '') : '';
 
   const list = scope.filter(t => (!cur || t.member === cur) && (!st || t.used > 0));
   const groups = grouper(list);
@@ -809,3 +813,4 @@ const resetEv = () => { evLimit = EV_PAGE; renderTickets(); };
 $('ev-cats')?.addEventListener('click', e => { const b = e.target.closest('[data-cat]'); if (b) { evCat = b.dataset.cat; resetEv(); } });
 $('ev-rank')?.addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (b) { const m = $('ev-member'); m.value = m.value === b.dataset.m ? '' : b.dataset.m; resetEv(); } });
 $('ev-more')?.addEventListener('click', () => { evLimit += EV_PAGE; renderTickets(); });
+$('ev-rank')?.addEventListener('click', e => { if (e.target.closest('#ev-rkmore')) { rkAll = !rkAll; renderTickets(); } });
