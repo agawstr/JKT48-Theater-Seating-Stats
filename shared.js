@@ -380,6 +380,7 @@ function skeleton() {
   $('sl-chart').innerHTML = '<div class="sk" style="height:30px;margin:6px 0"></div>'.repeat(5);
   if ($('lot')) $('lot').innerHTML = '<div class="lot-cards">' + '<div class="stat sk"></div>'.repeat(4) + '</div>'; // tab Tiket & Event
   if ($('ev-list')) $('ev-list').innerHTML = '<div class="sk" style="height:64px;margin:8px 0"></div>'.repeat(4);
+  if ($('ev-cats')) $('ev-cats').innerHTML = '<div class="sk" style="height:84px"></div>'.repeat(4);
 }
 
 // kalender kehadiran per hari (ikut filter)
@@ -724,6 +725,8 @@ function autoCat(t) {
 const tcat = t => t.cat || (t.type === 'SHOW' ? 'Show Teater' : autoCat(t));
 const tname = t => t.name.replace(/\s*[-,]\s*\d{1,2}(st|nd|rd|th)?\s+[A-Za-z]{3,}(\s+\d{4})?\s*$/, '').trim() || t.name; // nama tanpa tanggal
 
+let evCat = '', evLimit = 12;
+const EV_PAGE = 12; // jumlah seri per tampilan
 let dataLoaded = false; // false selama data masih dimuat
 function renderTickets() {
   const box = $('lot');
@@ -745,20 +748,64 @@ function renderTickets() {
 
   const ev = tickets.filter(t => t.type !== 'SHOW');
   if (dataLoaded) $('ev-tab').textContent = `Tiket & Event (${ev.length})`;
-  const tsel = $('ev-type'), ty = tsel.value, cc = {};
-  ev.forEach(t => { const c = tcat(t); cc[c] = (cc[c] || 0) + 1; });
-  tsel.innerHTML = '<option value="">Semua kategori</option>' + TK_CATS.filter(c => cc[c]).map(c => `<option value="${esc(c)}"${c === ty ? ' selected' : ''}>${esc(c)} (${cc[c]})</option>`).join('');
+  const td = new Date().toISOString().slice(0, 10);
   const sel = $('ev-member'), cur = sel.value, st = $('ev-status').value;
   sel.innerHTML = '<option value="">Semua member</option>' + [...new Set(ev.map(t => t.member).filter(Boolean))].sort().map(m => `<option${m === cur ? ' selected' : ''}>${esc(m)}</option>`).join('');
-  const list = ev.filter(t => (!ty || tcat(t) === ty) && (!cur || t.member === cur) && (!st || (st === 'used' ? t.used > 0 : t.used === 0)))
-    .sort((a, b) => b.date.localeCompare(a.date) || b.start.localeCompare(a.start));
-  $('ev-info').textContent = `${list.length} tiket`;
-  $('ev-list').innerHTML = list.length ? list.map(t => {
+
+  // kartu kategori = ringkasan sekaligus filter
+  const stat = {};
+  ev.forEach(t => { const c = tcat(t), o = stat[c] || (stat[c] = {n: 0, s: new Set()}); o.n++; o.s.add(tname(t)); });
+  $('ev-cats').innerHTML = [['', 'Semua', ev.length, new Set(ev.map(tname)).size], ...TK_CATS.filter(c => stat[c]).map(c => [c, c, stat[c].n, stat[c].s.size])]
+    .map(([k, l, n, z]) => `<button type="button" class="ev-c${k === evCat ? ' on' : ''}" data-cat="${esc(k)}" aria-pressed="${k === evCat}"><b>${n}</b><span>${esc(l)}</span><small>${z} seri</small></button>`).join('');
+
+  // kelompokkan tiket per seri (kategori + nama tanpa tanggal)
+  const grouper = arr => {
+    const m = new Map();
+    arr.forEach(t => { const k = tcat(t) + '|' + tname(t); if (!m.has(k)) m.set(k, {name: tname(t), cat: tcat(t), items: []}); m.get(k).items.push(t); });
+    return [...m.values()].map(g => { g.items.sort((a, b) => b.date.localeCompare(a.date) || b.start.localeCompare(a.start)); g.last = g.items[0].date; return g; })
+      .sort((a, b) => b.last.localeCompare(a.last));
+  };
+  // status per tiket; "tidak terpakai" tidak ditampilkan untuk Video Call (statusnya tidak diperbarui jkt48)
+  const chipOf = t => {
     const c = raffleOf(t.raffle);
-    const chip = t.used > 0 ? '<span class="chip ok">Terpakai</span>' : c === 'lose' ? '<span class="chip lose">Kalah lotre</span>' : c === 'win' ? '<span class="chip win">Menang lotre</span>' : '<span class="chip no">Tidak terpakai</span>';
-    const meta = [t.member, t.lane, t.session].filter(Boolean).join(' · ');
-    return `<div class="ev-i"><div class="tl-d"><b>${esc(t.date.slice(8))}</b><span>${MON_ID[+t.date.slice(5, 7) - 1]} ${esc(t.date.slice(2, 4))}</span></div>
-      <div class="tl-b"><b>${esc(t.name)}</b>${meta ? `<div class="ht">👤 ${esc(meta)}</div>` : ''}<div class="hn">${esc(tcat(t))}${t.start ? ' · ' + esc(t.start) : ''}${t.bought > 1 ? ' · ' + t.bought + ' tiket' : ''}</div></div>${chip}</div>`;
-  }).join('') : '<div class="empty">Tidak ada tiket yang cocok</div>';
+    return t.date > td ? '<span class="chip soon">Mendatang</span>' : t.used > 0 ? '<span class="chip ok">Hadir</span>' : c === 'lose' ? '<span class="chip lose">Kalah lotre</span>'
+      : c === 'win' ? '<span class="chip win">Menang lotre</span>' : tcat(t) === 'Video Call' ? '' : '<span class="chip no">Tidak terpakai</span>';
+  };
+  const groupHtml = g => {
+    const n = g.items.length, usd = g.items.filter(t => t.used > 0).length, up = g.items.filter(t => t.date > td).length, mem = {};
+    g.items.forEach(t => { if (t.member) mem[t.member] = (mem[t.member] || 0) + 1; });
+    const ms = Object.entries(mem).sort((a, b) => b[1] - a[1]), first = g.items[n - 1].date;
+    const range = first === g.last ? fmtDate(g.last) : `${fmtDate(first)} – ${fmtDate(g.last)}`;
+    const chip = up ? `<span class="chip soon">Mendatang${up < n ? ` ${up}/${n}` : ''}</span>` : usd ? `<span class="chip ok">Hadir${usd < n ? ` ${usd}/${n}` : ''}</span>`
+      : g.items.every(t => raffleOf(t.raffle) === 'lose') ? '<span class="chip lose">Kalah lotre</span>' : g.cat === 'Video Call' ? '' : '<span class="chip no">Tidak terpakai</span>';
+    return `<details class="ev-g"><summary>
+      <div class="tl-d"><b>${esc(g.last.slice(8))}</b><span>${MON_ID[+g.last.slice(5, 7) - 1]} ${esc(g.last.slice(2, 4))}</span></div>
+      <div class="tl-b"><b>${esc(g.name)}</b><div class="hn">${esc(g.cat)} · ${n} sesi · ${esc(range)}</div>
+        ${ms.length ? `<div class="mchips">${ms.slice(0, 5).map(([m, c]) => `<span class="mchip">${esc(m)}${c > 1 ? ' ×' + c : ''}</span>`).join('')}${ms.length > 5 ? `<span class="mchip">+${ms.length - 5}</span>` : ''}</div>` : ''}</div>
+      ${chip}</summary>
+      <div class="ev-d">${g.items.map(t => `<div class="ev-t"><span>${esc(fmtDate(t.date))}${t.start ? ' · ' + esc(t.start.slice(0, 5)) : ''}</span><span>${esc([t.member, t.lane, t.session].filter(Boolean).join(' · ')) || '–'}${t.bought > 1 ? ' · ' + t.bought + ' tiket' : ''}</span>${chipOf(t)}</div>`).join('')}</div></details>`;
+  };
+
+  const upc = grouper(ev.filter(t => t.date > td)); // tiket mendatang selalu di paling atas
+  $('ev-up').innerHTML = upc.length ? '<h3 class="sec2">Mendatang</h3>' + upc.map(groupHtml).join('') : '';
+
+  const scope = ev.filter(t => t.date <= td && (!evCat || tcat(t) === evCat));
+  const mc = {}, mt = {};
+  scope.forEach(t => { if (t.member) { mc[t.member] = (mc[t.member] || 0) + 1; mt[t.member] = (mt[t.member] || 0) + t.bought; } });
+  const rank = Object.entries(mc).sort((a, b) => b[1] - a[1]).slice(0, 8), mx = rank.length ? rank[0][1] : 1;
+  $('ev-rank').innerHTML = rank.length ? `<h3 class="sec2">Peringkat member${evCat ? ' · ' + esc(evCat) : ''}</h3>` + rank.map(([m, c], i) =>
+    `<button type="button" class="rk${m === cur ? ' on' : ''}" data-m="${esc(m)}" title="${mt[m]} tiket"><span class="rn">${i + 1}</span><span class="rm">${esc(m)}</span><span class="sl-bar"><i style="width:${c / mx * 100}%"></i></span><span class="rc">${c} sesi</span></button>`).join('') : '';
+
+  const list = scope.filter(t => (!cur || t.member === cur) && (!st || t.used > 0));
+  const groups = grouper(list);
+  $('ev-info').textContent = `${groups.length} seri · ${list.length} tiket`;
+  $('ev-list').innerHTML = groups.length ? groups.slice(0, evLimit).map(groupHtml).join('') : '<div class="empty">Tidak ada tiket yang cocok</div>';
+  $('ev-more').hidden = groups.length <= evLimit;
+  $('ev-more').textContent = `Tampilkan ${Math.max(0, Math.min(EV_PAGE, groups.length - evLimit))} lagi (sisa ${Math.max(0, groups.length - evLimit)})`;
 }
-['ev-type', 'ev-member', 'ev-status'].forEach(id => $(id)?.addEventListener('change', renderTickets));
+
+const resetEv = () => { evLimit = EV_PAGE; renderTickets(); };
+['ev-member', 'ev-status'].forEach(id => $(id)?.addEventListener('change', resetEv));
+$('ev-cats')?.addEventListener('click', e => { const b = e.target.closest('[data-cat]'); if (b) { evCat = b.dataset.cat; resetEv(); } });
+$('ev-rank')?.addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (b) { const m = $('ev-member'); m.value = m.value === b.dataset.m ? '' : b.dataset.m; resetEv(); } });
+$('ev-more')?.addEventListener('click', () => { evLimit += EV_PAGE; renderTickets(); });
