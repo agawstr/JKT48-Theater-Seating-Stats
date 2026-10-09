@@ -233,7 +233,7 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 .chip.win{color:#ffd23f;border-color:#6b4a12}.chip.lose{color:#f87171;border-color:#6b2b2b}
 
 /* tab Tiket & Event: kartu kategori, peringkat member, seri yang bisa dibuka */
-#ev-cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;width:100%;margin-bottom:16px}
+#ev-cats{display:grid;grid-template-columns:repeat(var(--cols,3),1fr);gap:10px;width:100%;margin-bottom:16px}
 .ev-c{display:flex;flex-direction:column;align-items:center;gap:2px;background:#181115;border:1px solid #2d1820;border-radius:12px;padding:12px 10px;color:#e4e4e7;cursor:pointer;font-family:inherit;transition:.2s}
 .ev-c b{font-size:24px;color:#ff8c00;font-weight:900}
 .ev-c span{font-size:13px;font-weight:700;text-align:center}
@@ -259,3 +259,9 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 #ev-more{margin:8px auto 0;display:block}
 #ev-more[hidden]{display:none}
 @media(max-width:600px){.ev-d{padding-left:12px}.ev-t{grid-template-columns:1fr auto}.ev-t span:nth-child(2){grid-column:1;grid-row:2}.rk{grid-template-columns:22px minmax(80px,130px) 1fr 56px}}
+
+.stat.main{border-color:#ff2a5f;background:linear-gradient(160deg,rgba(255,42,95,.22),#181115)}
+.stat.main .sv{font-size:28px;color:#ffd23f}
+#ev-rank .btn-s{margin:6px 0 0 8px}
+#ev-bar{margin-top:4px}
+@media(max-width:600px){#ev-cats{grid-template-columns:repeat(2,1fr)}}
