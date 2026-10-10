@@ -74,7 +74,7 @@ function sanitize(r, i) {
 let records = []; // diisi oleh halaman (index: dari data.json, admin: dari localStorage)
 
 // ---------- Render peta ----------
-function renderChart() {
+function renderChartRaw() {
   hidePop();
   const counts = {}, all = {}, on = isFiltered();
   records.forEach(r => all[r.seat] = 1);
@@ -92,9 +92,13 @@ function renderChart() {
   const first = !introDone && records.length > 0; // animasi masuk hanya sekali
   introDone = introDone || first; intro = first;
   $('chart').classList.toggle('intro', first);
+  const sig = JSON.stringify(filter);
+  if (lastSig !== null && sig !== lastSig && !first && replayN === null) playRefresh();
+  lastSig = sig;
   if (first) playEnter($('view-main'));
   renderFilters(); renderStats(); if (first) countUp($('stats'));
-  renderSetlists(); renderRows(); renderCal(); renderGallery(); renderTimeline(); renderCover(); renderLast(); renderTickets(); syncUrl();
+  tweenNums('st', $('stats'));
+  renderSetlists(); renderRows(); renderCal(); tweenAll(); renderGallery(); renderTimeline(); renderCover(); renderLast(); renderTickets(); syncUrl();
   requestAnimationFrame(centerChart);
 }
 
@@ -420,7 +424,7 @@ $('cal-nav').addEventListener('click', e => {
   const b = e.target.closest('[data-cy]');
   if (!b) return;
   calYear = +calYears[calYears.indexOf(String(calYear)) + Number(b.dataset.cy)];
-  renderCal();
+  renderCal(); tweenAll();
 });
 
 // galeri foto 2-Shot / Chekicha (hanya jika halaman punya #gallery)
@@ -733,7 +737,7 @@ const tname = t => t.name.replace(/\s*[-,]\s*\d{1,2}(st|nd|rd|th)?\s+[A-Za-z]{3,
 let evCat = '', evLimit = 12, rkAll = false;
 const EV_PAGE = 12; // jumlah seri per tampilan
 let dataLoaded = false; // false selama data masih dimuat
-function renderTickets() {
+function renderTicketsRaw() {
   const box = $('lot');
   if (!box) return;
   $('ev-tab').hidden = dataLoaded && !tickets.length; // tetap tampil selama data dimuat; disembunyikan hanya jika data.json memang tanpa tiket
@@ -811,6 +815,7 @@ function renderTickets() {
   $('ev-list').innerHTML = groups.length ? groups.slice(0, evLimit).map(groupHtml).join('') : '<div class="empty">Tidak ada tiket yang cocok</div>';
   $('ev-more').hidden = groups.length <= evLimit;
   $('ev-more').textContent = `Tampilkan ${Math.max(0, Math.min(EV_PAGE, groups.length - evLimit))} lagi (sisa ${Math.max(0, groups.length - evLimit)})`;
+  tweenBars('rk', $('ev-rank'), '.rk', '.sl-bar i', 'width', it => it.dataset.m);
 }
 
 const resetEv = () => { evLimit = EV_PAGE; renderTickets(); };
@@ -845,6 +850,7 @@ function applyChartFilter(kind, val) {
     $('flt-from').value = filter.from; $('flt-to').value = filter.to;
   }
   renderChart();
+  const c = $('chart'); c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); setTimeout(() => c.classList.remove('flash'), 1400); // kursi yang cocok berdenyut
   $('filters').scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start'});
 }
 [['rchart', 'row', 'data-row'], ['cal', 'd', 'data-d'], ['mchart', 'mo', 'data-mo']].forEach(([id, kind, attr]) => {
@@ -853,3 +859,132 @@ function applyChartFilter(kind, val) {
     if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[role=button]')) { e.preventDefault(); e.target.click(); }
   });
 });
+
+// ================= Animasi perubahan grafik & peta =================
+// Elemen grafik dibuat ulang setiap render, jadi nilai lama dicatat dulu lalu bar/angka/kursi digerakkan dari nilai lama ke nilai baru.
+const BAR_SETS = [ // [kontainer, bar, properti, angka, fungsi kunci]
+  ['sl-chart', '.sl-bar i', 'width', '.sl-c', x => x.closest('[data-setlist]')?.dataset.setlist],
+  ['ev-rank', '.sl-bar i', 'width', '.rc', x => x.closest('[data-m]')?.dataset.m],
+  ['rchart', '.mc-b i', 'height', '.mc-n', (x, i) => i],
+  ['mchart', '.mc-b i', 'height', '.mc-n', (x, i) => i]
+];
+const numOf = s => { const m = /\d+/.exec(s || ''); return m ? +m[0] : 0; };
+
+function snapAnim() {
+  const bars = BAR_SETS.map(([id, bs, prop, ns, keyOf]) => {
+    const el = $(id), b = new Map(), n = new Map();
+    if (el) {
+      el.querySelectorAll(bs).forEach((x, i) => { const k = keyOf(x, i); if (k !== undefined) b.set(k, x.style[prop]); });
+      el.querySelectorAll(ns).forEach((x, i) => { const k = keyOf(x, i); if (k !== undefined) n.set(k, numOf(x.textContent)); });
+    }
+    return {b, n};
+  });
+  const seats = new Map();
+  $('chart').querySelectorAll('.seat').forEach(x => { const cs = getComputedStyle(x); if (cs.opacity) seats.set(x.dataset.seat, [cs.opacity, cs.backgroundColor]); });
+  return {bars, seats};
+}
+
+function tweenNum(el, from, to) {
+  const m = /^(\D*)(\d+)(.*)$/.exec(el.textContent);
+  if (!m) return;
+  const t0 = performance.now();
+  const step = t => {
+    const p = Math.min(1, (t - t0) / 550);
+    el.textContent = m[1] + Math.round(from + (to - from) * (1 - Math.pow(1 - p, 3))) + m[3];
+    if (p < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+function playAnim(snap) {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const todo = [], tw = [], seatCh = [];
+  BAR_SETS.forEach(([id, bs, prop, ns, keyOf], n) => {
+    const el = $(id), old = snap.bars[n];
+    if (!el || !old.b.size) return; // render pertama: biarkan animasi masuk (.enter)
+    el.querySelectorAll(bs).forEach((x, i) => {
+      const k = keyOf(x, i), target = x.style[prop];
+      if (k === undefined) return;
+      const from = old.b.has(k) ? old.b.get(k) : '0%'; // bar baru tumbuh dari 0
+      if (from !== target) { x.style.transition = 'none'; x.style[prop] = from; todo.push([x, prop, target]); }
+    });
+    el.querySelectorAll(ns).forEach((x, i) => {
+      const k = keyOf(x, i), to = numOf(x.textContent), from = old.n.has(k) ? old.n.get(k) : 0;
+      if (k !== undefined && x.textContent && from !== to) tw.push([x, from, to]);
+    });
+  });
+  $('chart').querySelectorAll('.seat').forEach(x => { // baca dulu semua, tulis belakangan (hindari reflow berulang)
+    const o = snap.seats.get(x.dataset.seat), cs = getComputedStyle(x);
+    if (o && cs.opacity && (o[0] !== cs.opacity || o[1] !== cs.backgroundColor)) seatCh.push([x, o, x.style.backgroundColor]);
+  });
+  seatCh.forEach(([x, o]) => { x.style.transition = 'none'; x.style.opacity = o[0]; x.style.backgroundColor = o[1]; });
+  if (!todo.length && !tw.length && !seatCh.length) return;
+  void document.body.offsetWidth; // paksa nilai lama sempat dilukis
+  todo.forEach(([x, p, t]) => { x.style.transition = ''; x.style[p] = t; });
+  seatCh.forEach(([x, , bg]) => { x.style.transition = ''; x.style.opacity = ''; x.style.backgroundColor = bg; });
+  tw.forEach(([x, f, t]) => tweenNum(x, f, t));
+}
+
+let animDepth = 0;
+function withAnim(fn) {
+  if (animDepth++) { try { fn(); } finally { animDepth--; } return; } // panggilan bersarang cukup dijalankan
+  let snap;
+  try { snap = snapAnim(); fn(); } finally { animDepth--; }
+  playAnim(snap);
+}
+function renderChart() { withAnim(renderChartRaw); }
+function renderTickets() { withAnim(renderTicketsRaw); }
+
+// ================= Animasi perubahan data: bar naik/turun, angka berhitung, peta bereaksi =================
+const barMem = {}, numMem = {};
+let lastSig = null; // tanda filter terakhir, untuk mendeteksi perubahan filter
+const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// bar memanjang/memendek dari nilai sebelumnya ke nilai baru (lewat Web Animations API)
+function tweenBars(id, box, itemSel, barSel, dim, keyOf) {
+  const prev = barMem[id] || {}, next = {}, skip = calm() || replayN !== null || box.closest('.enter');
+  box.querySelectorAll(itemSel).forEach((it, i) => {
+    const bar = it.querySelector(barSel);
+    if (!bar) return;
+    const key = keyOf(it, i), v = parseFloat(bar.style[dim]) || 0;
+    next[key] = v;
+    if (!skip && prev[key] !== undefined && prev[key] !== v) {
+      bar.animate([{[dim]: prev[key] + '%'}, {[dim]: v + '%'}], {duration: 650, easing: 'cubic-bezier(.2,.8,.2,1)'});
+    }
+  });
+  barMem[id] = next;
+}
+function tweenAll() {
+  tweenBars('sl', $('sl-chart'), '.sl-row', '.sl-bar i', 'width', it => it.dataset.setlist);
+  tweenBars('rw', $('rchart'), '.mc', '.mc-b i', 'height', (it, i) => i);
+  tweenBars('mo', $('mchart'), '.mc', '.mc-b i', 'height', (it, i) => i);
+}
+
+// angka kartu statistik berhitung dari nilai lama ke nilai baru saat filter berubah
+function tweenNums(id, box) {
+  const prev = numMem[id] || {}, next = {}, skip = calm() || intro || replayN !== null;
+  box.querySelectorAll('[data-n]').forEach(el => {
+    const key = el.nextElementSibling ? el.nextElementSibling.textContent : '', to = +el.dataset.n, from = prev[key];
+    next[key] = to;
+    if (skip || from === undefined || from === to) return;
+    const t0 = performance.now();
+    const step = t => {
+      const p = Math.min(1, (t - t0) / 600);
+      el.textContent = Math.round(from + (to - from) * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(step);
+    };
+    el.textContent = from;
+    requestAnimationFrame(step);
+  });
+  numMem[id] = next;
+}
+
+// kursi yang cocok "membesar" bergantian setelah filter berubah
+function playRefresh() {
+  const c = $('chart');
+  c.classList.remove('refresh');
+  void c.offsetWidth;
+  c.classList.add('refresh');
+  clearTimeout(c._rf);
+  c._rf = setTimeout(() => c.classList.remove('refresh'), 1100);
+}
