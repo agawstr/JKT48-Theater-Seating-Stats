@@ -95,10 +95,11 @@ function renderChartRaw() {
   const sig = JSON.stringify(filter);
   if (lastSig !== null && sig !== lastSig && !first && replayN === null) playRefresh();
   lastSig = sig;
+  syncFbar();
   if (first) playEnter($('view-main'));
   renderFilters(); renderStats(); if (first) countUp($('stats'));
   tweenNums('st', $('stats'));
-  renderSetlists(); renderRows(); renderCal(); tweenAll(); renderGallery(); renderTimeline(); renderCover(); renderLast(); renderTickets(); syncUrl();
+  renderSetlists(); renderRows(); renderCal(); renderGallery(); renderTimeline(); renderCover(); renderLast(); renderTickets(); syncUrl();
   requestAnimationFrame(centerChart);
 }
 
@@ -127,6 +128,7 @@ function openSeat(code) {
       ${r.note ? `<div class="hn">"${esc(r.note)}"</div>` : ''}
       ${extras(r).map(x => `<div class="ht">${x.icon} ${esc(x.label)} dengan ${esc(x.member)}</div>${x.photo ? `<img src="${esc(x.photo)}" data-photo alt="Foto" loading="lazy">` : ''}`).join('')}
       ${r.harga ? `<div class="hn">🎟️ ${esc(rupiah(r.harga))}${r.tiket ? ' · ' + esc(r.tiket) : ''}</div>` : ''}
+      ${lotHtml(r)}
       <button type="button" class="btn-s share" data-share="${r.id}">📤 Bagikan kartu</button>
     </div>`).join('') : `<div class="empty">Belum ada riwayat di kursi ${esc(code)}</div>`;
   openEl('seat-modal');
@@ -424,7 +426,7 @@ $('cal-nav').addEventListener('click', e => {
   const b = e.target.closest('[data-cy]');
   if (!b) return;
   calYear = +calYears[calYears.indexOf(String(calYear)) + Number(b.dataset.cy)];
-  renderCal(); tweenAll();
+  renderCal();
 });
 
 // galeri foto 2-Shot / Chekicha (hanya jika halaman punya #gallery)
@@ -549,13 +551,13 @@ function renderTimeline() {
       cur = ym;
       html += `<h3 class="tl-mh">${/^\d{4}-\d{2}$/.test(ym) ? mon[+ym.slice(5) - 1] + ' ' + ym.slice(0, 4) : 'Tanpa tanggal'}</h3>`;
     }
-    html += `<div class="tl-i${ms ? ' ms' : ''}" style="--i:${Math.min(cnt++, 14)}"><div class="tl-d"><b>${esc(r.date.slice(8)) || '–'}</b><span>${esc(r.sesi)}</span></div>
-      <div class="tl-b"><b>${esc(r.setlist) || '(tanpa setlist)'}</b>${ms ? `<div class="tl-star">⭐ Show ke-${n}</div>` : ''}${r.harga ? `<div class="hn">🎟️ ${esc(rupiah(r.harga))}${r.tiket ? ' · ' + esc(r.tiket) : ''}</div>` : ''}
+    html += `<div class="tl-i${ms ? ' ms' : ''}" data-id="${r.id}" style="--i:${Math.min(cnt++, 14)}"><div class="tl-d"><b>${esc(r.date.slice(8)) || '–'}</b><span>${esc(r.sesi)}</span></div>
+      <div class="tl-b"><b>${esc(r.setlist) || '(tanpa setlist)'}</b>${ms ? `<div class="tl-star">⭐ Show ke-${n}</div>` : ''}${lotHtml(r)}${r.harga ? `<div class="hn">🎟️ ${esc(rupiah(r.harga))}${r.tiket ? ' · ' + esc(r.tiket) : ''}</div>` : ''}
         ${extras(r).map(x => `<div class="ht">${x.icon} ${esc(x.label)} dengan ${esc(x.member)}</div>`).join('')}
         ${r.note ? `<div class="hn">"${esc(r.note)}"</div>` : ''}</div>
       <button type="button" class="seat-badge tl-s" data-seat="${esc(r.seat)}" aria-label="Lihat kursi ${esc(r.seat)}">${esc(r.seat)}</button></div>`;
   }
-  el.innerHTML = html || `<div class="empty">${q ? 'Tidak ada show yang cocok' : 'Belum ada riwayat'}</div>`;
+  flipRender(el, '.tl-i', it => it.dataset.id, () => { el.innerHTML = html || `<div class="empty">${q ? 'Tidak ada show yang cocok' : 'Belum ada riwayat'}</div>`; });
 }
 $('timeline')?.addEventListener('click', e => {
   const b = e.target.closest('[data-seat]');
@@ -582,6 +584,7 @@ function replay() { // peta terisi satu per satu sesuai urutan tanggal
     if (++replayN > list.length) return stopReplay();
     renderChart();
     $('rp-btn').textContent = `⏹ ${replayN}/${list.length} · ${fmtDate(list[replayN - 1].date)}`;
+    if (replayN === 10 || replayN % 25 === 0) { $('rp-btn').textContent = '⭐ ' + $('rp-btn').textContent; burst($('chart').querySelector(`[data-seat="${list[replayN - 1].seat}"]`)); }
   }, Math.min(400, Math.max(60, 4000 / list.length)));
 }
 $('rp-btn').addEventListener('click', replay);
@@ -734,6 +737,14 @@ function autoCat(t) {
 const tcat = t => t.cat || (t.type === 'SHOW' ? 'Show Teater' : autoCat(t));
 const tname = t => t.name.replace(/\s*[-,]\s*\d{1,2}(st|nd|rd|th)?\s+[A-Za-z]{3,}(\s+\d{4})?\s*$/, '').trim() || t.name; // nama tanpa tanggal
 
+// hubungkan riwayat show dengan tiket lotre di tanggal & sesi yang sama
+function lotInfo(r) {
+  const ts = tickets.filter(t => (t.type === 'SHOW' || tcat(t) === 'Theater Event') && t.date === r.date && (!r.sesi || (parseInt(t.start) < 17 ? 'Siang' : 'Malam') === r.sesi));
+  if (!ts.length) return '';
+  const lose = ts.filter(t => raffleOf(t.raffle) === 'lose').length, win = ts.length - lose;
+  return `🎟️ Lotre: ${ts.length} percobaan · ${win} menang${lose ? ` · ${lose} kalah` : ''}`;
+}
+const lotHtml = r => { const t = lotInfo(r); return t ? `<div class="lt">${esc(t)}</div>` : ''; };
 let evCat = '', evLimit = 12, rkAll = false;
 const EV_PAGE = 12; // jumlah seri per tampilan
 let dataLoaded = false; // false selama data masih dimuat
@@ -746,13 +757,20 @@ function renderTicketsRaw() {
   const names = {SHOW: 'Show teater', EXCLUSIVE: 'Exclusive / M&G', EVENT: 'Event'};
   const card = (l, v, s, c = '') => `<div class="stat${c}"><div class="sv">${esc(v)}</div><div class="sl">${l}</div>${s ? `<div class="ss">${esc(s)}</div>` : ''}</div>`;
   const sh = ls.by['Show teater'], shDone = sh ? sh.win + sh.lose : 0;
-  const shCard = shDone ? card('Persentase menang (show teater)', (sh.win / shDone * 100).toFixed(1).replace(/\.0$/, '') + '%', `${sh.win} dari ${shDone} yang sudah diundi`, ' main') : '';
+  const bs = {}; // lotre per setlist (tiket show)
+  tickets.filter(t => t.type === 'SHOW').forEach(t => { const o = bs[t.name] || (bs[t.name] = {win: 0, lose: 0}); raffleOf(t.raffle) === 'lose' ? o.lose++ : o.win++; });
+  const bsHtml = Object.keys(bs).length ? '<h3 class="sec2">Lotre per setlist</h3>' + Object.entries(bs).map(([n, o]) => [n, o, o.win + o.lose]).sort((a, b) => b[2] - a[2]).map(([n, o, d]) => {
+    const p = o.win / d * 100;
+    return `<div class="ls-r"><span class="ls-n">${esc(n)}</span><span class="ls-b"><i style="width:${p}%"></i></span><span class="ls-c">${o.win} menang · ${o.lose} kalah (${Math.round(p)}%)</span></div>`;
+  }).join('') : '';
+  const shPct = shDone ? sh.win / shDone * 100 : 0;
+  const shCard = shDone ? `<div class="stat main"><div class="ring" style="--p:${shPct.toFixed(1)}"><svg viewBox="0 0 36 36" aria-hidden="true"><circle class="rb" cx="18" cy="18" r="15.9"/><circle class="rf" cx="18" cy="18" r="15.9" pathLength="100"/></svg><span>${shPct.toFixed(1).replace(/\.0$/, '')}%</span></div><div class="sl">Persentase menang (show teater)</div><div class="ss">${sh.win} dari ${shDone} yang sudah diundi</div></div>` : '';
   box.innerHTML = !ls.total ? '<div class="empty">Belum ada data lotre</div>' :
     `<div class="lot-cards">${card('Entri lotre', ls.total)}${card(ls.inferred ? 'Menang (perkiraan)' : 'Menang', ls.win, refs.length ? `${refs.length} dibatalkan & di-refund` : '')}${card('Kalah', ls.lose)}${shCard}${card('Persentase menang (semua jenis)', done ? ls.pct.toFixed(1) + '%' : '-', done ? `${ls.win} dari ${done} yang sudah diundi` : '')}</div>` +
     Object.entries(ls.by).map(([ty, b]) => {
       const d = b.win + b.lose, p = d ? b.win / d * 100 : 0;
       return `<div class="lot-r"><span>${names[ty] || esc(ty)}</span><span class="sl-bar"><i style="width:${p}%"></i></span><span>${b.win ? b.win + ' menang' : '0 menang terdeteksi'} · ${b.lose} kalah${d && b.win ? ` (${p.toFixed(0)}%)` : ''}</span></div>`;
-    }).join('') +
+    }).join('') + bsHtml +
     (ls.inferred ? '<p class="lot-n">Menang dihitung dari tiket tanpa status kalah pada show/event yang punya lotre, karena jkt48.com tidak memberi status menang. Tiket yang dibeli langsung tanpa lotre ikut terhitung.</p>' : '') +
     (refs.length ? `<p class="lot-n">Menang undian tapi dibatalkan dan di-refund: ${refs.map(t => esc(fmtDate(t.date) + ' ' + t.name)).join(', ')}.</p>` : '') +
     (ls.other ? `<p class="lot-n">Status lain (belum diundi / tidak dikenali): ${Object.entries(ls.raw).map(([k, n]) => `${esc(k)} ×${n}`).join(', ')}</p>` : '');
@@ -785,15 +803,17 @@ function renderTicketsRaw() {
       : c === 'win' ? '<span class="chip win">Menang lotre</span>' : tcat(t) === 'Video Call' ? '' : '<span class="chip no">Tidak terpakai</span>';
   };
   const groupHtml = (g, i = 0) => {
+    const nx = g.items.filter(t => t.date > td).sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start))[0];
+    const cdl = nx ? ` · <span class="cd-live" data-t="${nx.date}T${nx.start || '00:00:00'}"></span>` : '';
     const n = g.items.length, usd = g.items.filter(t => t.used > 0).length, up = g.items.filter(t => t.date > td).length, mem = {};
     g.items.forEach(t => { if (t.member) mem[t.member] = (mem[t.member] || 0) + 1; });
     const ms = Object.entries(mem).sort((a, b) => b[1] - a[1]), first = g.items[n - 1].date;
     const range = first === g.last ? fmtDate(g.last) : `${fmtDate(first)} – ${fmtDate(g.last)}`;
     const chip = up ? `<span class="chip soon">Mendatang${up < n ? ` ${up}/${n}` : ''}</span>` : usd ? `<span class="chip ok">Hadir${usd < n ? ` ${usd}/${n}` : ''}</span>`
       : g.items.every(t => raffleOf(t.raffle) === 'lose') ? '<span class="chip lose">Kalah lotre</span>' : g.cat === 'Video Call' ? '' : '<span class="chip no">Tidak terpakai</span>';
-    return `<details class="ev-g" style="--i:${Math.min(i, 14)}"><summary>
+    return `<details class="ev-g" data-k="${esc(g.cat + '|' + g.name)}" style="--i:${Math.min(i, 14)}"><summary>
       <div class="tl-d"><b>${esc(g.last.slice(8))}</b><span>${MON_ID[+g.last.slice(5, 7) - 1]} ${esc(g.last.slice(2, 4))}</span></div>
-      <div class="tl-b"><b>${esc(g.name)}</b><div class="hn">${esc(g.cat)} · ${n} sesi · ${esc(range)}</div>
+      <div class="tl-b"><b>${esc(g.name)}</b><div class="hn">${esc(g.cat)} · ${n} sesi · ${esc(range)}${cdl}</div>
         ${ms.length ? `<div class="mchips">${ms.slice(0, 5).map(([m, c]) => `<span class="mchip">${esc(m)}${c > 1 ? ' ×' + c : ''}</span>`).join('')}${ms.length > 5 ? `<span class="mchip">+${ms.length - 5}</span>` : ''}</div>` : ''}</div>
       ${chip}</summary>
       <div class="ev-d">${g.items.map(t => `<div class="ev-t"><span>${esc(fmtDate(t.date))}${t.start ? ' · ' + esc(t.start.slice(0, 5)) : ''}</span><span>${esc([t.member, t.lane, t.session].filter(Boolean).join(' · ')) || '–'}${t.bought > 1 ? ' · ' + t.bought + ' tiket' : ''}</span>${chipOf(t)}</div>`).join('')}</div></details>`;
@@ -812,10 +832,10 @@ function renderTicketsRaw() {
   const list = scope.filter(t => (!cur || t.member === cur) && (!st || t.used > 0));
   const groups = grouper(list);
   $('ev-info').textContent = `${groups.length} seri · ${list.length} tiket`;
-  $('ev-list').innerHTML = groups.length ? groups.slice(0, evLimit).map(groupHtml).join('') : '<div class="empty">Tidak ada tiket yang cocok</div>';
+  flipRender($('ev-list'), '.ev-g', it => it.dataset.k, () => { $('ev-list').innerHTML = groups.length ? groups.slice(0, evLimit).map(groupHtml).join('') : '<div class="empty">Tidak ada tiket yang cocok</div>'; });
   $('ev-more').hidden = groups.length <= evLimit;
   $('ev-more').textContent = `Tampilkan ${Math.max(0, Math.min(EV_PAGE, groups.length - evLimit))} lagi (sisa ${Math.max(0, groups.length - evLimit)})`;
-  tweenBars('rk', $('ev-rank'), '.rk', '.sl-bar i', 'width', it => it.dataset.m);
+  tickCountdown();
 }
 
 const resetEv = () => { evLimit = EV_PAGE; renderTickets(); };
@@ -834,6 +854,7 @@ function playEnter(el) {
   el.classList.add('enter');
   clearTimeout(el._enT);
   el._enT = setTimeout(() => el.classList.remove('enter'), 2600);
+  watchReveal(el);
 }
 
 // ================= Klik grafik / kalender -> filter peta =================
@@ -850,7 +871,6 @@ function applyChartFilter(kind, val) {
     $('flt-from').value = filter.from; $('flt-to').value = filter.to;
   }
   renderChart();
-  const c = $('chart'); c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); setTimeout(() => c.classList.remove('flash'), 1400); // kursi yang cocok berdenyut
   $('filters').scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start'});
 }
 [['rchart', 'row', 'data-row'], ['cal', 'd', 'data-d'], ['mchart', 'mo', 'data-mo']].forEach(([id, kind, attr]) => {
@@ -940,25 +960,6 @@ const barMem = {}, numMem = {};
 let lastSig = null; // tanda filter terakhir, untuk mendeteksi perubahan filter
 const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// bar memanjang/memendek dari nilai sebelumnya ke nilai baru (lewat Web Animations API)
-function tweenBars(id, box, itemSel, barSel, dim, keyOf) {
-  const prev = barMem[id] || {}, next = {}, skip = calm() || replayN !== null || box.closest('.enter');
-  box.querySelectorAll(itemSel).forEach((it, i) => {
-    const bar = it.querySelector(barSel);
-    if (!bar) return;
-    const key = keyOf(it, i), v = parseFloat(bar.style[dim]) || 0;
-    next[key] = v;
-    if (!skip && prev[key] !== undefined && prev[key] !== v) {
-      bar.animate([{[dim]: prev[key] + '%'}, {[dim]: v + '%'}], {duration: 650, easing: 'cubic-bezier(.2,.8,.2,1)'});
-    }
-  });
-  barMem[id] = next;
-}
-function tweenAll() {
-  tweenBars('sl', $('sl-chart'), '.sl-row', '.sl-bar i', 'width', it => it.dataset.setlist);
-  tweenBars('rw', $('rchart'), '.mc', '.mc-b i', 'height', (it, i) => i);
-  tweenBars('mo', $('mchart'), '.mc', '.mc-b i', 'height', (it, i) => i);
-}
 
 // angka kartu statistik berhitung dari nilai lama ke nilai baru saat filter berubah
 function tweenNums(id, box) {
@@ -987,4 +988,101 @@ function playRefresh() {
   c.classList.add('refresh');
   clearTimeout(c._rf);
   c._rf = setTimeout(() => c.classList.remove('refresh'), 1100);
+}
+
+// ================= Animasi lanjutan: tampil saat terlihat, daftar bergeser, tab meluncur, pil filter, hitung mundur, kembang api =================
+const REVEAL = ['sl-chart', 'rchart', 'cal', 'mchart', 'ev-rank', 'lot'];
+const revealIO = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  const el = e.target;
+  revealIO.unobserve(el);
+  el.classList.add('shown');
+  clearTimeout(el._sh);
+  el._sh = setTimeout(() => el.classList.remove('shown'), 2600);
+}), {threshold: 0.15}) : null;
+function watchReveal(root) { // animasi bar/kalender/cincin baru jalan saat bagiannya benar-benar terlihat
+  REVEAL.forEach(id => {
+    const el = $(id);
+    if (!el || (root && !root.contains(el))) return;
+    el.classList.remove('shown');
+    if (revealIO) revealIO.observe(el);
+    else { el.classList.add('shown'); setTimeout(() => el.classList.remove('shown'), 2600); }
+  });
+}
+
+// daftar bergeser ke posisi baru (FLIP), item baru memudar masuk
+function flipRender(box, itemSel, keyOf, doRender) {
+  if (calm() || !box.offsetParent || box.closest('.enter')) { doRender(); return; }
+  const first = new Map();
+  box.querySelectorAll(itemSel).forEach(el => first.set(keyOf(el), el.getBoundingClientRect()));
+  doRender();
+  if (!first.size) return;
+  box.querySelectorAll(itemSel).forEach(el => {
+    const a = first.get(keyOf(el)), b = el.getBoundingClientRect();
+    if (!a) el.animate([{opacity: 0, transform: 'translateY(8px)'}, {opacity: 1, transform: 'none'}], {duration: 300});
+    else if (a.left !== b.left || a.top !== b.top) el.animate([{transform: `translate(${a.left - b.left}px, ${a.top - b.top}px)`}, {transform: 'none'}], {duration: 350, easing: 'cubic-bezier(.2,.8,.2,1)'});
+  });
+}
+
+// penanda tab aktif yang meluncur
+function moveInd(instant) {
+  const bar = document.querySelector('.tabbar'), on = bar && bar.querySelector('.tab.on');
+  if (!on) return;
+  let ind = bar.querySelector('.tab-ind');
+  if (!ind) { ind = document.createElement('i'); ind.className = 'tab-ind'; bar.prepend(ind); instant = true; }
+  if (instant) ind.style.transition = 'none';
+  ind.style.width = on.offsetWidth + 'px';
+  ind.style.height = on.offsetHeight + 'px';
+  ind.style.transform = `translate(${on.offsetLeft}px, ${on.offsetTop}px)`;
+  if (instant) { void ind.offsetWidth; ind.style.transition = ''; }
+}
+document.querySelector('.tabbar')?.addEventListener('click', () => requestAnimationFrame(() => { moveInd(); syncFbar(); }));
+if (document.querySelector('.tabbar')) {
+  const ro = new ResizeObserver(() => moveInd(true)); // lebar tab berubah saat angka jumlah muncul
+  document.querySelectorAll('.tab').forEach(t => ro.observe(t));
+  window.addEventListener('resize', () => moveInd(true));
+  moveInd(true);
+}
+
+// pil pemberitahuan filter aktif (hanya di halaman publik)
+const fbar = document.querySelector('.tabbar') ? document.body.appendChild(Object.assign(document.createElement('div'), {id: 'fbar'})) : null;
+fbar?.setAttribute('role', 'status');
+fbar?.addEventListener('click', e => { if (e.target.closest('button')) $('flt-reset').click(); });
+function syncFbar() {
+  if (!fbar) return;
+  const parts = [];
+  if (filter.row) parts.push('Baris ' + filter.row);
+  if (filter.setlist) parts.push(filter.setlist);
+  if (filter.member) parts.push(filter.member);
+  if (filter.from || filter.to) parts.push(filter.from === filter.to ? fmtDate(filter.from) : `${filter.from ? fmtDate(filter.from) : '…'} – ${filter.to ? fmtDate(filter.to) : '…'}`);
+  const show = isFiltered() && !$('view-main').hidden;
+  if (show) fbar.innerHTML = `<span>🔎 ${esc(parts.join(' · '))} · <b>${view().length}</b> show</span><button type="button">Reset</button>`;
+  fbar.classList.toggle('on', show);
+}
+
+// hitung mundur tiket mendatang
+function tickCountdown() {
+  document.querySelectorAll('.cd-live').forEach(el => {
+    const ms = new Date(el.dataset.t) - Date.now();
+    if (isNaN(ms)) return;
+    if (ms <= 0) { el.textContent = 'sedang berlangsung'; return; }
+    const d = Math.floor(ms / 864e5), h = Math.floor(ms % 864e5 / 36e5), m = Math.floor(ms % 36e5 / 6e4);
+    el.textContent = d ? `${d} hari ${h} jam lagi` : `${h} jam ${m} menit lagi`;
+  });
+}
+setInterval(tickCountdown, 30000);
+
+// percikan kecil di kursi saat putar ulang mencapai show ke-10, 25, 50, ...
+function burst(el) {
+  if (!el || calm()) return;
+  const r = el.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  for (let i = 0; i < 22; i++) {
+    const p = document.createElement('i');
+    p.className = 'sparkle';
+    p.style.cssText = `left:${cx}px;top:${cy}px;background:${['#ffd23f', '#ff8c00', '#ff2a5f'][i % 3]}`;
+    document.body.appendChild(p);
+    const a = Math.random() * Math.PI * 2, d = 40 + Math.random() * 70;
+    p.animate([{transform: 'translate(0,0) scale(1)', opacity: 1}, {transform: `translate(${Math.cos(a) * d}px,${Math.sin(a) * d}px) scale(0)`, opacity: 0}],
+      {duration: 700 + Math.random() * 300, easing: 'cubic-bezier(.2,.8,.2,1)'}).onfinish = () => p.remove();
+  }
 }
