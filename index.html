@@ -59,6 +59,7 @@
     <div id="ev-list"></div>
     <button type="button" class="btn-s" id="ev-more" hidden>Tampilkan lebih banyak</button>
   </div>
+  <footer id="foot" class="foot"></footer>
 </div>
 
 <div class="overlay" id="seat-modal">
@@ -87,6 +88,7 @@ async function init() {
     records = arr.map(sanitize).filter(r => SEATS.has(r.seat)); // kursi di luar peta dilewati, jadi total = yang tampil di peta
     tickets = (Array.isArray(json.tickets) ? json.tickets : []).map(sanitizeTicket).filter(t => t.date);
     dataLoaded = true;
+    $('foot').textContent = json.updated ? 'Data diperbarui: ' + fmtDate(json.updated) : '';
     $('status').textContent = '';
     renderChart();
   } catch (err) {
