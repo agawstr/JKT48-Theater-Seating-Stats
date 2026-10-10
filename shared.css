@@ -265,3 +265,22 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 #ev-rank .btn-s{margin:6px 0 0 8px}
 #ev-bar{margin-top:4px}
 @media(max-width:600px){#ev-cats{grid-template-columns:repeat(2,1fr)}}
+
+/* animasi tab & isi tab (item/bar hanya beranimasi saat tab dibuka, lewat kelas .enter) */
+@keyframes tabin{from{opacity:0;transform:translateY(8px)}}
+@keyframes growx{from{transform:scaleX(0)}}
+@keyframes growy{from{transform:scaleY(0)}}
+@keyframes pop{from{opacity:0;transform:scale(.3)}}
+#view-main,#view-gal,#view-tl,#view-ev{animation:tabin .28s ease-out}
+.enter .tl-i,.enter .gi,.enter .ev-g,.enter .ev-c,.enter .sl-row,.enter .rk{animation:rise .4s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0) * 35ms)}
+.enter .sl-bar i{transform-origin:left;animation:growx .7s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0) * 45ms + .15s)}
+.enter .mc-b i{transform-origin:bottom;animation:growy .7s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0) * 40ms + .15s)}
+.enter .cd.on1,.enter .cd.on2,.enter .cd.on3{animation:pop .4s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--d,0) * 20ms + .3s)}
+/* buka-tutup halus untuk detail seri (browser yang belum mendukung ::details-content langsung membuka tanpa transisi) */
+.ev-g{interpolate-size:allow-keywords}
+.ev-g::details-content{block-size:0;overflow:hidden;transition:block-size .3s ease,content-visibility .3s allow-discrete}
+.ev-g[open]::details-content{block-size:auto}
+.ev-g[open] .ev-d{animation:fade .25s ease-out}
+@media(prefers-reduced-motion:reduce){
+#view-main,#view-gal,#view-tl,#view-ev,.enter .tl-i,.enter .gi,.enter .ev-g,.enter .ev-c,.enter .sl-row,.enter .rk,.enter .sl-bar i,.enter .mc-b i,.enter .cd.on1,.enter .cd.on2,.enter .cd.on3,.ev-g[open] .ev-d{animation:none}
+.ev-g::details-content{transition:none}}
