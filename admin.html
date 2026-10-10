@@ -70,6 +70,10 @@ summary{cursor:pointer;color:#ff8c00;font-size:13px;font-weight:600}
 .cat-n{flex:1;min-width:0;font-size:13px}
 .cat-n small{display:block;color:#a1a1aa;font-size:11px}
 .cat-r select{width:auto;max-width:55%}
+.pubopt{flex-basis:100%;width:100%;display:flex;flex-direction:column;gap:6px;margin-top:10px;padding:12px;border:1px solid #3d222e;border-radius:10px;font-size:13px;box-sizing:border-box}
+.pubopt label{display:flex;gap:8px;align-items:center}
+.pubopt input{width:auto}
+.pubopt small{color:#a1a1aa}
 </style>
 </head>
 <body>
@@ -135,6 +139,11 @@ summary{cursor:pointer;color:#ff8c00;font-size:13px;font-weight:600}
         <div class="tools">
           <button class="btn" id="btn-zip">⬇ Unduh paket (ZIP)</button>
           <button class="btn" id="btn-export">⬇ Backup lengkap (JSON)</button>
+          <div class="pubopt"><b>Opsi publikasi (untuk paket ZIP)</b>
+            <label><input type="checkbox" id="po-tickets" checked> Sertakan data tiket (lotre, meet &amp; greet, event)</label>
+            <label><input type="checkbox" id="po-photos" checked> Sertakan foto</label>
+            <label><input type="checkbox" id="po-mask"> Samarkan nama member (jadi inisial, mis. A.R.)</label>
+            <small>Repo publik: isi data.json dan folder photos/ bisa dilihat siapa saja. Backup lengkap tidak terpengaruh opsi ini.</small></div>
           <button class="btn" id="btn-import">⬆ Restore (JSON)</button>
           <button class="btn" id="btn-jk">🎫 Impor dari jkt48.com</button>
           <button class="btn" id="btn-cat">🏷️ Kategori &amp; status tiket</button>
@@ -546,11 +555,22 @@ function makeZip(files) {
   return new Blob([...parts, ...cen, new Uint8Array([0x50, 0x4b, 5, 6, 0, 0, 0, 0, ...n16(files.length), ...n16(files.length), ...n32(cs), ...n32(off), 0, 0])], {type: 'application/zip'});
 }
 // Paket publish: data.json tanpa base64 + folder photos/ berisi foto sebagai file
+const POK = KEY + '_pub';
+const pubOpts = () => { try { return JSON.parse(localStorage.getItem(POK)) || {}; } catch (e) { return {}; } };
+['tickets', 'photos', 'mask'].forEach(k => {
+  const el = $('po-' + k), o = pubOpts();
+  if (k in o) el.checked = o[k];
+  el.addEventListener('change', () => { const x = pubOpts(); x[k] = el.checked; localStorage.setItem(POK, JSON.stringify(x)); });
+});
 $('btn-zip').addEventListener('click', () => {
   const files = [];
+  const opt = {tickets: $('po-tickets').checked, photos: $('po-photos').checked, mask: $('po-mask').checked};
+  const mask = n => n ? n.split(/\s+/).map(w => w[0].toUpperCase()).join('.') + '.' : '';
   const pub = records.map(r => {
     const o = {...r};
     for (const K of KINDS) {
+      if (opt.mask) o[K.m] = mask(o[K.m]);
+      if (!opt.photos) { o[K.p] = ''; continue; }
       const m = String(o[K.p] || '').match(/^data:image\/(\w+);base64,(.*)$/s);
       if (!m) continue;
       const name = `photos/${r.id}-${K.k}.${m[1] === 'jpeg' ? 'jpg' : m[1]}`;
@@ -559,7 +579,7 @@ $('btn-zip').addEventListener('click', () => {
     }
     return o;
   });
-  files.unshift({name: 'data.json', data: new TextEncoder().encode(JSON.stringify({records: pub, tickets}, null, 1))});
+  files.unshift({name: 'data.json', data: new TextEncoder().encode(JSON.stringify({records: pub, tickets: opt.tickets ? tickets.map(t => opt.mask ? {...t, member: mask(t.member)} : t) : [], updated: new Date().toISOString().slice(0, 10)}, null, 1))});
   dl(makeZip(files), 'data-publish.zip');
   markExported();
 });
