@@ -98,6 +98,7 @@ document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () =>
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t === b));
   ['main', 'gal', 'tl', 'ev'].forEach(k => $('view-' + k).hidden = b.dataset.tab !== k);
   centerChart();
+  playEnter($('view-' + b.dataset.tab)); // animasi masuk isi tab
 }));
 init();
 </script>
