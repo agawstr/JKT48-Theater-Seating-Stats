@@ -92,6 +92,7 @@ function renderChart() {
   const first = !introDone && records.length > 0; // animasi masuk hanya sekali
   introDone = introDone || first; intro = first;
   $('chart').classList.toggle('intro', first);
+  if (first) playEnter($('view-main'));
   renderFilters(); renderStats(); if (first) countUp($('stats'));
   renderSetlists(); renderRows(); renderCal(); renderGallery(); renderTimeline(); renderCover(); renderLast(); renderTickets(); syncUrl();
   requestAnimationFrame(centerChart);
@@ -289,8 +290,8 @@ function renderSetlists() {
   records.filter(r => matchF(r, true)).forEach(r => { const k = r.setlist || '(tanpa setlist)'; o[k] = (o[k] || 0) + 1; });
   const rows = Object.entries(o).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
   const max = rows.length ? rows[0][1] : 1;
-  $('sl-chart').innerHTML = rows.length ? rows.map(([k, n]) => `
-    <button type="button" class="sl-row${filter.setlist === k ? ' on' : ''}" data-setlist="${esc(k)}" title="Klik untuk filter peta">
+  $('sl-chart').innerHTML = rows.length ? rows.map(([k, n], i) => `
+    <button type="button" style="--i:${Math.min(i, 14)}" class="sl-row${filter.setlist === k ? ' on' : ''}" data-setlist="${esc(k)}" title="Klik untuk filter peta">
       <span class="sl-n">${esc(k)}</span><span class="sl-bar"><i style="width:${n / max * 100}%"></i></span><span class="sl-c">${n}×</span>
     </button>`).join('') : '<div class="empty">Belum ada data</div>';
 }
@@ -401,7 +402,7 @@ function renderCal() {
   for (let idx = pad; d.getFullYear() === calYear; d.setDate(d.getDate() + 1), idx++) {
     if (d.getDate() === 1) labels += `<span style="left:${Math.floor(idx / 7) / weeks * 100}%">${mon[d.getMonth()]}</span>`; // label tepat di minggu pertama bulan
     const k = `${calYear}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`, n = cnt[k] || 0;
-    cells += `<i class="cd${n ? ' on' + Math.min(n, 3) : ''}" title="${fmtDate(k)}${n ? ': ' + n + ' show' : ''}"></i>`;
+    cells += `<i class="cd${n ? ' on' + Math.min(n, 3) : ''}"${n ? ` style="--d:${Math.floor(idx / 7)}"` : ''} title="${fmtDate(k)}${n ? ': ' + n + ' show' : ''}"></i>`;
   }
   $('cal').innerHTML = `<div class="cal-m">${labels}</div><div class="cal-g" style="--w:${weeks}">${cells}</div>`;
   // kunjungan per bulan di tahun yang sama (ikut filter)
@@ -409,7 +410,7 @@ function renderCal() {
   view().forEach(r => { if (r.date.startsWith(calYear + '-')) { mc[+r.date.slice(5, 7) - 1]++; ms[+r.date.slice(5, 7) - 1] += r.harga; } });
   const mx = Math.max(...mc, 1);
   $('mc-h').textContent = `Kunjungan per bulan (${calYear})`;
-  $('mchart').innerHTML = mc.map((n, i) => `<div class="mc" title="${mon[i]}: ${n} show${ms[i] ? ' · ' + rupiah(ms[i]) : ''}"><span class="mc-n">${n || ''}</span><div class="mc-b"><i style="height:${n / mx * 100}%"></i></div><span class="mc-l">${mon[i]}</span></div>`).join('');
+  $('mchart').innerHTML = mc.map((n, i) => `<div class="mc" style="--i:${i}" title="${mon[i]}: ${n} show${ms[i] ? ' · ' + rupiah(ms[i]) : ''}"><span class="mc-n">${n || ''}</span><div class="mc-b"><i style="height:${n / mx * 100}%"></i></div><span class="mc-l">${mon[i]}</span></div>`).join('');
 }
 $('cal-nav').addEventListener('click', e => {
   const b = e.target.closest('[data-cy]');
@@ -429,7 +430,7 @@ function renderGallery() {
   const list = cur ? items.filter(x => x.member === cur) : items;
   $('g-info').textContent = `${list.length} foto`;
   if ($('g-tab') && dataLoaded) $('g-tab').textContent = `Galeri (${items.length})`;
-  g.innerHTML = list.length ? list.map(x => `<figure class="gi"><img src="${esc(x.photo)}" data-photo alt="${esc(x.label)} dengan ${esc(x.member)}" loading="lazy">
+  g.innerHTML = list.length ? list.map((x, i) => `<figure class="gi" style="--i:${Math.min(i, 14)}"><img src="${esc(x.photo)}" data-photo alt="${esc(x.label)} dengan ${esc(x.member)}" loading="lazy">
     <figcaption><b>${esc(x.member) || '-'}</b><span>${x.icon} ${esc(x.label)}</span><span>${esc(x.r.setlist)} · ${esc(fmtDate(x.r.date))}</span></figcaption></figure>`).join('')
     : '<div class="empty">Belum ada foto</div>';
 }
@@ -532,7 +533,7 @@ function renderTimeline() {
   if ($('tl-info')) $('tl-info').textContent = q ? `${list.length} dari ${all.length} show` : '';
   const mon = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
   const numOf = new Map(all.slice().reverse().map((r, i) => [r.id, i + 1])); // nomor urut show sepanjang masa
-  let cur = '', curY = '', html = '';
+  let cur = '', curY = '', html = '', cnt = 0;
   for (const r of list) {
     const ym = r.date.slice(0, 7), n = numOf.get(r.id), ms = n === 1 || n === 10 || n % 25 === 0; // milestone
     if (r.date.slice(0, 4) !== curY) { curY = r.date.slice(0, 4); html += `<div class="tl-yh">${esc(curY) || '–'}</div>`; }
@@ -540,7 +541,7 @@ function renderTimeline() {
       cur = ym;
       html += `<h3 class="tl-mh">${/^\d{4}-\d{2}$/.test(ym) ? mon[+ym.slice(5) - 1] + ' ' + ym.slice(0, 4) : 'Tanpa tanggal'}</h3>`;
     }
-    html += `<div class="tl-i${ms ? ' ms' : ''}"><div class="tl-d"><b>${esc(r.date.slice(8)) || '–'}</b><span>${esc(r.sesi)}</span></div>
+    html += `<div class="tl-i${ms ? ' ms' : ''}" style="--i:${Math.min(cnt++, 14)}"><div class="tl-d"><b>${esc(r.date.slice(8)) || '–'}</b><span>${esc(r.sesi)}</span></div>
       <div class="tl-b"><b>${esc(r.setlist) || '(tanpa setlist)'}</b>${ms ? `<div class="tl-star">⭐ Show ke-${n}</div>` : ''}${r.harga ? `<div class="hn">🎟️ ${esc(rupiah(r.harga))}${r.tiket ? ' · ' + esc(r.tiket) : ''}</div>` : ''}
         ${extras(r).map(x => `<div class="ht">${x.icon} ${esc(x.label)} dengan ${esc(x.member)}</div>`).join('')}
         ${r.note ? `<div class="hn">"${esc(r.note)}"</div>` : ''}</div>
@@ -581,7 +582,7 @@ function renderRows() {
   const c = {}, keys = Object.keys(COUNTS);
   view().forEach(r => { const k = r.seat[0]; c[k] = (c[k] || 0) + 1; });
   const mx = Math.max(...keys.map(k => c[k] || 0), 1), sum = ks => ks.reduce((a, k) => a + (c[k] || 0), 0);
-  $('rchart').innerHTML = keys.map(k => `<div class="mc" title="Baris ${k}: ${c[k] || 0} kali"><span class="mc-n">${c[k] || ''}</span><div class="mc-b"><i style="height:${(c[k] || 0) / mx * 100}%"></i></div><span class="mc-l">${k}</span></div>`).join('');
+  $('rchart').innerHTML = keys.map((k, i) => `<div class="mc" style="--i:${i}" title="Baris ${k}: ${c[k] || 0} kali"><span class="mc-n">${c[k] || ''}</span><div class="mc-b"><i style="height:${(c[k] || 0) / mx * 100}%"></i></div><span class="mc-l">${k}</span></div>`).join('');
   $('rsum').textContent = `Depan (A–E): ${sum(keys.slice(0, 5))}× · Belakang (F–J): ${sum(keys.slice(5))}×`;
 }
 
@@ -775,14 +776,14 @@ function renderTickets() {
     return t.date > td ? '<span class="chip soon">Mendatang</span>' : t.used > 0 ? '<span class="chip ok">Hadir</span>' : c === 'lose' ? '<span class="chip lose">Kalah lotre</span>'
       : c === 'win' ? '<span class="chip win">Menang lotre</span>' : tcat(t) === 'Video Call' ? '' : '<span class="chip no">Tidak terpakai</span>';
   };
-  const groupHtml = g => {
+  const groupHtml = (g, i = 0) => {
     const n = g.items.length, usd = g.items.filter(t => t.used > 0).length, up = g.items.filter(t => t.date > td).length, mem = {};
     g.items.forEach(t => { if (t.member) mem[t.member] = (mem[t.member] || 0) + 1; });
     const ms = Object.entries(mem).sort((a, b) => b[1] - a[1]), first = g.items[n - 1].date;
     const range = first === g.last ? fmtDate(g.last) : `${fmtDate(first)} – ${fmtDate(g.last)}`;
     const chip = up ? `<span class="chip soon">Mendatang${up < n ? ` ${up}/${n}` : ''}</span>` : usd ? `<span class="chip ok">Hadir${usd < n ? ` ${usd}/${n}` : ''}</span>`
       : g.items.every(t => raffleOf(t.raffle) === 'lose') ? '<span class="chip lose">Kalah lotre</span>' : g.cat === 'Video Call' ? '' : '<span class="chip no">Tidak terpakai</span>';
-    return `<details class="ev-g"><summary>
+    return `<details class="ev-g" style="--i:${Math.min(i, 14)}"><summary>
       <div class="tl-d"><b>${esc(g.last.slice(8))}</b><span>${MON_ID[+g.last.slice(5, 7) - 1]} ${esc(g.last.slice(2, 4))}</span></div>
       <div class="tl-b"><b>${esc(g.name)}</b><div class="hn">${esc(g.cat)} · ${n} sesi · ${esc(range)}</div>
         ${ms.length ? `<div class="mchips">${ms.slice(0, 5).map(([m, c]) => `<span class="mchip">${esc(m)}${c > 1 ? ' ×' + c : ''}</span>`).join('')}${ms.length > 5 ? `<span class="mchip">+${ms.length - 5}</span>` : ''}</div>` : ''}</div>
@@ -798,7 +799,7 @@ function renderTickets() {
   scope.forEach(t => { if (t.member) { mc[t.member] = (mc[t.member] || 0) + 1; mt[t.member] = (mt[t.member] || 0) + t.bought; } });
   const rankAll = Object.entries(mc).sort((a, b) => b[1] - a[1]), rank = rkAll ? rankAll : rankAll.slice(0, 5), mx = rankAll.length ? rankAll[0][1] : 1;
   $('ev-rank').innerHTML = rank.length ? `<h3 class="sec2">Peringkat member${evCat ? ' · ' + esc(evCat) : ''}</h3>` + rank.map(([m, c], i) =>
-    `<button type="button" class="rk${m === cur ? ' on' : ''}" data-m="${esc(m)}" title="${mt[m]} tiket"><span class="rn">${i + 1}</span><span class="rm">${esc(m)}</span><span class="sl-bar"><i style="width:${c / mx * 100}%"></i></span><span class="rc">${c} sesi</span></button>`).join('') + (rankAll.length > 5 ? `<button type="button" class="btn-s" id="ev-rkmore">${rkAll ? 'Tampilkan 5 teratas' : `Lihat semua (${rankAll.length})`}</button>` : '') : '';
+    `<button type="button" style="--i:${i}" class="rk${m === cur ? ' on' : ''}" data-m="${esc(m)}" title="${mt[m]} tiket"><span class="rn">${i + 1}</span><span class="rm">${esc(m)}</span><span class="sl-bar"><i style="width:${c / mx * 100}%"></i></span><span class="rc">${c} sesi</span></button>`).join('') + (rankAll.length > 5 ? `<button type="button" class="btn-s" id="ev-rkmore">${rkAll ? 'Tampilkan 5 teratas' : `Lihat semua (${rankAll.length})`}</button>` : '') : '';
 
   const list = scope.filter(t => (!cur || t.member === cur) && (!st || t.used > 0));
   const groups = grouper(list);
@@ -814,3 +815,14 @@ $('ev-cats')?.addEventListener('click', e => { const b = e.target.closest('[data
 $('ev-rank')?.addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (b) { const m = $('ev-member'); m.value = m.value === b.dataset.m ? '' : b.dataset.m; resetEv(); } });
 $('ev-more')?.addEventListener('click', () => { evLimit += EV_PAGE; renderTickets(); });
 $('ev-rank')?.addEventListener('click', e => { if (e.target.closest('#ev-rkmore')) { rkAll = !rkAll; renderTickets(); } });
+
+// ================= Animasi isi tab =================
+// kelas .enter dipasang saat tab dibuka (dan saat data pertama tampil), lalu dilepas supaya render ulang (filter, pencarian) tidak mengulang animasi
+function playEnter(el) {
+  if (!el) return;
+  el.classList.remove('enter');
+  void el.offsetWidth; // paksa animasi mulai dari awal
+  el.classList.add('enter');
+  clearTimeout(el._enT);
+  el._enT = setTimeout(() => el.classList.remove('enter'), 2600);
+}
