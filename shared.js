@@ -196,25 +196,29 @@ document.addEventListener('keydown', e => {
 });
 
 // ================= Statistik, filter, legenda, setlist, PNG =================
-const filter = {setlist: '', member: '', from: '', to: ''};
+const filter = {setlist: '', member: '', from: '', to: '', row: ''};
 // filter dibaca dari URL (?setlist=..&member=..&from=YYYY-MM-DD&to=..) supaya hasilnya bisa dibagikan
 new URLSearchParams(location.search).forEach((v, k) => {
   if (!Object.keys(filter).includes(k)) return;
   filter[k] = (k === 'from' || k === 'to') && !/^\d{4}-\d{2}-\d{2}$/.test(v) ? '' : v;
 });
+if (!/^[A-J]$/.test(filter.row)) filter.row = ''; // validasi ?row=
 function syncUrl() {
   const q = new URLSearchParams();
   for (const k in filter) if (filter[k]) q.set(k, filter[k]);
   try { history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); } catch (e) {} // file:// bisa menolak
 }
 const isFiltered = () => Object.values(filter).some(Boolean);
-const matchF = (r, skipSetlist) => (skipSetlist || !filter.setlist || r.setlist === filter.setlist)
+// skip: dimensi filter yang diabaikan (supaya grafik tetap menampilkan pilihan lain yang bisa diklik)
+const matchF = (r, skip = []) => (skip.includes('setlist') || !filter.setlist || r.setlist === filter.setlist)
   && (!filter.member || extras(r).some(x => x.member === filter.member))
-  && (!filter.from || r.date >= filter.from) && (!filter.to || r.date <= filter.to);
-const view = () => { // saat putar ulang: hanya N show pertama menurut tanggal
-  const l = records.filter(r => matchF(r));
+  && (skip.includes('date') || ((!filter.from || r.date >= filter.from) && (!filter.to || r.date <= filter.to)))
+  && (skip.includes('row') || !filter.row || r.seat[0] === filter.row);
+const viewEx = skip => { // saat putar ulang: hanya N show pertama menurut tanggal
+  const l = records.filter(r => matchF(r, skip));
   return replayN === null ? l : l.sort((a, b) => cmp(b, a)).slice(0, replayN);
-}; // record yang lolos filter (dipakai peta)
+};
+const view = () => viewEx([]); // record yang lolos semua filter (dipakai peta)
 
 // warna heatmap: makin sering makin terang
 const HEAT = [
@@ -236,9 +240,9 @@ wrapEl.insertAdjacentHTML('beforebegin', `<div id="last"></div><div id="stats"><
     <button type="button" class="btn-s" id="flt-reset">Reset</button><span id="flt-info"></span>
   </div>`);
 wrapEl.insertAdjacentHTML('afterend', `<div id="legend"></div>
-  <h2 class="sec">Total kunjungan per setlist</h2><div id="sl-chart"></div>
-  <h2 class="sec">Sebaran per baris</h2><div id="rchart"></div><div id="rsum"></div>
-  <h2 class="sec">Kalender kehadiran</h2><div id="cal-nav"></div><div id="cal"></div>
+  <h2 class="sec">Total kunjungan per setlist <small class="hint">· klik untuk memfilter peta</small></h2><div id="sl-chart"></div>
+  <h2 class="sec">Sebaran per baris <small class="hint">· klik untuk memfilter peta</small></h2><div id="rchart"></div><div id="rsum"></div>
+  <h2 class="sec">Kalender kehadiran <small class="hint">· klik untuk memfilter peta</small></h2><div id="cal-nav"></div><div id="cal"></div>
   <h2 class="sec" id="mc-h">Kunjungan per bulan</h2><div id="mchart"></div>`);
 $('flt-from').value = filter.from;
 $('flt-to').value = filter.to;
@@ -253,7 +257,7 @@ function renderFilters() {
   };
   opts('flt-setlist', [...new Set(records.map(r => r.setlist).filter(Boolean))].sort(), 'Semua setlist');
   opts('flt-member', [...new Set(records.flatMap(r => extras(r).map(x => x.member)).filter(Boolean))].sort(), 'Semua member');
-  $('flt-info').textContent = isFiltered() ? `${view().length} dari ${records.length} show cocok` : '';
+  $('flt-info').textContent = isFiltered() ? `${filter.row ? 'Baris ' + filter.row + ' · ' : ''}${view().length} dari ${records.length} show cocok` : '';
 }
 $('filters').addEventListener('change', e => {
   const k = {'flt-setlist': 'setlist', 'flt-member': 'member', 'flt-from': 'from', 'flt-to': 'to'}[e.target.id];
@@ -287,7 +291,7 @@ function renderStats() {
 function renderSetlists() {
   const o = {};
   // ikut filter member & tanggal; filter setlist sendiri diabaikan supaya setlist lain tetap terlihat
-  records.filter(r => matchF(r, true)).forEach(r => { const k = r.setlist || '(tanpa setlist)'; o[k] = (o[k] || 0) + 1; });
+  records.filter(r => matchF(r, ['setlist'])).forEach(r => { const k = r.setlist || '(tanpa setlist)'; o[k] = (o[k] || 0) + 1; });
   const rows = Object.entries(o).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
   const max = rows.length ? rows[0][1] : 1;
   $('sl-chart').innerHTML = rows.length ? rows.map(([k, n], i) => `
@@ -394,7 +398,7 @@ function renderCal() {
   $('wrap-btn').textContent = `✨ Wrapped ${calYear}`;
   $('cal-nav').innerHTML = `<button type="button" class="btn-s" data-cy="-1" ${i <= 0 ? 'disabled' : ''}>‹</button><b>${calYear}</b><button type="button" class="btn-s" data-cy="1" ${i >= calYears.length - 1 ? 'disabled' : ''}>›</button>`;
   const cnt = {};
-  view().forEach(r => cnt[r.date] = (cnt[r.date] || 0) + 1);
+  viewEx(['date']).forEach(r => cnt[r.date] = (cnt[r.date] || 0) + 1);
   const d = new Date(calYear, 0, 1), pad = d.getDay(); // kolom dimulai hari Minggu
   const weeks = Math.ceil((pad + Math.round((new Date(calYear + 1, 0, 1) - d) / 864e5)) / 7);
   const mon = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
@@ -402,15 +406,15 @@ function renderCal() {
   for (let idx = pad; d.getFullYear() === calYear; d.setDate(d.getDate() + 1), idx++) {
     if (d.getDate() === 1) labels += `<span style="left:${Math.floor(idx / 7) / weeks * 100}%">${mon[d.getMonth()]}</span>`; // label tepat di minggu pertama bulan
     const k = `${calYear}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`, n = cnt[k] || 0;
-    cells += `<i class="cd${n ? ' on' + Math.min(n, 3) : ''}"${n ? ` style="--d:${Math.floor(idx / 7)}"` : ''} title="${fmtDate(k)}${n ? ': ' + n + ' show' : ''}"></i>`;
+    cells += `<i class="cd${n ? ' on' + Math.min(n, 3) : ''}${filter.from && filter.to && k >= filter.from && k <= filter.to ? ' sel' : ''}"${n ? ` data-d="${k}" role="button" tabindex="0" aria-label="${fmtDate(k)}" style="--d:${Math.floor(idx / 7)}"` : ''} title="${fmtDate(k)}${n ? ': ' + n + ' show' : ''}"></i>`;
   }
   $('cal').innerHTML = `<div class="cal-m">${labels}</div><div class="cal-g" style="--w:${weeks}">${cells}</div>`;
   // kunjungan per bulan di tahun yang sama (ikut filter)
   const mc = Array(12).fill(0), ms = Array(12).fill(0);
-  view().forEach(r => { if (r.date.startsWith(calYear + '-')) { mc[+r.date.slice(5, 7) - 1]++; ms[+r.date.slice(5, 7) - 1] += r.harga; } });
-  const mx = Math.max(...mc, 1);
-  $('mc-h').textContent = `Kunjungan per bulan (${calYear})`;
-  $('mchart').innerHTML = mc.map((n, i) => `<div class="mc" style="--i:${i}" title="${mon[i]}: ${n} show${ms[i] ? ' · ' + rupiah(ms[i]) : ''}"><span class="mc-n">${n || ''}</span><div class="mc-b"><i style="height:${n / mx * 100}%"></i></div><span class="mc-l">${mon[i]}</span></div>`).join('');
+  viewEx(['date']).forEach(r => { if (r.date.startsWith(calYear + '-')) { mc[+r.date.slice(5, 7) - 1]++; ms[+r.date.slice(5, 7) - 1] += r.harga; } });
+  const mx = Math.max(...mc, 1), mkey = i => calYear + '-' + String(i + 1).padStart(2, '0');
+  $('mc-h').innerHTML = `Kunjungan per bulan (${calYear}) <small class="hint">· klik untuk memfilter peta</small>`;
+  $('mchart').innerHTML = mc.map((n, i) => `<div class="mc${filter.from === mkey(i) + '-01' && filter.to.startsWith(mkey(i)) ? ' on' : ''}"${n ? ` data-mo="${mkey(i)}" role="button" tabindex="0"` : ''} style="--i:${i}" title="${mon[i]}: ${n} show${ms[i] ? ' · ' + rupiah(ms[i]) : ''}"><span class="mc-n">${n || ''}</span><div class="mc-b"><i style="height:${n / mx * 100}%"></i></div><span class="mc-l">${mon[i]}</span></div>`).join('');
 }
 $('cal-nav').addEventListener('click', e => {
   const b = e.target.closest('[data-cy]');
@@ -580,9 +584,9 @@ $('rp-btn').addEventListener('click', replay);
 
 function renderRows() {
   const c = {}, keys = Object.keys(COUNTS);
-  view().forEach(r => { const k = r.seat[0]; c[k] = (c[k] || 0) + 1; });
+  viewEx(['row']).forEach(r => { const k = r.seat[0]; c[k] = (c[k] || 0) + 1; });
   const mx = Math.max(...keys.map(k => c[k] || 0), 1), sum = ks => ks.reduce((a, k) => a + (c[k] || 0), 0);
-  $('rchart').innerHTML = keys.map((k, i) => `<div class="mc" style="--i:${i}" title="Baris ${k}: ${c[k] || 0} kali"><span class="mc-n">${c[k] || ''}</span><div class="mc-b"><i style="height:${(c[k] || 0) / mx * 100}%"></i></div><span class="mc-l">${k}</span></div>`).join('');
+  $('rchart').innerHTML = keys.map((k, i) => `<div class="mc${filter.row === k ? ' on' : ''}"${c[k] ? ` data-row="${k}" role="button" tabindex="0"` : ''} style="--i:${i}" title="Baris ${k}: ${c[k] || 0} kali"><span class="mc-n">${c[k] || ''}</span><div class="mc-b"><i style="height:${(c[k] || 0) / mx * 100}%"></i></div><span class="mc-l">${k}</span></div>`).join('');
   $('rsum').textContent = `Depan (A–E): ${sum(keys.slice(0, 5))}× · Belakang (F–J): ${sum(keys.slice(5))}×`;
 }
 
@@ -826,3 +830,26 @@ function playEnter(el) {
   clearTimeout(el._enT);
   el._enT = setTimeout(() => el.classList.remove('enter'), 2600);
 }
+
+// ================= Klik grafik / kalender -> filter peta =================
+function applyChartFilter(kind, val) {
+  if (kind === 'row') filter.row = filter.row === val ? '' : val;
+  else {
+    let from = val, to = val; // 'd' = satu hari
+    if (kind === 'mo') { // bulan: YYYY-MM
+      const [y, m] = val.split('-').map(Number);
+      from = val + '-01'; to = val + '-' + String(new Date(y, m, 0).getDate()).padStart(2, '0');
+    }
+    const same = filter.from === from && filter.to === to; // klik lagi = lepas filter
+    filter.from = same ? '' : from; filter.to = same ? '' : to;
+    $('flt-from').value = filter.from; $('flt-to').value = filter.to;
+  }
+  renderChart();
+  $('filters').scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start'});
+}
+[['rchart', 'row', 'data-row'], ['cal', 'd', 'data-d'], ['mchart', 'mo', 'data-mo']].forEach(([id, kind, attr]) => {
+  $(id).addEventListener('click', e => { const t = e.target.closest('[' + attr + ']'); if (t) applyChartFilter(kind, t.getAttribute(attr)); });
+  $(id).addEventListener('keydown', e => { // keyboard: Enter / spasi
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[role=button]')) { e.preventDefault(); e.target.click(); }
+  });
+});
