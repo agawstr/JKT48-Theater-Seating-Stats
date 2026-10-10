@@ -129,7 +129,7 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 .cal-m,.cal-g{min-width:700px}
 .cal-m{position:relative;height:18px;font-size:12px;color:#9a9aa4}
 .cal-m span{position:absolute;top:0}
-.cal-g{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,auto);grid-template-columns:repeat(var(--w),1fr);gap:3px}
+.cal-g{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,auto);grid-template-columns:repeat(var(--w),minmax(0,1fr));gap:3px}
 .cd{aspect-ratio:1;background:#2a0f18;border-radius:3px}
 .cd.e{background:none}
 .cd.on1{background:#c96a00}.cd.on2{background:#ff8c00}.cd.on3{background:#ffd23f}
@@ -291,3 +291,37 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 .mc[role=button]:hover .mc-b,.mc.on .mc-b{outline:2px solid #ff2a5f;outline-offset:1px}
 .mc.on .mc-l{color:#ff2a5f;font-weight:800}
 .cd[role=button]:hover,.cd.sel{box-shadow:0 0 0 2px #ff2a5f;position:relative;z-index:1}
+
+/* gerak saat nilai grafik berubah + umpan balik klik */
+.sl-bar i{transition:width .55s cubic-bezier(.2,.8,.2,1)}
+.mc-b i{transition:height .55s cubic-bezier(.2,.8,.2,1)}
+.mc-b,.cd[role=button],.sl-row,.rk,.btn-s{transition:transform .15s,box-shadow .15s,border-color .2s,background .2s}
+.mc[role=button]:active .mc-b{transform:scale(.96)}
+.cd[role=button]:active{transform:scale(.7)}
+.sl-row:active,.rk:active,.ev-c:active{transform:scale(.98)}
+.tab:active,.btn-s:active{transform:scale(.96)}
+@keyframes seatflash{0%{transform:scale(1.22);box-shadow:0 0 0 0 rgba(255,210,63,.8)}100%{transform:scale(1);box-shadow:0 0 0 16px rgba(255,210,63,0)}}
+.flash .seat.visited{animation:seatflash .8s ease-out .35s}
+@media(prefers-reduced-motion:reduce){.sl-bar i,.mc-b i{transition:none}.flash .seat.visited{animation:none}
+.mc[role=button]:active .mc-b,.cd[role=button]:active,.sl-row:active,.rk:active,.ev-c:active,.tab:active,.btn-s:active{transform:none}}
+
+/* animasi klik & perubahan data */
+@keyframes seatpop{0%{transform:scale(.7);opacity:.4}60%{transform:scale(1.12)}100%{transform:none;opacity:1}}
+@keyframes selpulse{0%{box-shadow:0 0 0 0 rgba(255,42,95,.55)}100%{box-shadow:0 0 0 12px rgba(255,42,95,0)}}
+.refresh .seat.visited{animation:seatpop .45s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--r,0) * 28ms)}
+.mc.on .mc-b,.rk.on,.sl-row.on,.ev-c.on,.cd.sel{animation:selpulse .6s ease-out}
+.mc[role=button]:active,.sl-row:active,.rk:active,.ev-c:active,.tab:active{transform:scale(.97)}
+.cd[role=button]:active{transform:scale(.8)}
+.mc,.rk,.sl-row,.ev-c,.tab,.cd{transition:transform .15s,border-color .2s,background .2s}
+@media(prefers-reduced-motion:reduce){.refresh .seat.visited,.mc.on .mc-b,.rk.on,.sl-row.on,.ev-c.on,.cd.sel{animation:none}.mc:active,.sl-row:active,.rk:active,.ev-c:active,.tab:active,.cd[role=button]:active{transform:none}}
+
+/* perapian tampilan */
+*{scrollbar-width:thin;scrollbar-color:#3d222e #140d11}
+html{scroll-padding-top:76px}
+.tabbar{position:sticky;top:0;z-index:30;padding:10px 14px;margin:0 0 16px;background:rgba(13,9,13,.82);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-radius:0 0 16px 16px;flex-wrap:wrap;justify-content:center}
+.tl-mh{top:62px}
+#view-main .sec,#view-ev .sec{padding-top:20px;border-top:1px solid #1d1318}
+#view-ev>.sec:first-child{border-top:none;padding-top:0}
+.sv,.sl-c,.rc,.mc-n,.cov-t span,.ss{font-variant-numeric:tabular-nums}
+h1,.sec,.sec2{text-wrap:balance}
+#cal{padding-bottom:10px}
