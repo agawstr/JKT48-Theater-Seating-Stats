@@ -284,3 +284,10 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 @media(prefers-reduced-motion:reduce){
 #view-main,#view-gal,#view-tl,#view-ev,.enter .tl-i,.enter .gi,.enter .ev-g,.enter .ev-c,.enter .sl-row,.enter .rk,.enter .sl-bar i,.enter .mc-b i,.enter .cd.on1,.enter .cd.on2,.enter .cd.on3,.ev-g[open] .ev-d{animation:none}
 .ev-g::details-content{transition:none}}
+
+/* grafik & kalender yang bisa diklik untuk memfilter peta */
+.hint{font-size:12px;font-weight:500;color:#9a9aa4;margin-left:2px}
+.mc[role=button],.cd[role=button]{cursor:pointer}
+.mc[role=button]:hover .mc-b,.mc.on .mc-b{outline:2px solid #ff2a5f;outline-offset:1px}
+.mc.on .mc-l{color:#ff2a5f;font-weight:800}
+.cd[role=button]:hover,.cd.sel{box-shadow:0 0 0 2px #ff2a5f;position:relative;z-index:1}
