@@ -39,7 +39,7 @@ Responsif untuk HP dan desktop, kontras warna sudah dicek, dan animasi otomatis 
 | `index.html` | Halaman publik (read-only). Membaca `data.json`. |
 | `admin.html` | Halaman untuk mengelola data. Data disimpan di `localStorage` browser. |
 | `data.json` | Data yang ditampilkan di halaman publik, dibuat dari tombol **Unduh paket (ZIP)** di admin. |
-| `photos/` | Foto 2-Shot/Chekicha sebagai file terpisah (ikut di dalam paket ZIP). |
+| `photos/` | Foto 2-Shot/Chekicha sebagai file terpisah (ikut di dalam paket ZIP). Versi kecil untuk galeri ada di `photos/t/`; kalau belum ada, galeri memakai foto penuh. |
 | `shared.js` | Kode bersama: layout kursi, validasi data, peta, statistik, modal, popover, kartu PNG. |
 | `shared.css` | Gaya bersama untuk kedua halaman. |
 
