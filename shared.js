@@ -743,7 +743,23 @@ function lotInfo(r) {
   const ts = tickets.filter(t => (t.type === 'SHOW' || tcat(t) === 'Theater Event') && t.date === r.date && (!r.sesi || (parseInt(t.start) < 17 ? 'Siang' : 'Malam') === r.sesi));
   if (!ts.length) return '';
   const lose = ts.filter(t => raffleOf(t.raffle) === 'lose').length, win = ts.length - lose;
-  return `🎟️ Lotre: ${ts.length} percobaan · ${win} menang${lose ? ` · ${lose} kalah` : ''}`;
+  if (!ts.some(t => t.type === 'SHOW')) return `🎟️ Lotre: ${win} menang${lose ? ` · ${lose} kalah` : ''}`; // event teater (mis. JKT48 School)
+  // aturan: menang OFC = tidak boleh daftar General; kalah OFC lalu daftar General = ada 2 entri; hanya 1 entri kalah = cuma daftar OFC
+  return '🎟️ ' + (win && !lose ? 'Menang di OFC' : win ? 'Kalah di OFC → menang di General' : lose >= 2 ? 'Kalah di OFC & General' : 'Kalah di OFC (tidak daftar General)');
+}
+
+// statistik alur lotre show teater per slot (tanggal + jam + setlist): OFC dulu, lalu General bagi yang kalah
+function lotFlowStats() {
+  const m = new Map();
+  tickets.filter(t => t.type === 'SHOW').forEach(t => {
+    const k = t.date + '|' + t.start + '|' + t.name, o = m.get(k) || {win: 0, lose: 0};
+    raffleOf(t.raffle) === 'lose' ? o.lose++ : o.win++;
+    m.set(k, o);
+  });
+  const s = {n: m.size, ofcWin: 0, genWin: 0, genLose: 0, ofcOnly: 0};
+  m.forEach(o => { if (o.win && !o.lose) s.ofcWin++; else if (o.win) s.genWin++; else if (o.lose >= 2) s.genLose++; else s.ofcOnly++; });
+  s.genTry = s.genWin + s.genLose; s.ofcLose = s.n - s.ofcWin; s.got = s.ofcWin + s.genWin;
+  return s;
 }
 const lotHtml = r => { const t = lotInfo(r); return t ? `<div class="lt">${esc(t)}</div>` : ''; };
 let evCat = '', evLimit = 12, rkAll = false;
@@ -764,6 +780,13 @@ function renderTicketsRaw() {
     const p = o.win / d * 100;
     return `<div class="ls-r"><span class="ls-n">${esc(n)}</span><span class="ls-b"><i style="width:${p}%"></i></span><span class="ls-c">${o.win} menang · ${o.lose} kalah (${Math.round(p)}%)</span></div>`;
   }).join('') : '';
+  const fl = lotFlowStats(), pc = (a, b) => b ? Math.round(a / b * 100) : 0;
+  const flowHtml = fl.n ? '<h3 class="sec2">Alur lotre show teater: OFC → General</h3>' + [
+    ['Tahap OFC', pc(fl.ofcWin, fl.n), `${fl.ofcWin} menang dari ${fl.n} show (${pc(fl.ofcWin, fl.n)}%)`],
+    ['Tahap General', pc(fl.genWin, fl.genTry), `${fl.genWin} menang dari ${fl.genTry} yang didaftar (${pc(fl.genWin, fl.genTry)}%)`],
+    ['Dapat tiket', pc(fl.got, fl.n), `${fl.got} dari ${fl.n} show (${pc(fl.got, fl.n)}%)`]
+  ].map(([l, p, t]) => `<div class="lot-r"><span>${l}</span><span class="sl-bar"><i style="width:${p}%"></i></span><span>${t}</span></div>`).join('') +
+    `<p class="lot-n">${fl.ofcLose} show kalah di OFC: ${fl.genTry} lanjut daftar General (${fl.genWin} menang, ${fl.genLose} kalah) dan ${fl.ofcOnly} hanya mendaftar sekali di OFC.</p>` : '';
   const shPct = shDone ? sh.win / shDone * 100 : 0;
   const shCard = shDone ? `<div class="stat main"><div class="ring" style="--p:${shPct.toFixed(1)}"><svg viewBox="0 0 36 36" aria-hidden="true"><circle class="rb" cx="18" cy="18" r="15.9"/><circle class="rf" cx="18" cy="18" r="15.9" pathLength="100"/></svg><span>${shPct.toFixed(1).replace(/\.0$/, '')}%</span></div><div class="sl">Persentase menang (show teater)</div><div class="ss">${sh.win} dari ${shDone} yang sudah diundi</div></div>` : '';
   box.innerHTML = !ls.total ? '<div class="empty">Belum ada data lotre</div>' :
@@ -771,7 +794,7 @@ function renderTicketsRaw() {
     Object.entries(ls.by).map(([ty, b]) => {
       const d = b.win + b.lose, p = d ? b.win / d * 100 : 0;
       return `<div class="lot-r"><span>${names[ty] || esc(ty)}</span><span class="sl-bar"><i style="width:${p}%"></i></span><span>${b.win ? b.win + ' menang' : '0 menang terdeteksi'} · ${b.lose} kalah${d && b.win ? ` (${p.toFixed(0)}%)` : ''}</span></div>`;
-    }).join('') + bsHtml +
+    }).join('') + flowHtml + bsHtml +
     (ls.inferred ? '<p class="lot-n">Menang dihitung dari tiket tanpa status kalah pada show/event yang punya lotre, karena jkt48.com tidak memberi status menang. Tiket yang dibeli langsung tanpa lotre ikut terhitung.</p>' : '') +
     (refs.length ? `<p class="lot-n">Menang undian tapi dibatalkan dan di-refund: ${refs.map(t => esc(fmtDate(t.date) + ' ' + t.name)).join(', ')}.</p>` : '') +
     (ls.other ? `<p class="lot-n">Status lain (belum diundi / tidak dikenali): ${Object.entries(ls.raw).map(([k, n]) => `${esc(k)} ×${n}`).join(', ')}</p>` : '');
