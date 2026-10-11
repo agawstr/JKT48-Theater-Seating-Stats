@@ -36,6 +36,8 @@ const normSeat = s => {
   return m ? m[1] + '-' + Number(m[2]) : '';
 };
 const okPhoto = p => typeof p === 'string' && (p.startsWith('data:image/') || /^https?:\/\//i.test(p) || /^photos\/[\w.-]+$/.test(p)); // data URL, URL, atau file di folder photos/
+// foto penuh: photos/X.jpg, versi kecil (untuk galeri/modal): photos/t/X.jpg; kalau thumbnail belum ada, otomatis memakai foto penuh
+const thumbOf = p => /^photos\/[\w.-]+$/.test(p) ? p.replace('photos/', 'photos/t/') : p;
 const KINDS = [
   {k:'ts', q:'2-Shot?', name:'2-Shot', icon:'📸', f:'twoshot', t:'tsType', m:'member', p:'photo',
    types:[['birthday','Birthday 2-Shot'],['roulette','2-Shot Roulette']], short:{birthday:'Birthday 2-Shot', roulette:'2-Shot'}},
@@ -126,7 +128,7 @@ function openSeat(code) {
       <b>${esc(r.setlist)}</b>
       <div class="hd">${esc(fmtDate(r.date))}${r.sesi ? ' · ' + r.sesi : ''}</div>
       ${r.note ? `<div class="hn">"${esc(r.note)}"</div>` : ''}
-      ${extras(r).map(x => `<div class="ht">${x.icon} ${esc(x.label)} dengan ${esc(x.member)}</div>${x.photo ? `<img src="${esc(x.photo)}" data-photo alt="Foto" loading="lazy">` : ''}`).join('')}
+      ${extras(r).map(x => `<div class="ht">${x.icon} ${esc(x.label)} dengan ${esc(x.member)}</div>${x.photo ? `<img src="${esc(thumbOf(x.photo))}" data-full="${esc(x.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="Foto" loading="lazy">` : ''}`).join('')}
       ${r.harga ? `<div class="hn">🎟️ ${esc(rupiah(r.harga))}${r.tiket ? ' · ' + esc(r.tiket) : ''}</div>` : ''}
       ${lotHtml(r)}
       <button type="button" class="btn-s share" data-share="${r.id}">📤 Bagikan kartu</button>
@@ -188,7 +190,7 @@ $('seat-close').addEventListener('click', () => closeEl('seat-modal'));
 $('seat-modal').addEventListener('click', e => { if (e.target.id === 'seat-modal') closeEl('seat-modal'); });
 document.addEventListener('click', e => {
   const im = e.target.closest('img[data-photo]');
-  if (im) { $('lb-img').src = im.src; openEl('lightbox'); }
+  if (im) { $('lb-img').src = im.dataset.full || im.src; openEl('lightbox'); } // lightbox selalu foto penuh
 });
 $('lightbox').addEventListener('click', () => closeEl('lightbox'));
 
@@ -441,7 +443,7 @@ function renderGallery() {
   const list = cur ? items.filter(x => x.member === cur) : items;
   $('g-info').textContent = `${list.length} foto`;
   if ($('g-tab') && dataLoaded) $('g-tab').textContent = `Galeri (${items.length})`;
-  g.innerHTML = list.length ? list.map((x, i) => `<figure class="gi" style="--i:${Math.min(i, 14)}"><img src="${esc(x.photo)}" data-photo alt="${esc(x.label)} dengan ${esc(x.member)}" loading="lazy">
+  g.innerHTML = list.length ? list.map((x, i) => `<figure class="gi" style="--i:${Math.min(i, 14)}"><img src="${esc(thumbOf(x.photo))}" data-full="${esc(x.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="${esc(x.label)} dengan ${esc(x.member)}" loading="lazy">
     <figcaption><b>${esc(x.member) || '-'}</b><span>${x.icon} ${esc(x.label)}</span><span>${esc(x.r.setlist)} · ${esc(fmtDate(x.r.date))}</span></figcaption></figure>`).join('')
     : '<div class="empty">Belum ada foto</div>';
 }
@@ -671,7 +673,7 @@ function renderLast() {
   const ago = isNaN(d) ? '' : d < 0 ? `${-d} hari lagi` : d === 0 ? 'Hari ini' : `${d} hari yang lalu`;
   const ph = extras(r).find(x => x.photo);
   el.innerHTML = `<div class="last-c">
-    ${ph ? `<img src="${esc(ph.photo)}" alt="Foto show terakhir" data-photo>` : `<div class="last-s">${esc(r.seat)}</div>`}
+    ${ph ? `<img src="${esc(thumbOf(ph.photo))}" data-full="${esc(ph.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="Foto show terakhir">` : `<div class="last-s">${esc(r.seat)}</div>`}
     <div class="last-b"><span class="last-l">Terakhir nonton</span><b>${esc(r.setlist) || '(tanpa setlist)'}</b>
       <span>${esc(fmtDate(r.date))}${r.sesi ? ' · ' + esc(r.sesi) : ''} · Kursi <button type="button" class="seat-badge tl-s" data-seat="${esc(r.seat)}">${esc(r.seat)}</button></span></div>
     <div class="last-a">${esc(ago)}</div></div>`;
@@ -785,7 +787,7 @@ function renderTicketsRaw() {
     ['Tahap OFC', pc(fl.ofcWin, fl.n), `${fl.ofcWin} menang dari ${fl.n} show (${pc(fl.ofcWin, fl.n)}%)`],
     ['Tahap General', pc(fl.genWin, fl.genTry), `${fl.genWin} menang dari ${fl.genTry} yang didaftar (${pc(fl.genWin, fl.genTry)}%)`],
     ['Dapat tiket', pc(fl.got, fl.n), `${fl.got} dari ${fl.n} show (${pc(fl.got, fl.n)}%)`]
-  ].map(([l, p, t]) => `<div class="lot-r"><span>${l}</span><span class="sl-bar"><i style="width:${p}%"></i></span><span>${t}</span></div>`).join('') +
+  ].map(([l, p, t0], i, _a, t = String(t0).replace(/\d+/g, n => `<b data-n="${n}">${n}</b>`)) => `<div class="lot-r fl" style="--i:${i}"><span>${l}</span><span class="sl-bar"><i style="width:${p}%"></i></span><span>${t}</span></div>`).join('') +
     `<p class="lot-n">${fl.ofcLose} show kalah di OFC: ${fl.genTry} lanjut daftar General (${fl.genWin} menang, ${fl.genLose} kalah) dan ${fl.ofcOnly} hanya mendaftar sekali di OFC.</p>` : '';
   const shPct = shDone ? sh.win / shDone * 100 : 0;
   const shCard = shDone ? `<div class="stat main"><div class="ring" style="--p:${shPct.toFixed(1)}"><svg viewBox="0 0 36 36" aria-hidden="true"><circle class="rb" cx="18" cy="18" r="15.9"/><circle class="rf" cx="18" cy="18" r="15.9" pathLength="100"/></svg><span>${shPct.toFixed(1).replace(/\.0$/, '')}%</span></div><div class="sl">Persentase menang (show teater)</div><div class="ss">${sh.win} dari ${shDone} yang sudah diundi</div></div>` : '';
@@ -1021,6 +1023,7 @@ const revealIO = 'IntersectionObserver' in window ? new IntersectionObserver(es 
   const el = e.target;
   revealIO.unobserve(el);
   el.classList.add('shown');
+  if (el.id === 'lot') flowCount(el);
   clearTimeout(el._sh);
   el._sh = setTimeout(() => el.classList.remove('shown'), 2600);
 }), {threshold: 0.15}) : null;
@@ -1120,4 +1123,13 @@ function slideCal(dir) {
   const c = $('cal');
   c.classList.remove('shown'); void c.offsetWidth; c.classList.add('shown');
   clearTimeout(c._sh); c._sh = setTimeout(() => c.classList.remove('shown'), 2000);
+}
+
+// alur OFC -> General: bar terisi berurutan, angka tiap tahap berhitung bergantian
+function flowCount(box) {
+  if (calm()) return;
+  box.querySelectorAll('.lot-r.fl').forEach((row, i) => {
+    row.querySelectorAll('[data-n]').forEach(el => { el.textContent = '0'; });
+    setTimeout(() => countUp(row), i * 550 + 150);
+  });
 }
