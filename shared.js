@@ -426,7 +426,8 @@ $('cal-nav').addEventListener('click', e => {
   const b = e.target.closest('[data-cy]');
   if (!b) return;
   calYear = +calYears[calYears.indexOf(String(calYear)) + Number(b.dataset.cy)];
-  renderCal();
+  withAnim(renderCal); // bar bulan ikut naik/turun
+  slideCal(Number(b.dataset.cy));
 });
 
 // galeri foto 2-Shot / Chekicha (hanya jika halaman punya #gallery)
@@ -1085,4 +1086,15 @@ function burst(el) {
     p.animate([{transform: 'translate(0,0) scale(1)', opacity: 1}, {transform: `translate(${Math.cos(a) * d}px,${Math.sin(a) * d}px) scale(0)`, opacity: 0}],
       {duration: 700 + Math.random() * 300, easing: 'cubic-bezier(.2,.8,.2,1)'}).onfinish = () => p.remove();
   }
+}
+
+// animasi ganti tahun di kalender: kalender & judul tahun meluncur sesuai arah, kotak berisi menyala bergantian
+function slideCal(dir) {
+  if (calm()) return;
+  const ease = {duration: 380, easing: 'cubic-bezier(.2,.8,.2,1)'};
+  ['.cal-g', '.cal-m'].forEach(sel => $('cal').querySelector(sel)?.animate([{opacity: 0, transform: `translateX(${dir * 28}px)`}, {opacity: 1, transform: 'none'}], ease));
+  $('cal-nav').querySelector('b')?.animate([{opacity: 0, transform: `translateY(${dir * -10}px)`}, {opacity: 1, transform: 'none'}], ease);
+  const c = $('cal');
+  c.classList.remove('shown'); void c.offsetWidth; c.classList.add('shown');
+  clearTimeout(c._sh); c._sh = setTimeout(() => c.classList.remove('shown'), 2000);
 }
