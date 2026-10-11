@@ -356,3 +356,9 @@ h1,.sec,.sec2{text-wrap:balance}
 #fbar button{background:#be123c;color:#fff;border:none;border-radius:99px;padding:6px 14px;font-weight:700;cursor:pointer;font-size:12px}
 .sparkle{position:fixed;width:7px;height:7px;margin:-3px 0 0 -3px;border-radius:50%;pointer-events:none;z-index:95}
 @media(prefers-reduced-motion:reduce){.shown .rf,.shown .sl-bar i,.shown .mc-b i,.shown .cd.on1,.shown .cd.on2,.shown .cd.on3,.shown .sl-row,.shown .rk{animation:none}.tab-ind,#fbar{transition:none}}
+
+/* alur OFC -> General: tahap mengalir berurutan */
+.shown .lot-r.fl{animation:rise .45s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0) * .55s)}
+.shown .lot-r.fl .sl-bar i{transform-origin:left;animation:growx .9s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0) * .55s + .15s)}
+.lot-r.fl b{font-variant-numeric:tabular-nums}
+@media(prefers-reduced-motion:reduce){.shown .lot-r.fl,.shown .lot-r.fl .sl-bar i{animation:none}}
