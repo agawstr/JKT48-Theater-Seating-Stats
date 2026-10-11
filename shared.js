@@ -772,6 +772,9 @@ function renderTicketsRaw() {
   if (!box) return;
   $('ev-tab').hidden = dataLoaded && !tickets.length; // tetap tampil selama data dimuat; disembunyikan hanya jika data.json memang tanpa tiket
   const ls = lotteryStats(tickets), done = ls.win + ls.lose;
+  // tiket event teater (JKT48 School dll.) ikut kelompok "Show teater" di kartu atas; beri tahu supaya selisih 48 vs 45 jelas
+  const te = tickets.filter(t => t.type !== 'SHOW' && tcat(t) === 'Theater Event'), tw = te.length ? lotteryStats(te) : null;
+  const teNote = tw && tw.win + tw.lose ? `<p class="lot-n">Angka "Show teater" memasukkan ${tw.win} menang dan ${tw.lose} kalah dari tiket event teater (${[...new Set(te.map(tname))].map(esc).join(', ')}). Alur OFC → General dan rincian per setlist hanya menghitung tiket show.</p>` : '';
   const refs = tickets.filter(t => t.status === 'refund'); // menang undian tapi show dibatalkan & di-refund
   const names = {SHOW: 'Show teater', EXCLUSIVE: 'Exclusive / M&G', EVENT: 'Event'};
   const card = (l, v, s, c = '') => `<div class="stat${c}"><div class="sv">${esc(v)}</div><div class="sl">${l}</div>${s ? `<div class="ss">${esc(s)}</div>` : ''}</div>`;
@@ -790,13 +793,14 @@ function renderTicketsRaw() {
   ].map(([l, p, t0], i, _a, t = String(t0).replace(/\d+/g, n => `<b data-n="${n}">${n}</b>`)) => `<div class="lot-r fl" style="--i:${i}"><span>${l}</span><span class="sl-bar"><i style="width:${p}%"></i></span><span>${t}</span></div>`).join('') +
     `<p class="lot-n">${fl.ofcLose} show kalah di OFC: ${fl.genTry} lanjut daftar General (${fl.genWin} menang, ${fl.genLose} kalah) dan ${fl.ofcOnly} hanya mendaftar sekali di OFC.</p>` : '';
   const shPct = shDone ? sh.win / shDone * 100 : 0;
-  const shCard = shDone ? `<div class="stat main"><div class="ring" style="--p:${shPct.toFixed(1)}"><svg viewBox="0 0 36 36" aria-hidden="true"><circle class="rb" cx="18" cy="18" r="15.9"/><circle class="rf" cx="18" cy="18" r="15.9" pathLength="100"/></svg><span>${shPct.toFixed(1).replace(/\.0$/, '')}%</span></div><div class="sl">Persentase menang (show teater)</div><div class="ss">${sh.win} dari ${shDone} yang sudah diundi</div></div>` : '';
+  const shCard = shDone ? `<div class="stat main"><div class="ring" style="--p:${shPct.toFixed(1)}"><svg viewBox="0 0 36 36" aria-hidden="true"><circle class="rb" cx="18" cy="18" r="15.9"/><circle class="rf" cx="18" cy="18" r="15.9" pathLength="100"/></svg><span>${shPct.toFixed(1).replace(/\.0$/, '')}%</span></div><div class="sl">Persentase menang (show teater)</div><div class="ss">${sh.win} dari ${shDone} yang sudah diundi${tw && tw.win + tw.lose ? ' · termasuk ' + (tw.win + tw.lose) + ' tiket event teater' : ''}</div></div>` : '';
   box.innerHTML = !ls.total ? '<div class="empty">Belum ada data lotre</div>' :
     `<div class="lot-cards">${card('Entri lotre', ls.total)}${card(ls.inferred ? 'Menang (perkiraan)' : 'Menang', ls.win, refs.length ? `${refs.length} dibatalkan & di-refund` : '')}${card('Kalah', ls.lose)}${shCard}${card('Persentase menang (semua jenis)', done ? ls.pct.toFixed(1) + '%' : '-', done ? `${ls.win} dari ${done} yang sudah diundi` : '')}</div>` +
     Object.entries(ls.by).map(([ty, b]) => {
       const d = b.win + b.lose, p = d ? b.win / d * 100 : 0;
       return `<div class="lot-r"><span>${names[ty] || esc(ty)}</span><span class="sl-bar"><i style="width:${p}%"></i></span><span>${b.win ? b.win + ' menang' : '0 menang terdeteksi'} · ${b.lose} kalah${d && b.win ? ` (${p.toFixed(0)}%)` : ''}</span></div>`;
     }).join('') + flowHtml + bsHtml +
+    teNote +
     (ls.inferred ? '<p class="lot-n">Menang dihitung dari tiket tanpa status kalah pada show/event yang punya lotre, karena jkt48.com tidak memberi status menang. Tiket yang dibeli langsung tanpa lotre ikut terhitung.</p>' : '') +
     (refs.length ? `<p class="lot-n">Menang undian tapi dibatalkan dan di-refund: ${refs.map(t => esc(fmtDate(t.date) + ' ' + t.name)).join(', ')}.</p>` : '') +
     (ls.other ? `<p class="lot-n">Status lain (belum diundi / tidak dikenali): ${Object.entries(ls.raw).map(([k, n]) => `${esc(k)} ×${n}`).join(', ')}</p>` : '');
