@@ -101,19 +101,22 @@ function renderChartRaw() {
   if (first) playEnter($('view-main'));
   renderFilters(); renderStats(); if (first) countUp($('stats'));
   tweenNums('st', $('stats'));
-  renderSetlists(); renderRows(); renderCal(); renderGallery(); renderTimeline(); renderCover(); renderLast(); renderTickets(); syncUrl();
+  renderSetlists(); renderRows(); renderCal(); renderGallery(); renderTimeline(); renderCover(); renderLast(); renderStory(); renderTickets(); syncUrl();
   requestAnimationFrame(centerChart);
 }
 
+let mapScale = 1; // zoom peta di HP (cubit dua jari / tombol)
 function fitChart() {
   const w = $('seating-wrapper'), c = $('stage-container');
   c.style.zoom = '';
   if (!w.clientWidth) return; // tab tersembunyi
   if (window.innerWidth > 768 && c.scrollWidth > w.clientWidth) c.style.zoom = (w.clientWidth / c.scrollWidth).toFixed(3);
+  if (window.innerWidth > 768) mapScale = 1; else if (mapScale !== 1) c.style.zoom = mapScale;
 }
 function centerChart() {
   fitChart();
   const w = $('seating-wrapper'), c = $('stage-container');
+  if (mapScale !== 1 && window.innerWidth <= 768) return; // sedang di-zoom: jangan pindahkan posisi geser
   w.scrollLeft = (c.scrollWidth - w.clientWidth) / 2;
 }
 window.addEventListener('resize', centerChart);
@@ -1137,3 +1140,67 @@ function flowCount(box) {
     setTimeout(() => countUp(row), i * 550 + 150);
   });
 }
+
+// ================= Zoom peta di HP =================
+$('seating-wrapper').insertAdjacentHTML('beforebegin', '<div id="zoomctl"><button type="button" class="btn-s" data-z="out" aria-label="Perkecil peta">−</button><button type="button" class="btn-s" data-z="in" aria-label="Perbesar peta">+</button><button type="button" class="btn-s" data-z="fit">⤢ Pas layar</button></div>');
+function setMapScale(s, px) { // px = titik (relatif ke wadah peta) yang dipertahankan saat zoom
+  if (window.innerWidth > 768) return;
+  const w = $('seating-wrapper'), c = $('stage-container');
+  if (px === undefined) px = w.clientWidth / 2;
+  const anchor = (w.scrollLeft + px) / mapScale;
+  c.style.zoom = '';
+  const natural = c.scrollWidth, min = Math.min(1, w.clientWidth / natural);
+  mapScale = Math.max(min, Math.min(2.4, s));
+  c.style.zoom = mapScale === 1 ? '' : mapScale;
+  w.scrollLeft = anchor * mapScale - px;
+}
+$('zoomctl').addEventListener('click', e => {
+  const b = e.target.closest('[data-z]');
+  if (!b) return;
+  setMapScale(b.dataset.z === 'fit' ? 0 : mapScale * (b.dataset.z === 'in' ? 1.3 : 1 / 1.3));
+});
+(() => { // cubit dua jari
+  const w = $('seating-wrapper'), dist = t => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+  let d0 = 0, s0 = 1;
+  w.addEventListener('touchstart', e => { if (e.touches.length === 2) { d0 = dist(e.touches); s0 = mapScale; } }, {passive: true});
+  w.addEventListener('touchmove', e => {
+    if (e.touches.length !== 2 || !d0) return;
+    e.preventDefault();
+    const px = (e.touches[0].clientX + e.touches[1].clientX) / 2 - w.getBoundingClientRect().left;
+    setMapScale(s0 * dist(e.touches) / d0, px);
+  }, {passive: false});
+  w.addEventListener('touchend', e => { if (e.touches.length < 2) d0 = 0; });
+})();
+
+// ================= Cerita otomatis di bagian atas =================
+$('last').insertAdjacentHTML('beforebegin', '<p id="story"></p>');
+function renderStory() {
+  const el = $('story');
+  if (!el) return;
+  if (!records.length) { el.innerHTML = ''; return; }
+  const who = ((document.querySelector('h1') || {textContent: ''}).textContent.match(/^(.+?)['’]s\b/) || [])[1] || 'Pemilik halaman ini';
+  const ok = records.filter(r => SEATS.has(r.seat)), ds = records.map(r => r.date).filter(Boolean).sort();
+  const seat = tally(ok, r => r.seat, seatTie), row = tally(ok, r => r.seat[0], (a, b) => a.localeCompare(b)), sl = tally(records, r => r.setlist);
+  const b = t => `<b>${esc(t)}</b>`;
+  let h = (ds.length ? `Sejak ${b(MON_ID[+ds[0].slice(5, 7) - 1] + ' ' + ds[0].slice(0, 4))}, ${esc(who)} sudah menonton ` : `${esc(who)} sudah menonton `)
+    + `${b(records.length + ' show')} di ${b(new Set(ok.map(r => r.seat)).size + ' kursi berbeda')}.`;
+  if (seat && row) h += ` Kursi favoritnya ${b(seat[0])} (${seat[1]}×), paling sering di ${b('baris ' + row[0])} (${row[1]}×)` + (sl ? `, dan setlist yang paling sering ditonton ${b(sl[0])} (${sl[1]}×).` : '.');
+  try {
+    const fl = lotFlowStats();
+    if (fl && fl.n) h += ` Dari ${fl.n} show yang diincar lewat undian, ${fl.got} berhasil didapat (${b(Math.round(fl.got / fl.n * 100) + '%')}), ${fl.ofcWin} di antaranya langsung menang di OFC.`;
+  } catch (e) { /* data tiket belum dimuat */ }
+  el.innerHTML = h;
+}
+
+// ================= Selalu pakai shared.js/css terbaru =================
+// Ambil ulang dengan revalidasi ringan (ETag). Kalau isinya beda dari salinan di cache, cache sudah terperbarui, lalu muat ulang satu kali.
+(async () => {
+  if (location.protocol === 'file:' || sessionStorage.getItem('freshChecked')) return;
+  try {
+    for (const u of ['shared.js', 'shared.css']) {
+      const [a, b] = await Promise.all([fetch(u).then(r => r.text()), fetch(u, {cache: 'no-cache'}).then(r => r.text())]);
+      if (a !== b) { sessionStorage.setItem('freshChecked', '1'); location.reload(); return; }
+    }
+    sessionStorage.setItem('freshChecked', '1');
+  } catch (e) { /* offline: abaikan */ }
+})();
