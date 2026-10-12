@@ -251,9 +251,9 @@ wrapEl.insertAdjacentHTML('beforebegin', `<div id="last"></div><div id="stats"><
     <button type="button" class="btn-s" id="flt-reset">Reset</button><span id="flt-info"></span>
   </div>`);
 wrapEl.insertAdjacentHTML('afterend', `<div id="legend"></div>
-  <h2 class="sec">Total kunjungan per setlist <small class="hint">· klik untuk memfilter peta</small></h2><div id="sl-chart"></div>
-  <h2 class="sec">Sebaran per baris <small class="hint">· klik untuk memfilter peta</small></h2><div id="rchart"></div><div id="rsum"></div>
-  <h2 class="sec">Kalender kehadiran <small class="hint">· klik untuk memfilter peta</small></h2><div id="cal-nav"></div><div id="cal"></div>
+  <h2 class="sec">Total kunjungan per setlist <button type="button" class="info-btn" aria-label="Keterangan" aria-expanded="false">ⓘ</button><small class="hint" hidden>· klik batang untuk memfilter peta</small></h2><div id="sl-chart"></div>
+  <h2 class="sec">Sebaran per baris <button type="button" class="info-btn" aria-label="Keterangan" aria-expanded="false">ⓘ</button><small class="hint" hidden>· klik batang untuk memfilter peta</small></h2><div id="rchart"></div><div id="rsum"></div>
+  <h2 class="sec">Kalender kehadiran <button type="button" class="info-btn" aria-label="Keterangan" aria-expanded="false">ⓘ</button><small class="hint" hidden>· klik tanggal yang berwarna untuk memfilter peta</small></h2><div id="cal-nav"></div><div id="cal"></div>
   <h2 class="sec" id="mc-h">Kunjungan per bulan</h2><div id="mchart"></div>`);
 $('flt-from').value = filter.from;
 $('flt-to').value = filter.to;
@@ -424,7 +424,8 @@ function renderCal() {
   const mc = Array(12).fill(0), ms = Array(12).fill(0);
   viewEx(['date']).forEach(r => { if (r.date.startsWith(calYear + '-')) { mc[+r.date.slice(5, 7) - 1]++; ms[+r.date.slice(5, 7) - 1] += r.harga; } });
   const mx = Math.max(...mc, 1), mkey = i => calYear + '-' + String(i + 1).padStart(2, '0');
-  $('mc-h').innerHTML = `Kunjungan per bulan (${calYear}) <small class="hint">· klik untuk memfilter peta</small>`;
+  const hOpen = !!$('mc-h').querySelector('.hint:not([hidden])'); // pertahankan keadaan buka/tutup saat digambar ulang
+  $('mc-h').innerHTML = `Kunjungan per bulan (${calYear}) <button type="button" class="info-btn" aria-label="Keterangan" aria-expanded="${hOpen}">ⓘ</button><small class="hint"${hOpen ? '' : ' hidden'}>· klik batang bulan untuk memfilter peta</small>`;
   $('mchart').innerHTML = mc.map((n, i) => `<div class="mc${filter.from === mkey(i) + '-01' && filter.to.startsWith(mkey(i)) ? ' on' : ''}"${n ? ` data-mo="${mkey(i)}" role="button" tabindex="0"` : ''} style="--i:${i}" title="${mon[i]}: ${n} show${ms[i] ? ' · ' + rupiah(ms[i]) : ''}"><span class="mc-n">${n || ''}</span><div class="mc-b"><i style="height:${n / mx * 100}%"></i></div><span class="mc-l">${mon[i]}</span></div>`).join('');
 }
 $('cal-nav').addEventListener('click', e => {
@@ -807,6 +808,15 @@ function renderTicketsRaw() {
     (ls.inferred ? '<p class="lot-n">Menang dihitung dari tiket tanpa status kalah pada show/event yang punya lotre, karena jkt48.com tidak memberi status menang. Tiket yang dibeli langsung tanpa lotre ikut terhitung.</p>' : '') +
     (refs.length ? `<p class="lot-n">Menang undian tapi dibatalkan dan di-refund: ${refs.map(t => esc(fmtDate(t.date) + ' ' + t.name)).join(', ')}.</p>` : '') +
     (ls.other ? `<p class="lot-n">Status lain (belum diundi / tidak dikenali): ${Object.entries(ls.raw).map(([k, n]) => `${esc(k)} ×${n}`).join(', ')}</p>` : '');
+  // kumpulkan semua catatan kecil ke satu bagian yang bisa dibuka (hemat tempat)
+  const notes = [...box.querySelectorAll('.lot-n')];
+  if (notes.length) {
+    const d = document.createElement('details');
+    d.className = 'lot-notes';
+    d.innerHTML = `<summary>ⓘ Catatan perhitungan (${notes.length})</summary>`;
+    notes.forEach(n => d.appendChild(n));
+    box.appendChild(d);
+  }
 
   const ev = tickets.filter(t => t.type !== 'SHOW');
   if (dataLoaded) $('ev-tab').textContent = `Tiket & Event (${ev.length})`;
@@ -1208,3 +1218,12 @@ function renderStory() {
     sessionStorage.setItem('freshChecked', '1');
   } catch (e) { /* offline: abaikan */ }
 })();
+
+// tombol ⓘ: buka/tutup keterangan di sebelahnya
+document.addEventListener('click', e => {
+  const b = e.target.closest('.info-btn');
+  const t = b && b.nextElementSibling;
+  if (!t) return;
+  t.hidden = !t.hidden;
+  b.setAttribute('aria-expanded', String(!t.hidden));
+});
