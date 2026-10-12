@@ -1187,7 +1187,11 @@ function renderStory() {
   if (seat && row) h += ` Kursi favoritnya ${b(seat[0])} (${seat[1]}×), paling sering di ${b('baris ' + row[0])} (${row[1]}×)` + (sl ? `, dan setlist yang paling sering ditonton ${b(sl[0])} (${sl[1]}×).` : '.');
   try {
     const fl = lotFlowStats();
-    if (fl && fl.n) h += ` Dari ${fl.n} show yang diincar lewat undian, ${fl.got} berhasil didapat (${b(Math.round(fl.got / fl.n * 100) + '%')}), ${fl.ofcWin} di antaranya langsung menang di OFC.`;
+    if (fl && fl.n) {
+      const refunds = tickets.filter(t => t.status === 'refund').length, watched = fl.got - refunds, rest = records.length - watched, gen = fl.got - fl.ofcWin;
+      h += ` Dari ${fl.n} show teater yang diincar lewat undian, ${fl.got} berhasil didapat (${b(Math.round(fl.got / fl.n * 100) + '%')}): ${fl.ofcWin} langsung menang di OFC${gen ? ' dan ' + gen + ' lewat General' : ''}.`
+        + ` ${refunds ? refunds + ' show dibatalkan dan di-refund, jadi ' : ''}${watched} ditonton${rest > 0 ? ', ditambah ' + rest + ' show lain di luar undian show teater (mis. JKT48 School)' : ''}.`;
+    }
   } catch (e) { /* data tiket belum dimuat */ }
   el.innerHTML = h;
 }
