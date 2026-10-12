@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="shared.css">
 <style>
 #status{color:#f87171;font-size:14px;margin:12px 0;text-align:center;min-height:18px}
+#status.warn{color:#fbbf24}
 </style>
 </head>
 <body>
@@ -77,31 +78,61 @@
    Kalau dibuka langsung dari file:// browser memblokir fetch -> pakai hosting / server lokal. */
 const DATA_URL = './data.json';
 
+const CK = 'jkt48_data_cache_v1'; // salinan data terakhir di perangkat pengunjung
+function applyData(json) {
+  const arr = Array.isArray(json) ? json : json.records;
+  if (!Array.isArray(arr)) throw new Error('Format data tidak dikenali');
+  records = arr.map(sanitize).filter(r => SEATS.has(r.seat)); // kursi di luar peta dilewati, jadi total = yang tampil di peta
+  tickets = (Array.isArray(json.tickets) ? json.tickets : []).map(sanitizeTicket).filter(t => t.date);
+  dataLoaded = true;
+  $('foot').textContent = json.updated ? 'Data diperbarui: ' + fmtDate(json.updated) : '';
+}
 async function init() {
   renderChart(); skeleton(); // peta kosong dulu biar layout langsung muncul
+  let old = null;
+  try { old = localStorage.getItem(CK); } catch (e) {}
+  if (old) { // tampilkan salinan terakhir dulu sementara data terbaru dimuat
+    try { applyData(JSON.parse(old)); $('status').textContent = ''; renderChart(); } catch (e) { old = null; }
+  }
   try {
     const res = await fetch(DATA_URL + (DATA_URL.includes('?') ? '&' : '?') + 't=' + Date.now());
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const json = await res.json();
-    const arr = Array.isArray(json) ? json : json.records;
-    if (!Array.isArray(arr)) throw new Error('Format data tidak dikenali');
-    records = arr.map(sanitize).filter(r => SEATS.has(r.seat)); // kursi di luar peta dilewati, jadi total = yang tampil di peta
-    tickets = (Array.isArray(json.tickets) ? json.tickets : []).map(sanitizeTicket).filter(t => t.date);
-    dataLoaded = true;
-    $('foot').textContent = json.updated ? 'Data diperbarui: ' + fmtDate(json.updated) : '';
-    $('status').textContent = '';
-    renderChart();
+    const text = await res.text();
+    if (text !== old) { // hanya render ulang kalau data berubah
+      applyData(JSON.parse(text)); $('status').textContent = ''; renderChart();
+      try { localStorage.setItem(CK, text); } catch (e) { /* penyimpanan penuh: abaikan */ }
+    }
+    $('status').classList.remove('warn');
   } catch (err) {
-    renderChart();
-    $('status').textContent = 'Gagal memuat data (' + err.message + '). Cek DATA_URL / pastikan dibuka lewat server, bukan file://.';
+    $('status').classList.toggle('warn', !!old);
+    $('status').textContent = old ? 'Tidak bisa memuat data terbaru, menampilkan salinan terakhir yang tersimpan di perangkat ini.'
+      : 'Gagal memuat data (' + err.message + '). Cek DATA_URL / pastikan dibuka lewat server, bukan file://.';
+    if (!old) renderChart();
   }
 }
 document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => {
+  const tl = [...document.querySelectorAll('.tab')], dir = tl.indexOf(b) >= tl.findIndex(t => t.classList.contains('on')) ? 1 : -1;
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t === b));
   ['main', 'gal', 'tl', 'ev'].forEach(k => $('view-' + k).hidden = b.dataset.tab !== k);
   centerChart();
+  $('view-' + b.dataset.tab).style.setProperty('--tabx', dir * 28 + 'px'); // isi tab masuk dari arah tab
   playEnter($('view-' + b.dataset.tab)); // animasi masuk isi tab
 }));
+// geser kiri/kanan untuk pindah tab (layar sentuh)
+(() => {
+  let x0 = 0, y0 = 0, ok = false;
+  const skip = el => el.closest('#seating-wrapper, #cal, select, input, .overlay, #fbar, .ev-d');
+  document.addEventListener('touchstart', e => { ok = e.touches.length === 1 && !skip(e.target); x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, {passive: true});
+  document.addEventListener('touchend', e => {
+    if (!ok) return;
+    ok = false;
+    const t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0;
+    if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 2) return;
+    const tabs = [...document.querySelectorAll('.tab')].filter(b => !b.hidden), i = tabs.findIndex(b => b.classList.contains('on'));
+    const n = tabs[i + (dx < 0 ? 1 : -1)];
+    if (n) n.click();
+  }, {passive: true});
+})();
 init();
 </script>
 </body>
