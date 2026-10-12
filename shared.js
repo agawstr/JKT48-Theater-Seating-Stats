@@ -785,9 +785,12 @@ function renderTicketsRaw() {
   const sh = ls.by['Show teater'], shDone = sh ? sh.win + sh.lose : 0;
   const bs = {}; // lotre per setlist (tiket show)
   tickets.filter(t => t.type === 'SHOW').forEach(t => { const o = bs[t.name] || (bs[t.name] = {win: 0, lose: 0}); raffleOf(t.raffle) === 'lose' ? o.lose++ : o.win++; });
-  const bsHtml = Object.keys(bs).length ? '<h3 class="sec2">Lotre per setlist</h3>' + Object.entries(bs).map(([n, o]) => [n, o, o.win + o.lose]).sort((a, b) => b[2] - a[2]).map(([n, o, d]) => {
+  const bsList = Object.entries(bs).map(([n, o]) => [n, o, o.win + o.lose])
+    .sort((a, b) => b[1].win - a[1].win || b[1].win / b[2] - a[1].win / a[2] || b[2] - a[2] || a[0].localeCompare(b[0])); // menang terbanyak dulu; seri: persentase, lalu jumlah percobaan
+  const maxWin = Math.max(1, ...bsList.map(x => x[1].win)); // bar = jumlah menang dibanding yang tertinggi, jadi sejalan dengan urutan
+  const bsHtml = bsList.length ? '<h3 class="sec2">Lotre per setlist</h3>' + bsList.map(([n, o, d]) => {
     const p = o.win / d * 100;
-    return `<div class="ls-r"><span class="ls-n">${esc(n)}</span><span class="ls-b"><i style="width:${p}%"></i></span><span class="ls-c">${o.win} menang · ${o.lose} kalah (${Math.round(p)}%)</span></div>`;
+    return `<div class="ls-r"><span class="ls-n">${esc(n)}</span><span class="ls-b"><i style="width:${o.win / maxWin * 100}%"></i></span><span class="ls-c">${o.win} menang · ${o.lose} kalah (${Math.round(p)}%)</span></div>`;
   }).join('') : '';
   const fl = lotFlowStats(), pc = (a, b) => b ? Math.round(a / b * 100) : 0;
   const flowHtml = fl.n ? '<h3 class="sec2">Alur lotre show teater: OFC → General</h3>' + [
