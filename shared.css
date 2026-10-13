@@ -380,3 +380,6 @@ h1,.sec,.sec2{text-wrap:balance}
 .lot-notes summary::-webkit-details-marker{display:none}
 .lot-notes summary:hover{color:#ff2a5f}
 .lot-notes[open] summary{margin-bottom:6px}
+
+/* jumlah tiket VC & MnG diblur di halaman publik */
+.blur-n{display:inline-block;filter:blur(5px);user-select:none;pointer-events:none}
