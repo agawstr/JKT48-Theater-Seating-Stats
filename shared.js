@@ -729,6 +729,8 @@ function lotteryStats(list) { // persentase menang = menang / (menang + kalah); 
 }
 
 // kategori tiket: ditebak dari nama (data jkt48.com tidak punya kolom kategori); bisa diatur manual lewat t.cat
+// kategori yang jumlah tiketnya disembunyikan di halaman publik (hanya terlihat di admin)
+const BLUR_CATS = ['Video Call', '2S & MnG Event', '2S & MnG Theater Sementara'];
 const TK_CATS = ['Video Call', '2S & MnG Event', '2S & MnG Theater Sementara', 'OFC Event', 'Theater Event', 'Belum dikategorikan'];
 const VC_NAMES = /cheerful little wishes|think donut|heart & harmony|code journal|cake a wish|the first snow|youthful days|we are love/i;
 function autoCat(t) {
@@ -862,7 +864,7 @@ function renderTicketsRaw() {
       <div class="tl-b"><b>${esc(g.name)}</b><div class="hn">${esc(g.cat)} · ${n} sesi · ${esc(range)}${cdl}</div>
         ${ms.length ? `<div class="mchips">${ms.slice(0, 5).map(([m, c]) => `<span class="mchip">${esc(m)}${c > 1 ? ' ×' + c : ''}</span>`).join('')}${ms.length > 5 ? `<span class="mchip">+${ms.length - 5}</span>` : ''}</div>` : ''}</div>
       ${chip}</summary>
-      <div class="ev-d">${g.items.map(t => `<div class="ev-t"><span>${esc(fmtDate(t.date))}${t.start ? ' · ' + esc(t.start.slice(0, 5)) : ''}</span><span>${esc([t.member, t.lane, t.session].filter(Boolean).join(' · ')) || '–'}${t.bought > 1 ? ' · ' + t.bought + ' tiket' : ''}</span>${chipOf(t)}</div>`).join('')}</div></details>`;
+      <div class="ev-d">${g.items.map(t => `<div class="ev-t"><span>${esc(fmtDate(t.date))}${t.start ? ' · ' + esc(t.start.slice(0, 5)) : ''}</span><span>${esc([t.member, t.lane, t.session].filter(Boolean).join(' · ')) || '–'}${BLUR_CATS.includes(tcat(t)) ? ' · <span class="blur-n" aria-hidden="true">88</span> tiket' : (t.bought > 1 ? ' · ' + t.bought + ' tiket' : '')}</span>${chipOf(t)}</div>`).join('')}</div></details>`;
   };
 
   const upc = grouper(ev.filter(t => t.date > td)); // tiket mendatang selalu di paling atas
@@ -873,11 +875,11 @@ function renderTicketsRaw() {
   scope.forEach(t => { if (t.member) { mc[t.member] = (mc[t.member] || 0) + 1; mt[t.member] = (mt[t.member] || 0) + t.bought; } });
   const rankAll = Object.entries(mc).sort((a, b) => b[1] - a[1]), rank = rkAll ? rankAll : rankAll.slice(0, 5), mx = rankAll.length ? rankAll[0][1] : 1;
   $('ev-rank').innerHTML = rank.length ? `<h3 class="sec2">Peringkat member${evCat ? ' · ' + esc(evCat) : ''}</h3>` + rank.map(([m, c], i) =>
-    `<button type="button" style="--i:${i}" class="rk${m === cur ? ' on' : ''}" data-m="${esc(m)}" title="${mt[m]} tiket"><span class="rn">${i + 1}</span><span class="rm">${esc(m)}</span><span class="sl-bar"><i style="width:${c / mx * 100}%"></i></span><span class="rc">${c} sesi</span></button>`).join('') + (rankAll.length > 5 ? `<button type="button" class="btn-s" id="ev-rkmore">${rkAll ? 'Tampilkan 5 teratas' : `Lihat semua (${rankAll.length})`}</button>` : '') : '';
+    `<button type="button" style="--i:${i}" class="rk${m === cur ? ' on' : ''}" data-m="${esc(m)}"><span class="rn">${i + 1}</span><span class="rm">${esc(m)}</span><span class="sl-bar"><i style="width:${c / mx * 100}%"></i></span><span class="rc">${c} sesi</span></button>`).join('') + (rankAll.length > 5 ? `<button type="button" class="btn-s" id="ev-rkmore">${rkAll ? 'Tampilkan 5 teratas' : `Lihat semua (${rankAll.length})`}</button>` : '') : '';
 
   const list = scope.filter(t => (!cur || t.member === cur) && (!st || t.used > 0));
   const groups = grouper(list);
-  $('ev-info').textContent = `${groups.length} seri · ${list.length} tiket`;
+  $('ev-info').textContent = `${groups.length} seri · ${list.length} sesi`;
   flipRender($('ev-list'), '.ev-g', it => it.dataset.k, () => { $('ev-list').innerHTML = groups.length ? groups.slice(0, evLimit).map(groupHtml).join('') : '<div class="empty">Tidak ada tiket yang cocok</div>'; });
   $('ev-more').hidden = groups.length <= evLimit;
   $('ev-more').textContent = `Tampilkan ${Math.max(0, Math.min(EV_PAGE, groups.length - evLimit))} lagi (sisa ${Math.max(0, groups.length - evLimit)})`;
