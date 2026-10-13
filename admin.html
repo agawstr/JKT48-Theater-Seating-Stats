@@ -78,14 +78,33 @@ summary{cursor:pointer;color:#ff8c00;font-size:13px;font-weight:600}
 .todo-c{background:#2a1a10;border:1px solid #6b4a12;color:#fbbf24;border-radius:99px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
 .todo-c:hover,.todo-c.on{background:#6b4a12;color:#fff}
 .todo-ok{color:#34d399;font-weight:700}
-.tt-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:12px 0}
-.tt-c{background:#181115;border:1px solid #2d1820;border-radius:12px;padding:14px;text-align:center}
-.tt-c b{display:block;font-size:28px;color:#ff8c00;font-weight:900}
-.tt-c span{font-size:13px;font-weight:700}
-.tt-c small{display:block;color:#a1a1aa;font-size:11px;margin-top:2px}
-.tt-c.main{border-color:#ff2a5f;background:linear-gradient(160deg,rgba(255,42,95,.22),#181115)}
-.tt-note{color:#a1a1aa;font-size:12px}
-.tt-h{color:#ff2a5f;font-size:15px;margin:20px 0 8px}
+#tt{display:flex;flex-direction:column;gap:18px}
+.tt-note{color:#a1a1aa;font-size:12px;margin:0}
+.tt-years{display:flex;flex-wrap:wrap;gap:6px}
+.tt-y{background:#181115;border:1px solid #2d1820;color:#e4e4e7;border-radius:99px;padding:5px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+.tt-y:hover{border-color:#ff2a5f}
+.tt-y.on{background:#881337;border-color:#f43f5e;color:#fff}
+.tt-hero{background:linear-gradient(135deg,rgba(255,42,95,.2),#181115 70%);border:1px solid #3d222e;border-radius:16px;padding:20px}
+.tt-big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.tt-big b{font-size:48px;font-weight:900;color:#ffd23f;line-height:1;font-variant-numeric:tabular-nums}
+.tt-big span{font-size:15px;font-weight:700;color:#e4e4e7}
+.tt-big small{color:#a1a1aa;font-size:12px}
+.tt-bar{display:flex;height:12px;border-radius:99px;overflow:hidden;background:#1e050c;transform-origin:left;animation:growx .8s cubic-bezier(.2,.8,.2,1) both}
+.tt-bar i{display:block;height:100%}
+.tt-legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;font-size:12px;color:#d4d4d8}
+.tt-legend span{display:inline-flex;align-items:center;gap:6px}
+.tt-legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.tt-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tt-c{background:#181115;border:1px solid #2d1820;border-top:3px solid var(--c);border-radius:14px;padding:14px;animation:rise .45s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i) * 80ms)}
+.tt-c b{display:block;font-size:34px;font-weight:900;color:var(--c);line-height:1.1;font-variant-numeric:tabular-nums}
+.tt-c .tl{font-size:14px;font-weight:800;color:#fff;margin-top:2px}
+.tt-c small{display:block;color:#a1a1aa;font-size:11px;margin-top:6px;line-height:1.55}
+.tt-h{color:#ff2a5f;font-size:15px;margin:0 0 6px}
+.tt-r{display:grid;grid-template-columns:minmax(80px,150px) 1fr 40px;gap:10px;align-items:center;padding:6px 0;font-size:13px}
+.tt-r .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tt-r .nm small{display:block;color:#a1a1aa;font-size:10px}
+.tt-r .tot{font-weight:900;color:#ff8c00;text-align:right;font-variant-numeric:tabular-nums}
+@media(prefers-reduced-motion:reduce){.tt-bar,.tt-c{animation:none}}
 </style>
 </head>
 <body>
@@ -784,28 +803,58 @@ $('todo').addEventListener('click', e => {
   $('search').scrollIntoView({behavior: 'smooth', block: 'center'});
 });
 
-// ---------- Total tiket Video Call & Meet and Greet (hanya terlihat di admin) ----------
+// ---------- Total tiket Video Call, 2-Shot, dan Meet & Greet (hanya terlihat di admin) ----------
+let ttYear = '';
+const TT_KINDS = [
+  {k: 'vc', label: 'Video Call', color: '#a78bfa'},
+  {k: 'ts', label: '2-Shot', color: '#ff2a5f'},
+  {k: 'mg', label: 'Meet & Greet', color: '#ffb347'}
+];
+const PKG = /greet\s*&\s*2[- ]?shot/i; // tiket paket "Meet and Greet & 2-Shot" dihitung sebagai Meet & Greet
+const ticketKind = t => tcat(t) === 'Video Call' ? 'vc' : (/2[- ]?shot/i.test(t.name) && !PKG.test(t.name)) ? 'ts' : 'mg';
 function renderTotals() {
   const el = $('tt');
   if (!el) return;
-  const ev = tickets.filter(t => t.type !== 'SHOW' && BLUR_CATS.includes(tcat(t)));
-  if (!ev.length) { el.innerHTML = '<div class="empty">Belum ada data tiket Video Call / Meet and Greet. Impor dulu dari jkt48.com.</div>'; return; }
-  const sum = a => a.reduce((x, t) => x + t.bought, 0), by = c => ev.filter(t => tcat(t) === c);
-  const today = new Date().toISOString().slice(0, 10), up = ev.filter(t => t.date > today);
-  const card = (l, a, c = '') => `<div class="tt-c${c}"><b>${sum(a)}</b><span>${esc(l)}</span><small>${a.length} sesi · ${new Set(a.map(tname)).size} seri</small></div>`;
-  const years = [...new Set(ev.map(t => t.date.slice(0, 4)))].sort().reverse();
-  const yRows = years.map(y => `<tr><td>${esc(y)}</td>${BLUR_CATS.map(c => `<td>${sum(by(c).filter(t => t.date.startsWith(y)))}</td>`).join('')}<td><b>${sum(ev.filter(t => t.date.startsWith(y)))}</b></td></tr>`).join('');
+  const all = tickets.filter(t => t.type !== 'SHOW' && BLUR_CATS.includes(tcat(t)));
+  if (!all.length) { el.innerHTML = '<div class="empty">Belum ada data tiket Video Call / 2-Shot / Meet & Greet. Impor dulu dari jkt48.com.</div>'; return; }
+  const years = [...new Set(all.map(t => t.date.slice(0, 4)))].sort().reverse();
+  if (ttYear && !years.includes(ttYear)) ttYear = '';
+  const ev = ttYear ? all.filter(t => t.date.startsWith(ttYear)) : all, today = new Date().toISOString().slice(0, 10);
+  const sum = a => a.reduce((x, t) => x + t.bought, 0);
+  const agg = a => ({vc: sum(a.filter(t => ticketKind(t) === 'vc')), ts: sum(a.filter(t => ticketKind(t) === 'ts')), mg: sum(a.filter(t => ticketKind(t) === 'mg'))});
+  const tot = v => v.vc + v.ts + v.mg, total = sum(ev), pct = n => total ? Math.round(n / total * 100) : 0;
+  const bar = (v, max) => `<div class="tt-bw"><div class="tt-bar" style="width:${max ? tot(v) / max * 100 : 0}%">${TT_KINDS.map(K => v[K.k] ? `<i style="flex:${v[K.k]};background:${K.color}" title="${K.label}: ${v[K.k]}"></i>` : '').join('')}</div></div>`;
+  const A = agg(ev), upN = sum(ev.filter(t => t.date > today));
+
+  const card = (K, i) => {
+    const a = ev.filter(t => ticketKind(t) === K.k), ser = new Set(a.map(tname)).size, up = sum(a.filter(t => t.date > today));
+    const sub = K.k === 'vc' ? '' : `Event ${sum(a.filter(t => tcat(t) === '2S & MnG Event'))} · Theater Sementara ${sum(a.filter(t => tcat(t) === '2S & MnG Theater Sementara'))}`;
+    const pk = K.k === 'mg' ? sum(a.filter(t => PKG.test(t.name))) : 0;
+    return `<div class="tt-c" style="--c:${K.color};--i:${i}"><b>${A[K.k]}</b><div class="tl">${K.label}</div>
+      <small>${pct(A[K.k])}% dari total · ${a.length} sesi · ${ser} seri${sub ? '<br>' + sub : ''}${pk ? `<br>termasuk ${pk} tiket paket MnG + 2-Shot` : ''}${up ? `<br>${up} mendatang` : ''}</small></div>`;
+  };
+
+  const yMax = Math.max(1, ...years.map(y => tot(agg(all.filter(t => t.date.startsWith(y))))));
+  const yRows = years.map(y => { const v = agg(all.filter(t => t.date.startsWith(y))); return `<div class="tt-r"><span class="nm">${esc(y)}</span>${bar(v, yMax)}<span class="tot">${tot(v)}</span></div>`; }).join('');
+
   const mem = {};
-  ev.forEach(t => { if (!t.member) return; const m = mem[t.member] || (mem[t.member] = {vc: 0, mng: 0}); m[tcat(t) === 'Video Call' ? 'vc' : 'mng'] += t.bought; });
-  const mRows = Object.entries(mem).sort((a, b) => (b[1].vc + b[1].mng) - (a[1].vc + a[1].mng)).slice(0, 12)
-    .map(([n, m]) => `<tr><td>${esc(n)}</td><td>${m.vc}</td><td>${m.mng}</td><td><b>${m.vc + m.mng}</b></td></tr>`).join('');
-  el.innerHTML = `<p class="tt-note">🔒 Halaman ini hanya ada di admin. Di halaman publik, jumlah tiket VC dan MnG tampil diblur.</p>
-    <div class="tt-g">${card('Total tiket VC + MnG' + (up.length ? ` (termasuk ${sum(up)} mendatang)` : ''), ev, ' main')}${BLUR_CATS.map(c => card(c, by(c))).join('')}</div>
-    <h3 class="tt-h">Per tahun</h3>
-    <div class="scroll"><table><thead><tr><th>Tahun</th>${BLUR_CATS.map(c => `<th>${esc(c)}</th>`).join('')}<th>Total</th></tr></thead><tbody>${yRows}</tbody></table></div>
-    <h3 class="tt-h">Per member (12 teratas)</h3>
-    <div class="scroll"><table><thead><tr><th>Member</th><th>Video Call</th><th>MnG</th><th>Total</th></tr></thead><tbody>${mRows}</tbody></table></div>`;
+  ev.forEach(t => { if (t.member) (mem[t.member] = mem[t.member] || []).push(t); });
+  const mList = Object.entries(mem).map(([n, a]) => [n, agg(a)]).sort((a, b) => tot(b[1]) - tot(a[1])).slice(0, 12), mMax = mList.length ? tot(mList[0][1]) : 1;
+  const mRows = mList.map(([n, v]) => `<div class="tt-r"><span class="nm">${esc(n)}<small>VC ${v.vc} · 2S ${v.ts} · MG ${v.mg}</small></span>${bar(v, mMax)}<span class="tot">${tot(v)}</span></div>`).join('');
+
+  el.innerHTML = `<p class="tt-note">🔒 Halaman ini hanya ada di admin. Di halaman publik, jumlah tiket VC, 2-Shot, dan MnG tampil diblur.</p>
+    <div class="tt-years">${['', ...years].map(y => `<button type="button" class="tt-y${y === ttYear ? ' on' : ''}" data-y="${y}">${y || 'Semua tahun'}</button>`).join('')}</div>
+    <div class="tt-hero"><div class="tt-big"><b>${total}</b><span>total tiket${ttYear ? ' ' + ttYear : ''}</span>${upN ? `<small>termasuk ${upN} mendatang</small>` : ''}</div>
+      <div style="margin-top:14px">${bar(A, total)}</div>
+      <div class="tt-legend">${TT_KINDS.map(K => `<span><i style="background:${K.color}"></i>${K.label} ${A[K.k]} (${pct(A[K.k])}%)</span>`).join('')}</div></div>
+    <div class="tt-cards">${TT_KINDS.map(card).join('')}</div>
+    <div><h3 class="tt-h">Per tahun</h3>${yRows}</div>
+    <div><h3 class="tt-h">Per member${ttYear ? ' (' + ttYear + ')' : ''} · 12 teratas</h3>${mRows || '<div class="empty">Tidak ada data</div>'}</div>`;
 }
+$('tt').addEventListener('click', e => {
+  const b = e.target.closest('[data-y]');
+  if (b) { ttYear = b.dataset.y; renderTotals(); }
+});
 
 // ---------- Init ----------
 renderAll(); renderBackup();
