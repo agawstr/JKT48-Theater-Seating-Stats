@@ -105,6 +105,33 @@ summary{cursor:pointer;color:#ff8c00;font-size:13px;font-weight:600}
 .tt-r .nm small{display:block;color:#a1a1aa;font-size:10px}
 .tt-r .tot{font-weight:900;color:#ff8c00;text-align:right;font-variant-numeric:tabular-nums}
 @media(prefers-reduced-motion:reduce){.tt-bar,.tt-c{animation:none}}
+.tt-r .nm,.tt-m .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tt-m .nm small{display:block;color:#a1a1aa;font-size:10px}
+.tt-m{border-bottom:1px solid #24151d}
+.tt-m summary{display:grid;grid-template-columns:minmax(90px,170px) 1fr 40px;gap:10px;align-items:center;padding:8px 4px;cursor:pointer;list-style:none;font-size:13px;border-radius:8px;transition:background .2s}
+.tt-m summary::-webkit-details-marker{display:none}
+.tt-m summary:hover{background:rgba(255,255,255,.04)}
+.tt-m .nm::before{content:'▸';display:inline-block;margin-right:6px;color:#9a9aa4;transition:transform .25s var(--ease)}
+.tt-m[open] .nm::before{transform:rotate(90deg)}
+.tt-m .tot{font-weight:900;color:#ff8c00;text-align:right;font-variant-numeric:tabular-nums}
+.tt-m em{font-style:normal;font-size:10px;color:#93c5fd;border:1px solid #1e3a5f;border-radius:99px;padding:1px 6px;margin-left:6px}
+.tt-ml{padding:4px 0 10px 14px;margin:0 0 8px 6px;border-left:2px solid #3d222e}
+.tt-m[open] .tt-ml{animation:fade .3s ease-out}
+.tt-m{interpolate-size:allow-keywords}
+.tt-m::details-content{block-size:0;overflow:hidden;transition:block-size .3s ease,content-visibility .3s allow-discrete}
+.tt-m[open]::details-content{block-size:auto}
+/* animasi admin */
+.view.active{animation:tabin .3s var(--ease)}
+.card{animation:rise .5s var(--ease) both}
+#msg.pulse{animation:rise .35s var(--ease)}
+#todo .todo-c{animation:popin .3s var(--ease) both}
+tbody tr{transition:background .2s}
+tbody tr:hover{background:rgba(255,255,255,.035)}
+input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px rgba(255,42,95,.18)}
+input,select,textarea{transition:border-color .2s,box-shadow .2s}
+.thumb{transition:transform .25s var(--ease)}
+.thumb:hover{transform:scale(1.6);position:relative;z-index:3}
+@media(prefers-reduced-motion:reduce){.tt-m[open] .tt-ml,.view.active,.card,#msg.pulse,#todo .todo-c{animation:none}.tt-m::details-content{transition:none}}
 </style>
 </head>
 <body>
@@ -410,7 +437,7 @@ function switchTab(name) {
 document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
 
 // ---------- Form ----------
-const setMsg = t => $('msg').textContent = t || '';
+const setMsg = t => { const m = $('msg'); m.textContent = t || ''; m.classList.remove('pulse'); if (t) { void m.offsetWidth; m.classList.add('pulse'); } };
 
 $('extras').innerHTML = KINDS.map(K => `
   <div class="fg"><label for="f-${K.k}">${K.q}</label>
@@ -842,6 +869,18 @@ function renderTotals() {
   const mList = Object.entries(mem).map(([n, a]) => [n, agg(a)]).sort((a, b) => tot(b[1]) - tot(a[1])).slice(0, 12), mMax = mList.length ? tot(mList[0][1]) : 1;
   const mRows = mList.map(([n, v]) => `<div class="tt-r"><span class="nm">${esc(n)}<small>VC ${v.vc} · 2S ${v.ts} · MG ${v.mg}</small></span>${bar(v, mMax)}<span class="tot">${tot(v)}</span></div>`).join('');
 
+  // per bulan: total tiket + daftar member beserta tiketnya (klik bulan untuk membuka)
+  const months = {};
+  ev.forEach(t => { (months[t.date.slice(0, 7)] = months[t.date.slice(0, 7)] || []).push(t); });
+  const mKeys = Object.keys(months).sort().reverse(), moMax = Math.max(1, ...mKeys.map(k => tot(agg(months[k]))));
+  const moHtml = mKeys.map(k => {
+    const list = months[k], v = agg(list), by = {};
+    list.forEach(t => { const n = t.member || 'Tanpa nama member'; (by[n] = by[n] || []).push(t); });
+    const rows = Object.entries(by).map(([n, x]) => [n, agg(x), [...new Set(x.map(tname))]]).sort((p, q) => tot(q[1]) - tot(p[1])), lMax = Math.max(1, tot(rows[0][1]));
+    return `<details class="tt-m"><summary><span class="nm">${esc(MON_ID[+k.slice(5, 7) - 1] + ' ' + k.slice(0, 4))}${k > today.slice(0, 7) ? ' <em>mendatang</em>' : ''}<small>VC ${v.vc} · 2S ${v.ts} · MG ${v.mg} · ${rows.length} member</small></span>${bar(v, moMax)}<span class="tot">${tot(v)}</span></summary>
+      <div class="tt-ml">${rows.map(([n, x, series]) => `<div class="tt-r" title="${esc(series.join(', '))}"><span class="nm">${esc(n)}<small>VC ${x.vc} · 2S ${x.ts} · MG ${x.mg}</small></span>${bar(x, lMax)}<span class="tot">${tot(x)}</span></div>`).join('')}</div></details>`;
+  }).join('');
+
   el.innerHTML = `<p class="tt-note">🔒 Halaman ini hanya ada di admin. Di halaman publik, jumlah tiket VC, 2-Shot, dan MnG tampil diblur.</p>
     <div class="tt-years">${['', ...years].map(y => `<button type="button" class="tt-y${y === ttYear ? ' on' : ''}" data-y="${y}">${y || 'Semua tahun'}</button>`).join('')}</div>
     <div class="tt-hero"><div class="tt-big"><b>${total}</b><span>total tiket${ttYear ? ' ' + ttYear : ''}</span>${upN ? `<small>termasuk ${upN} mendatang</small>` : ''}</div>
@@ -849,6 +888,7 @@ function renderTotals() {
       <div class="tt-legend">${TT_KINDS.map(K => `<span><i style="background:${K.color}"></i>${K.label} ${A[K.k]} (${pct(A[K.k])}%)</span>`).join('')}</div></div>
     <div class="tt-cards">${TT_KINDS.map(card).join('')}</div>
     <div><h3 class="tt-h">Per tahun</h3>${yRows}</div>
+    <div><h3 class="tt-h">Per bulan · klik bulan untuk melihat member</h3>${moHtml}</div>
     <div><h3 class="tt-h">Per member${ttYear ? ' (' + ttYear + ')' : ''} · 12 teratas</h3>${mRows || '<div class="empty">Tidak ada data</div>'}</div>`;
 }
 $('tt').addEventListener('click', e => {
