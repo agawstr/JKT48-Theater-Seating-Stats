@@ -1232,3 +1232,11 @@ document.addEventListener('click', e => {
   t.hidden = !t.hidden;
   b.setAttribute('aria-expanded', String(!t.hidden));
 });
+
+// bayangan di bar tab saat halaman digulir
+(() => {
+  const bar = document.querySelector('.tabbar');
+  if (!bar) return;
+  let t = 0;
+  addEventListener('scroll', () => { if (t) return; t = requestAnimationFrame(() => { t = 0; bar.classList.toggle('stuck', scrollY > 30); }); }, {passive: true});
+})();
