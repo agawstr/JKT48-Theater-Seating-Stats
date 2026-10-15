@@ -383,3 +383,35 @@ h1,.sec,.sec2{text-wrap:balance}
 
 /* jumlah tiket VC & MnG diblur di halaman publik */
 .blur-n{display:inline-block;filter:blur(5px);user-select:none;pointer-events:none}
+
+/* ===== penghalusan & animasi tambahan (index + admin) ===== */
+:root{--ease:cubic-bezier(.2,.8,.2,1)}
+@keyframes drop{from{opacity:0;transform:translateY(-10px)}}
+@keyframes tabout{to{opacity:0;transform:translate(calc(var(--tabx,0px) * -.5),-4px)}}
+@keyframes popin{from{opacity:0;transform:translateY(4px) scale(.96)}}
+html{scroll-behavior:smooth}
+.head h1{animation:drop .7s var(--ease) both}
+.head .sub{animation:drop .7s var(--ease) .08s both}
+.head .badge{animation:drop .7s var(--ease) .16s both}
+.tabbar{transition:box-shadow .3s}
+.tabbar.stuck{box-shadow:0 10px 28px rgba(0,0,0,.5)}
+.leave{animation:tabout .12s ease-in both}
+#pop.on{animation:popin .16s var(--ease)}
+.btn-s,.btn,.todo-c,.tt-y,.tab,.info-btn{transition:transform .18s var(--ease),background .2s,border-color .2s,color .2s,box-shadow .2s}
+.btn-s:active,.btn:active,.todo-c:active,.tt-y:active{transform:scale(.96)}
+.stat:not(.sk),.tt-c,.ev-c,.last-c{transition:transform .25s var(--ease),border-color .25s,box-shadow .25s,background .25s}
+.stat:not(.sk):hover,.tt-c:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,.4)}
+.ev-g,.tl-i{transition:border-color .25s,background .25s,transform .25s var(--ease)}
+.ev-g:hover,.tl-i:hover{transform:translateX(3px)}
+.gi img,.hi img,.last-c img{animation:fade .5s ease-out}
+.enter #story,.enter .last-c,.enter #cover,.enter #filters,.enter #stats .stat{animation:rise .55s var(--ease) both}
+.enter #stats .stat:nth-child(2){animation-delay:60ms}
+.enter #stats .stat:nth-child(3){animation-delay:120ms}
+.enter #stats .stat:nth-child(4){animation-delay:180ms}
+.enter #stats .stat:nth-child(5){animation-delay:240ms}
+.enter #stats .stat:nth-child(6){animation-delay:300ms}
+.enter #stats .stat:nth-child(7){animation-delay:360ms}
+.enter #stats .stat:nth-child(8){animation-delay:420ms}
+.enter #cover{animation-delay:.24s}
+.enter #filters{animation-delay:.3s}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
