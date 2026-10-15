@@ -110,13 +110,24 @@ async function init() {
     if (!old) renderChart();
   }
 }
+let tabTimer = 0;
 document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => {
-  const tl = [...document.querySelectorAll('.tab')], dir = tl.indexOf(b) >= tl.findIndex(t => t.classList.contains('on')) ? 1 : -1;
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t === b));
-  ['main', 'gal', 'tl', 'ev'].forEach(k => $('view-' + k).hidden = b.dataset.tab !== k);
-  centerChart();
-  $('view-' + b.dataset.tab).style.setProperty('--tabx', dir * 28 + 'px'); // isi tab masuk dari arah tab
-  playEnter($('view-' + b.dataset.tab)); // animasi masuk isi tab
+  const tl = [...document.querySelectorAll('.tab')], from = tl.findIndex(t => t.classList.contains('on')), dir = tl.indexOf(b) >= from ? 1 : -1;
+  if (tl.indexOf(b) === from) return;
+  const prev = ['main', 'gal', 'tl', 'ev'].map(k => $('view-' + k)).find(v => !v.hidden), next = $('view-' + b.dataset.tab);
+  tl.forEach(t => t.classList.toggle('on', t === b));
+  const show = () => {
+    ['main', 'gal', 'tl', 'ev'].forEach(k => $('view-' + k).hidden = b.dataset.tab !== k);
+    centerChart();
+    next.style.setProperty('--tabx', dir * 28 + 'px'); // isi tab masuk dari arah tab
+    playEnter(next);
+  };
+  clearTimeout(tabTimer);
+  if (prev && prev !== next && !matchMedia('(prefers-reduced-motion: reduce)').matches) { // isi tab lama keluar dulu, baru yang baru masuk
+    prev.style.setProperty('--tabx', dir * 28 + 'px');
+    prev.classList.add('leave');
+    tabTimer = setTimeout(() => { prev.classList.remove('leave'); show(); }, 120);
+  } else show();
 }));
 // geser kiri/kanan untuk pindah tab (layar sentuh)
 (() => {
