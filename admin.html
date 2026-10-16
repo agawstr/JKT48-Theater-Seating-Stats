@@ -132,6 +132,27 @@ input,select,textarea{transition:border-color .2s,box-shadow .2s}
 .thumb{transition:transform .25s var(--ease)}
 .thumb:hover{transform:scale(1.6);position:relative;z-index:3}
 @media(prefers-reduced-motion:reduce){.tt-m[open] .tt-ml,.view.active,.card,#msg.pulse,#todo .todo-c{animation:none}.tt-m::details-content{transition:none}}
+.tt-fil{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.tt-fil>span{font-size:11px;color:#a1a1aa;min-width:44px}
+.tt-c[data-k]{cursor:pointer}
+.tt-c.on{box-shadow:0 0 0 2px var(--c)}
+button.tt-c{font:inherit;color:inherit;text-align:left;cursor:pointer}
+.tt-c .tl{display:block}
+.tt-c.on{box-shadow:0 0 0 2px var(--c)}
+.tt-hint{font-style:normal;color:#9a9aa4}
+.tt-k{min-width:84px}
+.ex-n{font-size:22px!important}
+.ex-big{font-size:38px!important}
+.ex-m summary{grid-template-columns:minmax(90px,170px) 1fr 112px}
+.ex-m .tot{font-size:12px;white-space:nowrap}
+.ex-l{display:grid;grid-template-columns:1fr auto auto;gap:12px;font-size:12px;padding:4px 0;color:#d4d4d8}
+.ex-l b{color:#ff8c00;min-width:96px;text-align:right}
+.ex-prices{background:#181115;border:1px solid #2d1820;border-radius:12px;padding:10px 14px}
+.ex-prices summary{cursor:pointer;font-weight:700;color:#e4e4e7}
+.ex-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:4px 16px;margin:10px 0}
+.ex-pr{display:grid;grid-template-columns:1fr 120px;gap:8px;align-items:center;font-size:13px}
+.ex-ov{display:grid;grid-template-columns:140px 1fr 120px 36px;gap:8px;align-items:center;margin:6px 0}
+.ex-prices small{color:#a1a1aa}
 </style>
 </head>
 <body>
@@ -143,6 +164,7 @@ input,select,textarea{transition:border-color .2s,box-shadow .2s}
       <button class="tab-btn active" data-tab="peta">Peta Kursi</button>
       <button class="tab-btn" data-tab="crud">Tambah &amp; Kelola Data</button>
       <button class="tab-btn" data-tab="tiket">🔒 Total Tiket</button>
+      <button class="tab-btn" data-tab="biaya">💸 Pengeluaran</button>
     </div>
     <div class="badge">Total Riwayat Show: <span id="total">0</span></div>
   </div>
@@ -161,6 +183,7 @@ input,select,textarea{transition:border-color .2s,box-shadow .2s}
   </div>
 
   <div id="view-tiket" class="view"><div id="tt"></div></div>
+  <div id="view-biaya" class="view"><div id="ex"></div></div>
 
   <div id="view-crud" class="view">
     <div class="crud">
@@ -425,7 +448,7 @@ function renderLists() {
   dl('dl-setlist', records.map(r => r.setlist));
   dl('dl-member', records.flatMap(r => extras(r).map(x => x.member)));
 }
-const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTodo(); renderTotals(); };
+const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTodo(); renderTotals(); renderExpense(); };
 
 // ---------- Tab ----------
 function switchTab(name) {
@@ -433,6 +456,7 @@ function switchTab(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
   if (name === 'peta') requestAnimationFrame(centerChart);
   if (name === 'tiket') renderTotals();
+  if (name === 'biaya') renderExpense();
 }
 document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
 
@@ -598,7 +622,7 @@ const dl = (blob, name) => {
 };
 // Backup lengkap: foto tetap di dalam JSON (dipakai untuk Restore)
 $('btn-export').addEventListener('click', () => {
-  dl(new Blob([JSON.stringify({records, tickets}, null, 2)], {type: 'application/json'}), 'backup-lengkap.json');
+  dl(new Blob([JSON.stringify({records, tickets, prices}, null, 2)], {type: 'application/json'}), 'backup-lengkap.json');
   markExported();
 });
 
@@ -675,6 +699,7 @@ $('file-import').addEventListener('change', async e => {
     const arr = Array.isArray(json) ? json : json.records;
     if (!Array.isArray(arr)) throw new Error('Format bukan array');
     if (!Array.isArray(json) && Array.isArray(json.tickets)) mergeTickets(json.tickets);
+    if (!Array.isArray(json) && json.prices && json.prices.base) { prices = {base: {...DEF_PRICES.base, ...json.prices.base}, over: Array.isArray(json.prices.over) ? json.prices.over : []}; savePrices(); renderExpense(); }
     const ids = new Set(records.map(r => r.id));
     // id kembar di dalam file yang sama juga dilewati (ids.add mengembalikan Set = truthy)
     const fresh = arr.map(sanitize).filter(r => !ids.has(r.id) && ids.add(r.id));
@@ -767,7 +792,7 @@ $('jk-add').addEventListener('click', () => {
 // ---------- Kategori tiket (diatur per nama tiket) ----------
 function persistTickets() {
   try { localStorage.setItem(KEY + '_tickets', JSON.stringify(tickets)); } catch (e) { alert('Gagal menyimpan data tiket (penyimpanan penuh?)'); }
-  bumpDirty(); renderTodo(); renderTotals();
+  bumpDirty(); renderTodo(); renderTotals(); renderExpense();
 }
 function renderCats() {
   const groups = new Map();
@@ -830,71 +855,177 @@ $('todo').addEventListener('click', e => {
   $('search').scrollIntoView({behavior: 'smooth', block: 'center'});
 });
 
-// ---------- Total tiket Video Call, 2-Shot, dan Meet & Greet (hanya terlihat di admin) ----------
-let ttYear = '';
+// ---------- Total tiket Video Call, 2-Shot, dan MNG (hanya terlihat di admin) ----------
+let ttYear = '', ttKind = ''; // ttKind: '' = gabungan, atau 'vc' | 'ts' | 'mg' = satu jenis saja
 const TT_KINDS = [
   {k: 'vc', label: 'Video Call', color: '#a78bfa'},
   {k: 'ts', label: '2-Shot', color: '#ff2a5f'},
-  {k: 'mg', label: 'Meet & Greet', color: '#ffb347'}
+  {k: 'mg', label: 'MNG', color: '#ffb347'}
 ];
-const PKG = /greet\s*&\s*2[- ]?shot/i; // tiket paket "Meet and Greet & 2-Shot" dihitung sebagai Meet & Greet
+const PKG = /greet\s*&\s*2[- ]?shot/i; // tiket paket "Meet and Greet & 2-Shot" dihitung sebagai MNG
 const ticketKind = t => tcat(t) === 'Video Call' ? 'vc' : (/2[- ]?shot/i.test(t.name) && !PKG.test(t.name)) ? 'ts' : 'mg';
+const ttRows = () => tickets.filter(t => t.type !== 'SHOW' && BLUR_CATS.includes(tcat(t)) && raffleOf(t.raffle) !== 'lose'); // entri undian yang kalah bukan tiket yang dibeli
+const ttSum = a => a.reduce((x, t) => x + t.bought, 0);
+const ttAgg = a => ({vc: ttSum(a.filter(t => ticketKind(t) === 'vc')), ts: ttSum(a.filter(t => ticketKind(t) === 'ts')), mg: ttSum(a.filter(t => ticketKind(t) === 'mg'))});
+const ttTot = v => v.vc + v.ts + v.mg;
+const ttSmall = v => `VC ${v.vc} · 2S ${v.ts} · MNG ${v.mg}`;
+const stackBar = (parts, max) => { // parts: [warna, nilai, label, teks]
+  const t = parts.reduce((x, p) => x + p[1], 0);
+  return `<div class="tt-bw"><div class="tt-bar" style="width:${max ? t / max * 100 : 0}%">${parts.filter(p => p[1]).map(p => `<i style="flex:${p[1]};background:${p[0]}" title="${esc(p[2] || '')}: ${esc(p[3] ?? p[1])}"></i>`).join('')}</div></div>`;
+};
+const ttBar = (v, max) => stackBar(TT_KINDS.map(K => [K.color, v[K.k], K.label]), max);
+
 function renderTotals() {
   const el = $('tt');
   if (!el) return;
-  const all = tickets.filter(t => t.type !== 'SHOW' && BLUR_CATS.includes(tcat(t)));
-  if (!all.length) { el.innerHTML = '<div class="empty">Belum ada data tiket Video Call / 2-Shot / Meet & Greet. Impor dulu dari jkt48.com.</div>'; return; }
-  const years = [...new Set(all.map(t => t.date.slice(0, 4)))].sort().reverse();
+  const base = ttRows();
+  if (!base.length) { el.innerHTML = '<div class="empty">Belum ada data tiket Video Call / 2-Shot / MNG. Impor dulu dari jkt48.com.</div>'; return; }
+  const years = [...new Set(base.map(t => t.date.slice(0, 4)))].sort().reverse();
   if (ttYear && !years.includes(ttYear)) ttYear = '';
-  const ev = ttYear ? all.filter(t => t.date.startsWith(ttYear)) : all, today = new Date().toISOString().slice(0, 10);
-  const sum = a => a.reduce((x, t) => x + t.bought, 0);
-  const agg = a => ({vc: sum(a.filter(t => ticketKind(t) === 'vc')), ts: sum(a.filter(t => ticketKind(t) === 'ts')), mg: sum(a.filter(t => ticketKind(t) === 'mg'))});
-  const tot = v => v.vc + v.ts + v.mg, total = sum(ev), pct = n => total ? Math.round(n / total * 100) : 0;
-  const bar = (v, max) => `<div class="tt-bw"><div class="tt-bar" style="width:${max ? tot(v) / max * 100 : 0}%">${TT_KINDS.map(K => v[K.k] ? `<i style="flex:${v[K.k]};background:${K.color}" title="${K.label}: ${v[K.k]}"></i>` : '').join('')}</div></div>`;
-  const A = agg(ev), upN = sum(ev.filter(t => t.date > today));
+  const today = new Date().toISOString().slice(0, 10), inK = t => !ttKind || ticketKind(t) === ttKind;
+  const evY = ttYear ? base.filter(t => t.date.startsWith(ttYear)) : base; // satu tahun, semua jenis (untuk kartu jenis)
+  const ev = evY.filter(inK), all = base.filter(inK);                       // + filter jenis (untuk hero, tahun, bulan, member)
+  const AY = ttAgg(evY), A = ttAgg(ev), total = ttTot(A), totY = ttTot(AY);
+  const pct = n => total ? Math.round(n / total * 100) : 0, pctY = n => totY ? Math.round(n / totY * 100) : 0;
+  const upN = ttSum(ev.filter(t => t.date > today)), shown = ttKind ? TT_KINDS.filter(K => K.k === ttKind) : TT_KINDS;
+  const kLabel = ttKind ? ' · ' + TT_KINDS.find(K => K.k === ttKind).label : '';
 
   const card = (K, i) => {
-    const a = ev.filter(t => ticketKind(t) === K.k), ser = new Set(a.map(tname)).size, up = sum(a.filter(t => t.date > today));
-    const sub = K.k === 'vc' ? '' : `Event ${sum(a.filter(t => tcat(t) === '2S & MnG Event'))} · Theater Sementara ${sum(a.filter(t => tcat(t) === '2S & MnG Theater Sementara'))}`;
-    const pk = K.k === 'mg' ? sum(a.filter(t => PKG.test(t.name))) : 0;
-    return `<div class="tt-c" style="--c:${K.color};--i:${i}"><b>${A[K.k]}</b><div class="tl">${K.label}</div>
-      <small>${pct(A[K.k])}% dari total · ${a.length} sesi · ${ser} seri${sub ? '<br>' + sub : ''}${pk ? `<br>termasuk ${pk} tiket paket MnG + 2-Shot` : ''}${up ? `<br>${up} mendatang` : ''}</small></div>`;
+    const a = evY.filter(t => ticketKind(t) === K.k), ser = new Set(a.map(tname)).size, up = ttSum(a.filter(t => t.date > today));
+    const sub = K.k === 'vc' ? '' : `Event ${ttSum(a.filter(t => tcat(t) === '2S & MnG Event'))} · Theater Sementara ${ttSum(a.filter(t => tcat(t) === '2S & MnG Theater Sementara'))}`;
+    const pk = K.k === 'mg' ? ttSum(a.filter(t => PKG.test(t.name))) : 0;
+    return `<button type="button" class="tt-c${ttKind === K.k ? ' on' : ''}" data-k="${K.k}" style="--c:${K.color};--i:${i}" aria-pressed="${ttKind === K.k}"><b>${AY[K.k]}</b><span class="tl">${K.label}</span>
+      <small>${pctY(AY[K.k])}% dari total · ${a.length} sesi · ${ser} seri${sub ? '<br>' + sub : ''}${pk ? `<br>termasuk ${pk} tiket paket MNG + 2-Shot` : ''}${up ? `<br>${up} mendatang` : ''}<br><em class="tt-hint">${ttKind === K.k ? 'klik lagi untuk gabungan' : 'klik untuk lihat terpisah'}</em></small></button>`;
   };
 
-  const yMax = Math.max(1, ...years.map(y => tot(agg(all.filter(t => t.date.startsWith(y))))));
-  const yRows = years.map(y => { const v = agg(all.filter(t => t.date.startsWith(y))); return `<div class="tt-r"><span class="nm">${esc(y)}</span>${bar(v, yMax)}<span class="tot">${tot(v)}</span></div>`; }).join('');
+  const yMax = Math.max(1, ...years.map(y => ttTot(ttAgg(all.filter(t => t.date.startsWith(y))))));
+  const yRows = years.map(y => { const v = ttAgg(all.filter(t => t.date.startsWith(y))); return `<div class="tt-r"><span class="nm">${esc(y)}</span>${ttBar(v, yMax)}<span class="tot">${ttTot(v)}</span></div>`; }).join('');
+
+  const months = {};
+  ev.forEach(t => { (months[t.date.slice(0, 7)] = months[t.date.slice(0, 7)] || []).push(t); });
+  const mKeys = Object.keys(months).sort().reverse(), moMax = Math.max(1, ...mKeys.map(k => ttTot(ttAgg(months[k]))));
+  const moHtml = mKeys.map(k => {
+    const list = months[k], v = ttAgg(list), by = {};
+    list.forEach(t => { const n = t.member || 'Tanpa nama member'; (by[n] = by[n] || []).push(t); });
+    const rows = Object.entries(by).map(([n, x]) => [n, ttAgg(x), [...new Set(x.map(tname))]]).sort((p, q) => ttTot(q[1]) - ttTot(p[1])), lMax = Math.max(1, ttTot(rows[0][1]));
+    return `<details class="tt-m"><summary><span class="nm">${esc(MON_ID[+k.slice(5, 7) - 1] + ' ' + k.slice(0, 4))}${k > today.slice(0, 7) ? ' <em>mendatang</em>' : ''}<small>${ttSmall(v)} · ${rows.length} member</small></span>${ttBar(v, moMax)}<span class="tot">${ttTot(v)}</span></summary>
+      <div class="tt-ml">${rows.map(([n, x, series]) => `<div class="tt-r" title="${esc(series.join(', '))}"><span class="nm">${esc(n)}<small>${ttSmall(x)}</small></span>${ttBar(x, lMax)}<span class="tot">${ttTot(x)}</span></div>`).join('')}</div></details>`;
+  }).join('');
 
   const mem = {};
   ev.forEach(t => { if (t.member) (mem[t.member] = mem[t.member] || []).push(t); });
-  const mList = Object.entries(mem).map(([n, a]) => [n, agg(a)]).sort((a, b) => tot(b[1]) - tot(a[1])).slice(0, 12), mMax = mList.length ? tot(mList[0][1]) : 1;
-  const mRows = mList.map(([n, v]) => `<div class="tt-r"><span class="nm">${esc(n)}<small>VC ${v.vc} · 2S ${v.ts} · MG ${v.mg}</small></span>${bar(v, mMax)}<span class="tot">${tot(v)}</span></div>`).join('');
+  const mList = Object.entries(mem).map(([n, a]) => [n, ttAgg(a)]).sort((a, b) => ttTot(b[1]) - ttTot(a[1])).slice(0, 12), mMax = mList.length ? ttTot(mList[0][1]) : 1;
+  const mRows = mList.map(([n, v]) => `<div class="tt-r"><span class="nm">${esc(n)}<small>${ttSmall(v)}</small></span>${ttBar(v, mMax)}<span class="tot">${ttTot(v)}</span></div>`).join('');
 
-  // per bulan: total tiket + daftar member beserta tiketnya (klik bulan untuk membuka)
-  const months = {};
-  ev.forEach(t => { (months[t.date.slice(0, 7)] = months[t.date.slice(0, 7)] || []).push(t); });
-  const mKeys = Object.keys(months).sort().reverse(), moMax = Math.max(1, ...mKeys.map(k => tot(agg(months[k]))));
-  const moHtml = mKeys.map(k => {
-    const list = months[k], v = agg(list), by = {};
-    list.forEach(t => { const n = t.member || 'Tanpa nama member'; (by[n] = by[n] || []).push(t); });
-    const rows = Object.entries(by).map(([n, x]) => [n, agg(x), [...new Set(x.map(tname))]]).sort((p, q) => tot(q[1]) - tot(p[1])), lMax = Math.max(1, tot(rows[0][1]));
-    return `<details class="tt-m"><summary><span class="nm">${esc(MON_ID[+k.slice(5, 7) - 1] + ' ' + k.slice(0, 4))}${k > today.slice(0, 7) ? ' <em>mendatang</em>' : ''}<small>VC ${v.vc} · 2S ${v.ts} · MG ${v.mg} · ${rows.length} member</small></span>${bar(v, moMax)}<span class="tot">${tot(v)}</span></summary>
-      <div class="tt-ml">${rows.map(([n, x, series]) => `<div class="tt-r" title="${esc(series.join(', '))}"><span class="nm">${esc(n)}<small>VC ${x.vc} · 2S ${x.ts} · MG ${x.mg}</small></span>${bar(x, lMax)}<span class="tot">${tot(x)}</span></div>`).join('')}</div></details>`;
-  }).join('');
-
-  el.innerHTML = `<p class="tt-note">🔒 Halaman ini hanya ada di admin. Di halaman publik, jumlah tiket VC, 2-Shot, dan MnG tampil diblur.</p>
+  el.innerHTML = `<p class="tt-note">🔒 Halaman ini hanya ada di admin. Di halaman publik, jumlah tiket VC, 2-Shot, dan MNG tampil diblur. Entri undian yang kalah tidak dihitung.</p>
+    <div class="tt-years">${[['', 'Gabungan'], ...TT_KINDS.map(K => [K.k, K.label])].map(([k, l]) => `<button type="button" class="tt-y tt-k${k === ttKind ? ' on' : ''}" data-k="${k}">${l}</button>`).join('')}</div>
     <div class="tt-years">${['', ...years].map(y => `<button type="button" class="tt-y${y === ttYear ? ' on' : ''}" data-y="${y}">${y || 'Semua tahun'}</button>`).join('')}</div>
-    <div class="tt-hero"><div class="tt-big"><b>${total}</b><span>total tiket${ttYear ? ' ' + ttYear : ''}</span>${upN ? `<small>termasuk ${upN} mendatang</small>` : ''}</div>
-      <div style="margin-top:14px">${bar(A, total)}</div>
-      <div class="tt-legend">${TT_KINDS.map(K => `<span><i style="background:${K.color}"></i>${K.label} ${A[K.k]} (${pct(A[K.k])}%)</span>`).join('')}</div></div>
+    <div class="tt-hero"><div class="tt-big"><b>${total}</b><span>total tiket${kLabel}${ttYear ? ' ' + ttYear : ''}</span>${upN ? `<small>termasuk ${upN} mendatang</small>` : ''}</div>
+      <div style="margin-top:14px">${ttBar(A, total)}</div>
+      <div class="tt-legend">${shown.map(K => `<span><i style="background:${K.color}"></i>${K.label} ${A[K.k]} (${pct(A[K.k])}%)</span>`).join('')}</div></div>
     <div class="tt-cards">${TT_KINDS.map(card).join('')}</div>
     <div><h3 class="tt-h">Per tahun</h3>${yRows}</div>
     <div><h3 class="tt-h">Per bulan · klik bulan untuk melihat member</h3>${moHtml}</div>
     <div><h3 class="tt-h">Per member${ttYear ? ' (' + ttYear + ')' : ''} · 12 teratas</h3>${mRows || '<div class="empty">Tidak ada data</div>'}</div>`;
 }
 $('tt').addEventListener('click', e => {
-  const b = e.target.closest('[data-y]');
-  if (b) { ttYear = b.dataset.y; renderTotals(); }
+  const y = e.target.closest('[data-y]'), k = e.target.closest('[data-k]');
+  if (y) ttYear = y.dataset.y;
+  else if (k) ttKind = ttKind === k.dataset.k ? '' : k.dataset.k;
+  else return;
+  renderTotals();
 });
+
+// ---------- Pengeluaran: dihitung dari data yang sudah diinput + daftar harga ----------
+const EX_ITEMS = [
+  {k: 'theater', label: 'Tiket theater', g: 'theater', base: 200000, unit: 'show'},
+  {k: 'ts_roulette', label: '2-Shot Roulette', g: 'ts', base: 100000, unit: 'sesi'},
+  {k: 'ts_bday', label: 'Birthday 2-Shot', g: 'ts', base: 250000, unit: 'sesi'},
+  {k: 'ck_roulette', label: 'Chekicha', g: 'ck', base: 150000, unit: 'sesi'},
+  {k: 'ck_bday', label: 'Birthday Chekicha', g: 'ck', base: 250000, unit: 'sesi'},
+  {k: 'ts_event', label: '2-Shot Event', g: 'ts', base: 180000, unit: 'tiket'},
+  {k: 'mng', label: 'MNG', g: 'mng', base: 50000, unit: 'tiket'},
+  {k: 'vc', label: 'Video Call', g: 'vc', base: 120000, unit: 'tiket'}
+];
+const EX_GROUPS = [
+  {g: 'theater', label: 'Tiket theater', color: '#ff8c00'}, {g: 'ts', label: '2-Shot', color: '#ff2a5f'}, {g: 'ck', label: 'Chekicha', color: '#34d399'},
+  {g: 'mng', label: 'MNG', color: '#ffd23f'}, {g: 'vc', label: 'Video Call', color: '#a78bfa'}
+];
+const EX_ITEM = Object.fromEntries(EX_ITEMS.map(i => [i.k, i]));
+const PRK = 'jkt48_prices_v1';
+const DEF_PRICES = {base: Object.fromEntries(EX_ITEMS.map(i => [i.k, i.base])), over: [{m: '2026-10', k: 'ts_event', p: 200000}, {m: '2026-10', k: 'mng', p: 60000}]}; // Okt 2026 harganya berbeda
+let prices = (() => {
+  try { const s = JSON.parse(localStorage.getItem(PRK)); if (s && s.base && Array.isArray(s.over)) return {base: {...DEF_PRICES.base, ...s.base}, over: s.over}; } catch (e) {}
+  return JSON.parse(JSON.stringify(DEF_PRICES));
+})();
+const savePrices = () => { try { localStorage.setItem(PRK, JSON.stringify(prices)); } catch (e) {} };
+const priceOf = (k, m) => { const o = prices.over.find(x => x.k === k && x.m === m); return o ? o.p : prices.base[k]; }; // harga khusus bulan itu, kalau tidak ada pakai harga dasar
+let exYear = '', exOpen = false;
+function expenseLines() {
+  const L = [], add = (date, k, q) => { if (!date || !q) return; const m = date.slice(0, 7), p = priceOf(k, m); L.push({m, k, q, p, amt: q * p}); };
+  records.forEach(r => {
+    add(r.date, 'theater', 1);
+    if (r.twoshot === 'Ya') add(r.date, r.tsType === 'birthday' ? 'ts_bday' : 'ts_roulette', 1);
+    if (r.chekicha === 'Ya') add(r.date, r.ckType === 'birthday' ? 'ck_bday' : 'ck_roulette', 1);
+  });
+  ttRows().forEach(t => add(t.date, {vc: 'vc', ts: 'ts_event', mg: 'mng'}[ticketKind(t)], t.bought));
+  return L;
+}
+function renderExpense() {
+  const el = $('ex');
+  if (!el) return;
+  const lines = expenseLines();
+  if (!lines.length) { el.innerHTML = '<div class="empty">Belum ada data untuk dihitung.</div>'; return; }
+  const years = [...new Set(lines.map(l => l.m.slice(0, 4)))].sort().reverse();
+  if (exYear && !years.includes(exYear)) exYear = '';
+  const L = exYear ? lines.filter(l => l.m.startsWith(exYear)) : lines;
+  const amt = a => a.reduce((x, l) => x + l.amt, 0), qty = a => a.reduce((x, l) => x + l.q, 0), total = amt(L), nm = new Set(L.map(l => l.m)).size;
+  const gOf = l => EX_ITEM[l.k].g, pct = n => total ? Math.round(n / total * 100) : 0;
+  const gParts = a => EX_GROUPS.map(G => { const v = amt(a.filter(l => gOf(l) === G.g)); return [G.color, v, G.label, rupiah(v)]; });
+  const gColor = I => EX_GROUPS.find(G => G.g === I.g).color;
+  const cards = EX_ITEMS.map(I => [I, L.filter(l => l.k === I.k)]).filter(x => x[1].length).map(([I, a], i) => {
+    const ps = [...new Set(a.map(l => l.p))];
+    return `<div class="tt-c" style="--c:${gColor(I)};--i:${i}"><b class="ex-n">${rupiah(amt(a))}</b><span class="tl">${I.label}</span><small>${qty(a)} ${I.unit} × ${ps.length > 1 ? 'harga campuran' : rupiah(ps[0])}<br>${pct(amt(a))}% dari total</small></div>`;
+  }).join('');
+  const byM = {};
+  L.forEach(l => (byM[l.m] = byM[l.m] || []).push(l));
+  const mKeys = Object.keys(byM).sort().reverse(), mMax = Math.max(1, ...mKeys.map(k => amt(byM[k])));
+  const moHtml = mKeys.map(k => {
+    const a = byM[k], rows = new Map();
+    a.forEach(l => { const key = l.k + '|' + l.p, r = rows.get(key) || {k: l.k, p: l.p, q: 0}; r.q += l.q; rows.set(key, r); });
+    const lines2 = [...rows.values()].sort((x, y) => y.q * y.p - x.q * x.p).map(r => `<div class="ex-l"><span>${EX_ITEM[r.k].label}</span><span>${r.q} ${EX_ITEM[r.k].unit} × ${rupiah(r.p)}</span><b>${rupiah(r.q * r.p)}</b></div>`).join('');
+    return `<details class="tt-m ex-m"><summary><span class="nm">${esc(MON_ID[+k.slice(5, 7) - 1] + ' ' + k.slice(0, 4))}<small>${rows.size} jenis</small></span>${stackBar(gParts(a), mMax)}<span class="tot">${rupiah(amt(a))}</span></summary><div class="tt-ml">${lines2}</div></details>`;
+  }).join('');
+  const editor = `<details class="ex-prices"${exOpen ? ' open' : ''}><summary>⚙️ Daftar harga</summary>
+    <div class="ex-grid">${EX_ITEMS.map(I => `<label class="ex-pr"><span>${I.label} <small>/ ${I.unit}</small></span><input type="number" min="0" step="1000" data-pk="${I.k}" value="${prices.base[I.k]}"></label>`).join('')}</div>
+    <h4 class="tt-h">Penyesuaian harga per bulan</h4>
+    ${prices.over.map((o, i) => `<div class="ex-ov"><input type="month" data-oi="${i}" data-of="m" value="${esc(o.m)}"><select data-oi="${i}" data-of="k">${EX_ITEMS.map(I => `<option value="${I.k}"${I.k === o.k ? ' selected' : ''}>${I.label}</option>`).join('')}</select><input type="number" min="0" step="1000" data-oi="${i}" data-of="p" value="${o.p}"><button type="button" class="btn-s" data-odel="${i}" aria-label="Hapus penyesuaian">✕</button></div>`).join('') || '<p class="tt-note">Belum ada penyesuaian.</p>'}
+    <button type="button" class="btn-s" data-oadd="1">＋ Tambah penyesuaian</button></details>`;
+  el.innerHTML = `<p class="tt-note">🔒 Hanya terlihat di admin. Theater = jumlah show di riwayat (termasuk JKT48 School). 2-Shot dan Chekicha = sesi yang dicatat di riwayat. 2-Shot Event, MNG, dan Video Call = jumlah tiket per sesi (tanpa undian yang kalah). Bulan mengikuti tanggal acara.</p>
+    <div class="tt-years">${['', ...years].map(y => `<button type="button" class="tt-y${y === exYear ? ' on' : ''}" data-ey="${y}">${y || 'Semua tahun'}</button>`).join('')}</div>
+    <div class="tt-hero"><div class="tt-big"><b class="ex-big">${rupiah(total)}</b><span>total pengeluaran${exYear ? ' ' + exYear : ''}</span><small>rata-rata ${rupiah(total / nm)} per bulan (${nm} bulan)</small></div>
+      <div style="margin-top:14px">${stackBar(gParts(L), total)}</div>
+      <div class="tt-legend">${gParts(L).filter(p => p[1]).map(p => `<span><i style="background:${p[0]}"></i>${p[2]} ${p[3]} (${pct(p[1])}%)</span>`).join('')}</div></div>
+    <div class="tt-cards">${cards}</div>
+    <div><h3 class="tt-h">Per bulan · klik untuk rincian</h3>${moHtml}</div>
+    ${editor}`;
+}
+$('ex').addEventListener('click', e => {
+  const y = e.target.closest('[data-ey]'), d = e.target.closest('[data-odel]'), ad = e.target.closest('[data-oadd]');
+  if (y) exYear = y.dataset.ey;
+  else if (d) { prices.over.splice(+d.dataset.odel, 1); savePrices(); exOpen = true; }
+  else if (ad) { prices.over.push({m: new Date().toISOString().slice(0, 7), k: 'ts_event', p: prices.base.ts_event}); savePrices(); exOpen = true; }
+  else return;
+  renderExpense();
+});
+$('ex').addEventListener('change', e => {
+  const t = e.target;
+  if (t.dataset.pk) prices.base[t.dataset.pk] = Math.max(0, +t.value || 0);
+  else if (t.dataset.oi !== undefined) { const o = prices.over[+t.dataset.oi]; o[t.dataset.of] = t.dataset.of === 'p' ? Math.max(0, +t.value || 0) : t.value; }
+  else return;
+  savePrices(); exOpen = true; renderExpense();
+});
+$('ex').addEventListener('toggle', e => { if (e.target.classList && e.target.classList.contains('ex-prices')) exOpen = e.target.open; }, true);
 
 // ---------- Init ----------
 renderAll(); renderBackup();
