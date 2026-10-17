@@ -153,6 +153,22 @@ button.tt-c{font:inherit;color:inherit;text-align:left;cursor:pointer}
 .ex-pr{display:grid;grid-template-columns:1fr 120px;gap:8px;align-items:center;font-size:13px}
 .ex-ov{display:grid;grid-template-columns:140px 1fr 120px 36px;gap:8px;align-items:center;margin:6px 0}
 .ex-prices small{color:#a1a1aa}
+.ex-sub{margin-bottom:14px}
+#ex:not([hidden]),#away:not([hidden]){animation:tabin .3s var(--ease)}
+#away{display:flex;flex-direction:column;gap:18px}
+.aw-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;background:#181115;border:1px solid #2d1820;border-radius:14px;padding:14px}
+.aw-form label{display:grid;gap:4px;font-size:12px;color:#a1a1aa}
+.aw-wide{grid-column:1/-1}
+.aw-act{grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end}
+.aw-row{display:grid;grid-template-columns:100px 1fr auto auto;gap:10px;align-items:center;padding:8px 6px;border-bottom:1px solid #24151d;font-size:13px;transition:background .2s}
+.aw-row:hover{background:rgba(255,255,255,.035)}
+.aw-row b{color:#ff8c00;white-space:nowrap}
+.aw-m small{display:block;color:#a1a1aa;font-size:11px}
+.aw-m i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.aw-b{display:flex;gap:6px}
+.tt-r.aw-t{grid-template-columns:minmax(90px,170px) 1fr 104px}
+.aw-t .tot{font-size:12px;white-space:nowrap}
+@media(max-width:600px){.aw-row{grid-template-columns:84px 1fr auto}.aw-b{grid-column:1/-1;justify-content:flex-end}}
 </style>
 </head>
 <body>
@@ -183,7 +199,11 @@ button.tt-c{font:inherit;color:inherit;text-align:left;cursor:pointer}
   </div>
 
   <div id="view-tiket" class="view"><div id="tt"></div></div>
-  <div id="view-biaya" class="view"><div id="ex"></div></div>
+  <div id="view-biaya" class="view">
+    <div class="tt-years ex-sub"><button type="button" class="tt-y ex-t on" data-ext="sum">Ringkasan</button><button type="button" class="tt-y ex-t" data-ext="away">✈️ Away</button></div>
+    <div id="ex"></div>
+    <div id="away" hidden></div>
+  </div>
 
   <div id="view-crud" class="view">
     <div class="crud">
@@ -448,7 +468,7 @@ function renderLists() {
   dl('dl-setlist', records.map(r => r.setlist));
   dl('dl-member', records.flatMap(r => extras(r).map(x => x.member)));
 }
-const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTodo(); renderTotals(); renderExpense(); };
+const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTodo(); renderTotals(); renderExpense(); renderAway(); };
 
 // ---------- Tab ----------
 function switchTab(name) {
@@ -456,7 +476,7 @@ function switchTab(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
   if (name === 'peta') requestAnimationFrame(centerChart);
   if (name === 'tiket') renderTotals();
-  if (name === 'biaya') renderExpense();
+  if (name === 'biaya') { renderExpense(); renderAway(); }
 }
 document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
 
@@ -622,7 +642,7 @@ const dl = (blob, name) => {
 };
 // Backup lengkap: foto tetap di dalam JSON (dipakai untuk Restore)
 $('btn-export').addEventListener('click', () => {
-  dl(new Blob([JSON.stringify({records, tickets, prices}, null, 2)], {type: 'application/json'}), 'backup-lengkap.json');
+  dl(new Blob([JSON.stringify({records, tickets, prices, away}, null, 2)], {type: 'application/json'}), 'backup-lengkap.json');
   markExported();
 });
 
@@ -700,6 +720,7 @@ $('file-import').addEventListener('change', async e => {
     if (!Array.isArray(arr)) throw new Error('Format bukan array');
     if (!Array.isArray(json) && Array.isArray(json.tickets)) mergeTickets(json.tickets);
     if (!Array.isArray(json) && json.prices && json.prices.base) { prices = {base: {...DEF_PRICES.base, ...json.prices.base}, over: Array.isArray(json.prices.over) ? json.prices.over : []}; savePrices(); renderExpense(); }
+    if (!Array.isArray(json) && Array.isArray(json.away)) { const ids = new Set(away.map(w => w.id)); json.away.map(cleanAway).filter(w => w.date && !ids.has(w.id)).forEach(w => away.push(w)); saveAway(); renderAway(); renderExpense(); }
     const ids = new Set(records.map(r => r.id));
     // id kembar di dalam file yang sama juga dilewati (ids.add mengembalikan Set = truthy)
     const fresh = arr.map(sanitize).filter(r => !ids.has(r.id) && ids.add(r.id));
@@ -949,9 +970,10 @@ const EX_ITEMS = [
 ];
 const EX_GROUPS = [
   {g: 'theater', label: 'Tiket theater', color: '#ff8c00'}, {g: 'ts', label: '2-Shot', color: '#ff2a5f'}, {g: 'ck', label: 'Chekicha', color: '#34d399'},
-  {g: 'mng', label: 'MNG', color: '#ffd23f'}, {g: 'vc', label: 'Video Call', color: '#a78bfa'}
+  {g: 'mng', label: 'MNG', color: '#ffd23f'}, {g: 'vc', label: 'Video Call', color: '#a78bfa'}, {g: 'away', label: 'Away', color: '#22d3ee'}
 ];
 const EX_ITEM = Object.fromEntries(EX_ITEMS.map(i => [i.k, i]));
+const exItem = k => EX_ITEM[k] || {label: 'Away · ' + k.slice(5), g: 'away', unit: 'entri'}; // k = "away:Kategori"
 const PRK = 'jkt48_prices_v1';
 const DEF_PRICES = {base: Object.fromEntries(EX_ITEMS.map(i => [i.k, i.base])), over: [{m: '2026-10', k: 'ts_event', p: 200000}, {m: '2026-10', k: 'mng', p: 60000}]}; // Okt 2026 harganya berbeda
 let prices = (() => {
@@ -969,6 +991,7 @@ function expenseLines() {
     if (r.chekicha === 'Ya') add(r.date, r.ckType === 'birthday' ? 'ck_bday' : 'ck_roulette', 1);
   });
   ttRows().forEach(t => add(t.date, {vc: 'vc', ts: 'ts_event', mg: 'mng'}[ticketKind(t)], t.bought));
+  away.forEach(w => { if (w.date && w.amount) L.push({m: w.date.slice(0, 7), k: 'away:' + w.cat, q: 1, p: w.amount, amt: w.amount, trip: w.trip}); }); // catatan Away
   return L;
 }
 function renderExpense() {
@@ -980,20 +1003,22 @@ function renderExpense() {
   if (exYear && !years.includes(exYear)) exYear = '';
   const L = exYear ? lines.filter(l => l.m.startsWith(exYear)) : lines;
   const amt = a => a.reduce((x, l) => x + l.amt, 0), qty = a => a.reduce((x, l) => x + l.q, 0), total = amt(L), nm = new Set(L.map(l => l.m)).size;
-  const gOf = l => EX_ITEM[l.k].g, pct = n => total ? Math.round(n / total * 100) : 0;
+  const gOf = l => exItem(l.k).g, pct = n => total ? Math.round(n / total * 100) : 0;
   const gParts = a => EX_GROUPS.map(G => { const v = amt(a.filter(l => gOf(l) === G.g)); return [G.color, v, G.label, rupiah(v)]; });
   const gColor = I => EX_GROUPS.find(G => G.g === I.g).color;
   const cards = EX_ITEMS.map(I => [I, L.filter(l => l.k === I.k)]).filter(x => x[1].length).map(([I, a], i) => {
     const ps = [...new Set(a.map(l => l.p))];
     return `<div class="tt-c" style="--c:${gColor(I)};--i:${i}"><b class="ex-n">${rupiah(amt(a))}</b><span class="tl">${I.label}</span><small>${qty(a)} ${I.unit} × ${ps.length > 1 ? 'harga campuran' : rupiah(ps[0])}<br>${pct(amt(a))}% dari total</small></div>`;
   }).join('');
+  const awL = L.filter(l => l.k.startsWith('away:'));
+  const awayCard = awL.length ? `<div class="tt-c" style="--c:#22d3ee;--i:9"><b class="ex-n">${rupiah(amt(awL))}</b><span class="tl">Away (fansfar)</span><small>${awL.length} catatan · ${new Set(awL.map(l => l.trip || '—')).size} perjalanan<br>${pct(amt(awL))}% dari total</small></div>` : '';
   const byM = {};
   L.forEach(l => (byM[l.m] = byM[l.m] || []).push(l));
   const mKeys = Object.keys(byM).sort().reverse(), mMax = Math.max(1, ...mKeys.map(k => amt(byM[k])));
   const moHtml = mKeys.map(k => {
     const a = byM[k], rows = new Map();
-    a.forEach(l => { const key = l.k + '|' + l.p, r = rows.get(key) || {k: l.k, p: l.p, q: 0}; r.q += l.q; rows.set(key, r); });
-    const lines2 = [...rows.values()].sort((x, y) => y.q * y.p - x.q * x.p).map(r => `<div class="ex-l"><span>${EX_ITEM[r.k].label}</span><span>${r.q} ${EX_ITEM[r.k].unit} × ${rupiah(r.p)}</span><b>${rupiah(r.q * r.p)}</b></div>`).join('');
+    a.forEach(l => { const aw = l.k.startsWith('away:'), key = aw ? l.k : l.k + '|' + l.p, r = rows.get(key) || {k: l.k, p: l.p, q: 0, amt: 0, aw}; r.q += l.q; r.amt += l.amt; rows.set(key, r); });
+    const lines2 = [...rows.values()].sort((x, y) => y.amt - x.amt).map(r => `<div class="ex-l"><span>${exItem(r.k).label}</span><span>${r.aw ? r.q + ' catatan' : r.q + ' ' + exItem(r.k).unit + ' × ' + rupiah(r.p)}</span><b>${rupiah(r.amt)}</b></div>`).join('');
     return `<details class="tt-m ex-m"><summary><span class="nm">${esc(MON_ID[+k.slice(5, 7) - 1] + ' ' + k.slice(0, 4))}<small>${rows.size} jenis</small></span>${stackBar(gParts(a), mMax)}<span class="tot">${rupiah(amt(a))}</span></summary><div class="tt-ml">${lines2}</div></details>`;
   }).join('');
   const editor = `<details class="ex-prices"${exOpen ? ' open' : ''}><summary>⚙️ Daftar harga</summary>
@@ -1001,12 +1026,12 @@ function renderExpense() {
     <h4 class="tt-h">Penyesuaian harga per bulan</h4>
     ${prices.over.map((o, i) => `<div class="ex-ov"><input type="month" data-oi="${i}" data-of="m" value="${esc(o.m)}"><select data-oi="${i}" data-of="k">${EX_ITEMS.map(I => `<option value="${I.k}"${I.k === o.k ? ' selected' : ''}>${I.label}</option>`).join('')}</select><input type="number" min="0" step="1000" data-oi="${i}" data-of="p" value="${o.p}"><button type="button" class="btn-s" data-odel="${i}" aria-label="Hapus penyesuaian">✕</button></div>`).join('') || '<p class="tt-note">Belum ada penyesuaian.</p>'}
     <button type="button" class="btn-s" data-oadd="1">＋ Tambah penyesuaian</button></details>`;
-  el.innerHTML = `<p class="tt-note">🔒 Hanya terlihat di admin. Theater = jumlah show di riwayat (termasuk JKT48 School). 2-Shot dan Chekicha = sesi yang dicatat di riwayat. 2-Shot Event, MNG, dan Video Call = jumlah tiket per sesi (tanpa undian yang kalah). Bulan mengikuti tanggal acara.</p>
+  el.innerHTML = `<p class="tt-note">🔒 Hanya terlihat di admin. Theater = jumlah show di riwayat (termasuk JKT48 School). 2-Shot dan Chekicha = sesi yang dicatat di riwayat. 2-Shot Event, MNG, dan Video Call = jumlah tiket per sesi (tanpa undian yang kalah). Bulan mengikuti tanggal acara. Away = catatan di sub-tab Away.</p>
     <div class="tt-years">${['', ...years].map(y => `<button type="button" class="tt-y${y === exYear ? ' on' : ''}" data-ey="${y}">${y || 'Semua tahun'}</button>`).join('')}</div>
     <div class="tt-hero"><div class="tt-big"><b class="ex-big">${rupiah(total)}</b><span>total pengeluaran${exYear ? ' ' + exYear : ''}</span><small>rata-rata ${rupiah(total / nm)} per bulan (${nm} bulan)</small></div>
       <div style="margin-top:14px">${stackBar(gParts(L), total)}</div>
       <div class="tt-legend">${gParts(L).filter(p => p[1]).map(p => `<span><i style="background:${p[0]}"></i>${p[2]} ${p[3]} (${pct(p[1])}%)</span>`).join('')}</div></div>
-    <div class="tt-cards">${cards}</div>
+    <div class="tt-cards">${cards}${awayCard}</div>
     <div><h3 class="tt-h">Per bulan · klik untuk rincian</h3>${moHtml}</div>
     ${editor}`;
 }
@@ -1026,6 +1051,81 @@ $('ex').addEventListener('change', e => {
   savePrices(); exOpen = true; renderExpense();
 });
 $('ex').addEventListener('toggle', e => { if (e.target.classList && e.target.classList.contains('ex-prices')) exOpen = e.target.open; }, true);
+
+// ---------- Away: pengeluaran saat fansfar (transportasi, penginapan, dll) ----------
+const AWAY_CATS = [
+  {c: 'Transportasi', color: '#60a5fa'}, {c: 'Penginapan', color: '#a78bfa'}, {c: 'Makan & minum', color: '#34d399'},
+  {c: 'Belanja / merch', color: '#ffb347'}, {c: 'Lainnya', color: '#9a9aa4'}
+];
+const AWK = 'jkt48_away_v1';
+const cleanAway = w => ({id: Number(w.id) || Date.now() + Math.floor(Math.random() * 1000), date: String(w.date || '').slice(0, 10), trip: String(w.trip || '').trim().slice(0, 80),
+  cat: AWAY_CATS.some(x => x.c === w.cat) ? w.cat : 'Lainnya', amount: Math.max(0, Math.round(Number(w.amount) || 0)), note: String(w.note || '').trim().slice(0, 200)});
+let away = (() => { try { const s = JSON.parse(localStorage.getItem(AWK)); if (Array.isArray(s)) return s.map(cleanAway).filter(w => w.date); } catch (e) {} return []; })();
+const saveAway = () => { try { localStorage.setItem(AWK, JSON.stringify(away)); } catch (e) { alert('Gagal menyimpan catatan Away (penyimpanan penuh?)'); } };
+let awayEdit = 0, awayLast = {date: '', trip: ''}; // awayLast: tanggal & perjalanan terakhir, supaya input beruntun lebih cepat
+
+function renderAway() {
+  const el = $('away');
+  if (!el) return;
+  const today = new Date().toISOString().slice(0, 10), sumA = a => a.reduce((s, w) => s + w.amount, 0), catColor = c => AWAY_CATS.find(x => x.c === c).color;
+  const years = [...new Set(away.map(w => w.date.slice(0, 4)))].sort().reverse();
+  const list = (exYear ? away.filter(w => w.date.startsWith(exYear)) : away).slice().sort((x, y) => y.date.localeCompare(x.date) || y.id - x.id), total = sumA(list);
+  const ed = away.find(w => w.id === awayEdit) || {date: awayLast.date || today, trip: awayLast.trip, cat: AWAY_CATS[0].c, amount: '', note: ''};
+  const trips = [...new Set(away.map(w => w.trip).filter(Boolean))];
+  const form = `<div class="aw-form">
+    <label>Tanggal<input type="date" id="aw-date" value="${esc(ed.date)}"></label>
+    <label>Perjalanan<input id="aw-trip" list="aw-trips" placeholder="mis. Surabaya, Yogyakarta" value="${esc(ed.trip)}" autocomplete="off"><datalist id="aw-trips">${trips.map(t => `<option value="${esc(t)}">`).join('')}</datalist></label>
+    <label>Kategori<select id="aw-cat">${AWAY_CATS.map(x => `<option${x.c === ed.cat ? ' selected' : ''}>${esc(x.c)}</option>`).join('')}</select></label>
+    <label>Jumlah (Rp)<input type="number" id="aw-amt" min="0" step="1000" inputmode="numeric" placeholder="150000" value="${ed.amount}"></label>
+    <label class="aw-wide">Catatan (opsional)<input id="aw-note" placeholder="mis. kereta PP, hotel 2 malam" value="${esc(ed.note)}" autocomplete="off"></label>
+    <div class="aw-act">${awayEdit ? '<button type="button" class="btn-s" data-acancel="1">Batal</button>' : ''}<button type="button" class="btn" data-asave="1">${awayEdit ? 'Simpan perubahan' : '＋ Tambah pengeluaran'}</button></div></div>`;
+  const catTot = AWAY_CATS.map(x => { const v = sumA(list.filter(w => w.cat === x.c)); return [x.color, v, x.c, rupiah(v)]; });
+  const byTrip = {};
+  list.forEach(w => { const k = w.trip || 'Tanpa nama perjalanan'; (byTrip[k] = byTrip[k] || []).push(w); });
+  const tList = Object.entries(byTrip).map(([n, w]) => { const ds = w.map(x => x.date).sort(); return {n, w, t: sumA(w), d1: ds[0], d2: ds[ds.length - 1]}; }).sort((x, y) => y.d2.localeCompare(x.d2));
+  const tMax = Math.max(1, ...tList.map(x => x.t));
+  const tHtml = tList.map(x => `<div class="tt-r aw-t"><span class="nm">${esc(x.n)}<small>${esc(x.d1 === x.d2 ? fmtDate(x.d1) : fmtDate(x.d1) + ' – ' + fmtDate(x.d2))} · ${x.w.length} catatan</small></span>${stackBar(AWAY_CATS.map(c => { const v = sumA(x.w.filter(w => w.cat === c.c)); return [c.color, v, c.c, rupiah(v)]; }), tMax)}<span class="tot">${rupiah(x.t)}</span></div>`).join('');
+  const rows = list.map(w => `<div class="aw-row"><span>${esc(fmtDate(w.date))}</span><span class="aw-m"><i style="background:${catColor(w.cat)}"></i>${esc(w.cat)}${w.trip ? ' · ' + esc(w.trip) : ''}${w.note ? `<small>${esc(w.note)}</small>` : ''}</span><b>${rupiah(w.amount)}</b><span class="aw-b"><button type="button" class="btn-s" data-aedit="${w.id}" aria-label="Ubah catatan">✎</button><button type="button" class="btn-s" data-adel="${w.id}" aria-label="Hapus catatan">✕</button></span></div>`).join('');
+  el.innerHTML = `<p class="tt-note">🔒 Hanya terlihat di admin. Catat pengeluaran saat fansfar (transportasi, penginapan, makan, belanja, dll). Tiket show, 2-Shot, Chekicha, MNG, dan Video Call tidak perlu dicatat di sini karena sudah dihitung otomatis. Total Away ikut masuk ke sub-tab Ringkasan.</p>
+    ${form}
+    <div class="tt-years">${['', ...years].map(y => `<button type="button" class="tt-y${y === exYear ? ' on' : ''}" data-ey="${y}">${y || 'Semua tahun'}</button>`).join('')}</div>
+    <div class="tt-hero"><div class="tt-big"><b class="ex-big">${rupiah(total)}</b><span>total Away${exYear ? ' ' + exYear : ''}</span><small>${list.length} catatan · ${tList.filter(x => x.n !== 'Tanpa nama perjalanan').length} perjalanan</small></div>
+      <div style="margin-top:14px">${stackBar(catTot, total)}</div>
+      <div class="tt-legend">${catTot.filter(p => p[1]).map(p => `<span><i style="background:${p[0]}"></i>${esc(p[2])} ${p[3]} (${Math.round(p[1] / total * 100)}%)</span>`).join('') || '<span>Belum ada catatan</span>'}</div></div>
+    ${tHtml ? `<div><h3 class="tt-h">Per perjalanan</h3>${tHtml}</div>` : ''}
+    <div><h3 class="tt-h">Semua catatan</h3>${rows || '<div class="empty">Belum ada catatan Away.</div>'}</div>`;
+}
+$('away').addEventListener('click', async e => {
+  const q = s => e.target.closest(s);
+  const y = q('[data-ey]');
+  if (y) { exYear = y.dataset.ey; renderAway(); renderExpense(); return; }
+  if (q('[data-asave]')) {
+    const date = $('aw-date').value, amount = Math.round(Number($('aw-amt').value) || 0);
+    if (!date) return alert('Isi tanggalnya dulu.');
+    if (amount <= 0) return alert('Isi jumlah pengeluarannya (lebih dari 0).');
+    const rec = cleanAway({id: awayEdit || Date.now(), date, trip: $('aw-trip').value, cat: $('aw-cat').value, amount, note: $('aw-note').value});
+    const i = away.findIndex(w => w.id === rec.id);
+    if (i >= 0) away[i] = rec; else away.push(rec);
+    awayLast = {date: rec.date, trip: rec.trip}; awayEdit = 0;
+    saveAway(); renderAway(); renderExpense(); $('aw-amt').focus();
+  } else if (q('[data-acancel]')) { awayEdit = 0; renderAway(); }
+  else if (q('[data-aedit]')) { awayEdit = Number(q('[data-aedit]').dataset.aedit); renderAway(); $('aw-date').scrollIntoView({behavior: 'smooth', block: 'center'}); }
+  else if (q('[data-adel]')) {
+    const id = Number(q('[data-adel]').dataset.adel), w = away.find(x => x.id === id);
+    if (w && await ask(`Hapus catatan Away ${fmtDate(w.date)} · ${w.cat} ${rupiah(w.amount)}?`, 'Hapus')) {
+      away = away.filter(x => x.id !== id); if (awayEdit === id) awayEdit = 0;
+      saveAway(); renderAway(); renderExpense();
+    }
+  }
+});
+$('away').addEventListener('keydown', e => { // Enter di kolom isian = simpan
+  if (e.key === 'Enter' && e.target.closest('.aw-form input')) { e.preventDefault(); $('away').querySelector('[data-asave]').click(); }
+});
+document.querySelectorAll('.ex-t').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.ex-t').forEach(x => x.classList.toggle('on', x === b));
+  $('ex').hidden = b.dataset.ext !== 'sum'; $('away').hidden = b.dataset.ext !== 'away';
+  if (b.dataset.ext === 'away') renderAway(); else renderExpense();
+}));
 
 // ---------- Init ----------
 renderAll(); renderBackup();
