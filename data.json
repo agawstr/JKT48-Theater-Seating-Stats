@@ -4054,6 +4054,46 @@
       "bought": 1,
       "cat": "",
       "status": ""
+    },
+    {
+      "k": "165w3yg",
+      "type": "EXCLUSIVE",
+      "date": "2026-10-24",
+      "name": "JKT48 Photocard @ Personal Meet and Greet Festival “Ayo Senyumlah”",
+      "start": "18:00",
+      "used": 0,
+      "raffle": "",
+      "member": "Nur Intan",
+      "lane": "Jalur 18",
+      "session": "Sesi 8",
+      "bought": 2,
+      "cat": "",
+      "status": ""
     }
-  ]
+  ],
+  "prices": {
+    "base": {
+      "theater": 200000,
+      "ts_roulette": 100000,
+      "ts_bday": 250000,
+      "ck_roulette": 150000,
+      "ck_bday": 250000,
+      "ts_event": 180000,
+      "mng": 50000,
+      "vc": 120000
+    },
+    "over": [
+      {
+        "m": "2026-10",
+        "k": "ts_event",
+        "p": 200000
+      },
+      {
+        "m": "2026-10",
+        "k": "mng",
+        "p": 60000
+      }
+    ]
+  },
+  "away": []
 }
