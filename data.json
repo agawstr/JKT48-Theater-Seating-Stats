@@ -831,7 +831,7 @@
   ],
   "tickets": [
     {
-      "k": "mys0fz",
+      "k": "12bzw4u",
       "type": "EVENT",
       "date": "2024-03-24",
       "name": "JKT48 SCHOOL",
@@ -843,10 +843,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1ukjnx4"
     },
     {
-      "k": "5onu4q",
+      "k": "1loavza",
       "type": "EXCLUSIVE",
       "date": "2024-04-19",
       "name": "JKT48 Ramadhan Special Show 2024, 19 April 2024",
@@ -858,10 +859,11 @@
       "session": "Session 1",
       "bought": 1,
       "cat": "Video Call",
-      "status": ""
+      "status": "",
+      "tx": "1lt3osl"
     },
     {
-      "k": "93gipy",
+      "k": "o18pny",
       "type": "EXCLUSIVE",
       "date": "2024-04-29",
       "name": "JKT48 Ramadhan Special Show 2024, 29 April 2024",
@@ -873,10 +875,11 @@
       "session": "Session 1",
       "bought": 1,
       "cat": "Video Call",
-      "status": ""
+      "status": "",
+      "tx": "7mmg5t"
     },
     {
-      "k": "5op4js",
+      "k": "1wczunv",
       "type": "EVENT",
       "date": "2024-05-08",
       "name": "JKT48 OFC Event: Magic Hour Short Movie Premiere",
@@ -888,10 +891,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1ukpwzg"
     },
     {
-      "k": "lvr2s",
+      "k": "126u9rc",
       "type": "SHOW",
       "date": "2024-05-09",
       "name": "Ingin Bertemu",
@@ -903,10 +907,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "18pabb1"
     },
     {
-      "k": "1w920vn",
+      "k": "p40php",
       "type": "SHOW",
       "date": "2024-05-09",
       "name": "Ingin Bertemu",
@@ -918,10 +923,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "18paepv"
     },
     {
-      "k": "l7yecf",
+      "k": "ojdbtr",
       "type": "EXCLUSIVE",
       "date": "2024-05-11",
       "name": "JKT48 Photocard - Spring Has Come - JKT48 Personal Meet and Greet & 2-Shot",
@@ -933,10 +939,11 @@
       "session": "Session 5",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "14jk5wp"
     },
     {
-      "k": "dshnb5",
+      "k": "1puew8x",
       "type": "EXCLUSIVE",
       "date": "2024-05-11",
       "name": "JKT48 Photocard - Spring Has Come - JKT48 Personal Meet and Greet & 2-Shot",
@@ -948,10 +955,27 @@
       "session": "Session 7",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "14jk5wp"
     },
     {
-      "k": "1grjzke",
+      "k": "15fe12h",
+      "type": "EXCLUSIVE",
+      "date": "2024-05-11",
+      "name": "JKT48 Photocard - Spring Has Come - JKT48 Personal Meet and Greet & 2-Shot",
+      "start": "17:00",
+      "used": 0,
+      "raffle": "",
+      "member": "Abigail Rachel",
+      "lane": "Lane 2",
+      "session": "Session 7",
+      "bought": 3,
+      "cat": "",
+      "status": "",
+      "tx": "k4jaq9"
+    },
+    {
+      "k": "1ldrozz",
       "type": "SHOW",
       "date": "2024-05-18",
       "name": "Ingin Bertemu",
@@ -963,10 +987,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "18pct62"
     },
     {
-      "k": "12do4z4",
+      "k": "1tz0808",
       "type": "SHOW",
       "date": "2024-05-19",
       "name": "Aturan Anti Cinta",
@@ -978,10 +1003,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "18pbvnl"
     },
     {
-      "k": "3nk7fa",
+      "k": "tlygxc",
       "type": "EXCLUSIVE",
       "date": "2024-05-20",
       "name": "LAST VOYAGE - Digital Photobook, 20 May 2024",
@@ -993,10 +1019,11 @@
       "session": "Session 1",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "rxeawz"
     },
     {
-      "k": "4vdqbi",
+      "k": "39jz14",
       "type": "EXCLUSIVE",
       "date": "2024-05-20",
       "name": "LAST VOYAGE - Digital Photobook, 20 May 2024",
@@ -1008,10 +1035,11 @@
       "session": "Session 2",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "rxeawz"
     },
     {
-      "k": "a4hd4x",
+      "k": "jecior",
       "type": "EXCLUSIVE",
       "date": "2024-05-21",
       "name": "LAST VOYAGE - Digital Photobook, 21 May 2024",
@@ -1023,10 +1051,11 @@
       "session": "Session 1",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "15z1irn"
     },
     {
-      "k": "ocz1lo",
+      "k": "vn2ue2",
       "type": "EXCLUSIVE",
       "date": "2024-05-21",
       "name": "LAST VOYAGE - Digital Photobook, 21 May 2024",
@@ -1038,10 +1067,11 @@
       "session": "Session 3",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "2oc1lz"
     },
     {
-      "k": "11hcy1a",
+      "k": "188yz61",
       "type": "SHOW",
       "date": "2024-05-30",
       "name": "Pajama Drive",
@@ -1053,10 +1083,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "18q1e1w"
     },
     {
-      "k": "1aqhuw6",
+      "k": "n21rnn",
       "type": "SHOW",
       "date": "2024-06-07",
       "name": "Pajama Drive",
@@ -1068,10 +1099,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "18qnq9y"
     },
     {
-      "k": "19637k9",
+      "k": "1d02efj",
       "type": "SHOW",
       "date": "2024-06-15",
       "name": "Pajama Drive",
@@ -1083,10 +1115,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "18rh3an"
     },
     {
-      "k": "1ck0zqi",
+      "k": "1q2vx4a",
       "type": "SHOW",
       "date": "2024-06-15",
       "name": "Pajama Drive",
@@ -1098,10 +1131,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "18rgyax"
     },
     {
-      "k": "6ww90d",
+      "k": "fbcipv",
       "type": "EXCLUSIVE",
       "date": "2024-06-16",
       "name": "Think Donut, 16 Juni 2024",
@@ -1113,10 +1147,11 @@
       "session": "Session 1",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "aggr67"
     },
     {
-      "k": "uxr5mw",
+      "k": "ahv6ac",
       "type": "EXCLUSIVE",
       "date": "2024-06-22",
       "name": "Think Donut, 22 Juni 2024",
@@ -1128,10 +1163,11 @@
       "session": "Session 1",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1dgl8fp"
     },
     {
-      "k": "1yxtiwd",
+      "k": "1jfs2wd",
       "type": "SHOW",
       "date": "2024-06-23",
       "name": "Pajama Drive",
@@ -1143,10 +1179,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "18s3fhl"
     },
     {
-      "k": "ss9z9o",
+      "k": "1e8i9vt",
       "type": "SHOW",
       "date": "2024-06-27",
       "name": "Pajama Drive",
@@ -1158,10 +1195,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "18s5izq"
     },
     {
-      "k": "pec73f",
+      "k": "115on3b",
       "type": "SHOW",
       "date": "2024-06-27",
       "name": "Pajama Drive",
@@ -1173,10 +1211,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "18s5jvp"
     },
     {
-      "k": "mi4e24",
+      "k": "10j159t",
       "type": "SHOW",
       "date": "2024-07-05",
       "name": "Pajama Drive",
@@ -1188,10 +1227,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "18s752m"
     },
     {
-      "k": "1cvcm3j",
+      "k": "1aaonkh",
       "type": "EXCLUSIVE",
       "date": "2024-07-21",
       "name": "JKT48 Theater Sementara 2024 & Pajama Drive Shonichi - 21 Juli 2024",
@@ -1203,10 +1243,11 @@
       "session": "Session 1",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1nus0gr"
     },
     {
-      "k": "12pjdiq",
+      "k": "1dhmllr",
       "type": "SHOW",
       "date": "2024-07-25",
       "name": "Pajama Drive",
@@ -1218,10 +1259,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "18sy7rq"
     },
     {
-      "k": "zbllch",
+      "k": "10esyqf",
       "type": "SHOW",
       "date": "2024-07-25",
       "name": "Pajama Drive",
@@ -1233,10 +1275,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "18sy8kv"
     },
     {
-      "k": "1ukzvq0",
+      "k": "48u1g4",
       "type": "SHOW",
       "date": "2024-07-28",
       "name": "Ingin Bertemu",
@@ -1248,10 +1291,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "18thc11"
     },
     {
-      "k": "1r723jr",
+      "k": "1q74jsl",
       "type": "SHOW",
       "date": "2024-07-28",
       "name": "Ingin Bertemu",
@@ -1263,10 +1307,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "18thg2v"
     },
     {
-      "k": "1yzok0c",
+      "k": "cx3cnj",
       "type": "SHOW",
       "date": "2024-08-04",
       "name": "Pajama Drive",
@@ -1278,10 +1323,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "18tjnzg"
     },
     {
-      "k": "1lgxcfh",
+      "k": "9ceymr",
       "type": "EXCLUSIVE",
       "date": "2024-08-19",
       "name": "JKT48 Djakarta Tahoen '48 - 19 Aug 2024",
@@ -1293,10 +1339,11 @@
       "session": "Session 2",
       "bought": 1,
       "cat": "Video Call",
-      "status": ""
+      "status": "",
+      "tx": "1gt2eq7"
     },
     {
-      "k": "6eoci",
+      "k": "1f3lse",
       "type": "EXCLUSIVE",
       "date": "2024-08-27",
       "name": "JKT48 Djakarta Tahoen '48 - 27 Aug 2024",
@@ -1308,10 +1355,11 @@
       "session": "Session 3",
       "bought": 1,
       "cat": "Video Call",
-      "status": ""
+      "status": "",
+      "tx": "1p2n3at"
     },
     {
-      "k": "1gdqxg2",
+      "k": "r0ux6i",
       "type": "EXCLUSIVE",
       "date": "2024-09-13",
       "name": "ONE NIGHT OF J. K. T. - 13th Sep",
@@ -1323,10 +1371,11 @@
       "session": "Session 3",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "7dtfpt"
     },
     {
-      "k": "izziq9",
+      "k": "10d3b49",
       "type": "EXCLUSIVE",
       "date": "2024-09-14",
       "name": "ONE NIGHT OF J. K. T. - 14th Sep",
@@ -1338,10 +1387,11 @@
       "session": "Session 6",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1ska8x"
     },
     {
-      "k": "cna5du",
+      "k": "1rfdh4a",
       "type": "EXCLUSIVE",
       "date": "2024-09-16",
       "name": "ONE NIGHT OF J. K. T. - 16th Sep",
@@ -1353,10 +1403,11 @@
       "session": "Session 1",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "14p48k1"
     },
     {
-      "k": "1ukh0sy",
+      "k": "18qm0yq",
       "type": "EXCLUSIVE",
       "date": "2024-10-11",
       "name": "Personal Meet & Greet Festival: Road to Sousenkyo 2024 - 11th Oct",
@@ -1368,10 +1419,11 @@
       "session": "Session 2",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1d99iyh"
     },
     {
-      "k": "1evzvec",
+      "k": "1xob0kk",
       "type": "EXCLUSIVE",
       "date": "2024-10-13",
       "name": "Personal Meet & Greet Festival: Road to Sousenkyo 2024 - 13th Oct",
@@ -1383,10 +1435,11 @@
       "session": "Session 4",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "8ebd7d"
     },
     {
-      "k": "2qnnpm",
+      "k": "knnoay",
       "type": "EXCLUSIVE",
       "date": "2024-10-17",
       "name": "Personal Meet & Greet Festival: Road to Sousenkyo 2024 - 17th Oct",
@@ -1398,10 +1451,11 @@
       "session": "Session 2",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1rxn415"
     },
     {
-      "k": "18zvhn6",
+      "k": "kbvkt6",
       "type": "EXCLUSIVE",
       "date": "2024-11-08",
       "name": "Youthful Days - 8th Nov",
@@ -1413,10 +1467,27 @@
       "session": "Session 1",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1rdecdt"
     },
     {
-      "k": "1xawudg",
+      "k": "1nwqeyi",
+      "type": "EXCLUSIVE",
+      "date": "2024-11-08",
+      "name": "Youthful Days - 8th Nov",
+      "start": "16:30",
+      "used": 0,
+      "raffle": "",
+      "member": "Abigail Rachel",
+      "lane": "Lane 5",
+      "session": "Session 1",
+      "bought": 1,
+      "cat": "",
+      "status": "",
+      "tx": "vx54k1"
+    },
+    {
+      "k": "zrl9ui",
       "type": "EXCLUSIVE",
       "date": "2024-11-10",
       "name": "Youthful Days - 10th Nov",
@@ -1428,10 +1499,27 @@
       "session": "Session 1",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "64v2m7"
     },
     {
-      "k": "m6ffhq",
+      "k": "1209l9g",
+      "type": "EXCLUSIVE",
+      "date": "2024-11-10",
+      "name": "Youthful Days - 10th Nov",
+      "start": "11:45",
+      "used": 0,
+      "raffle": "",
+      "member": "Adeline Wijaya",
+      "lane": "Lane 3",
+      "session": "Session 1",
+      "bought": 1,
+      "cat": "",
+      "status": "",
+      "tx": "8dje15"
+    },
+    {
+      "k": "94hc1v",
       "type": "SHOW",
       "date": "2024-11-28",
       "name": "Pajama Drive",
@@ -1443,10 +1531,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19ckgu6"
     },
     {
-      "k": "g5rqjk",
+      "k": "19sd5do",
       "type": "EXCLUSIVE",
       "date": "2024-12-21",
       "name": "WONDERLAND - 21st Dec",
@@ -1458,10 +1547,11 @@
       "session": "Session 4",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "xvqsxx"
     },
     {
-      "k": "4wbrx0",
+      "k": "a837iv",
       "type": "SHOW",
       "date": "2024-12-28",
       "name": "Aturan Anti Cinta",
@@ -1473,10 +1563,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19cp370"
     },
     {
-      "k": "1idzqr",
+      "k": "1w6dpdq",
       "type": "SHOW",
       "date": "2024-12-28",
       "name": "Aturan Anti Cinta",
@@ -1488,10 +1579,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19cp6r8"
     },
     {
-      "k": "104u3t6",
+      "k": "rhip0m",
       "type": "SHOW",
       "date": "2025-01-09",
       "name": "Aturan Anti Cinta",
@@ -1503,10 +1595,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19d8fwl"
     },
     {
-      "k": "lqy98j",
+      "k": "yrm2a3",
       "type": "SHOW",
       "date": "2025-01-10",
       "name": "Pajama Drive",
@@ -1518,10 +1611,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19cpxgx"
     },
     {
-      "k": "1s0am12",
+      "k": "ey0rdy",
       "type": "SHOW",
       "date": "2025-01-11",
       "name": "Aturan Anti Cinta",
@@ -1533,10 +1627,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19cpxhl"
     },
     {
-      "k": "1a8gz9j",
+      "k": "ah0g85",
       "type": "SHOW",
       "date": "2025-01-12",
       "name": "Ingin Bertemu",
@@ -1548,10 +1643,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19d9thj"
     },
     {
-      "k": "1dmerfs",
+      "k": "njti32",
       "type": "SHOW",
       "date": "2025-01-12",
       "name": "Ingin Bertemu",
@@ -1563,10 +1659,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19d97nz"
     },
     {
-      "k": "sv2pku",
+      "k": "c0rg7o",
       "type": "EXCLUSIVE",
       "date": "2025-01-16",
       "name": "JKT48 13th Anniversary Concert - 16th Jan",
@@ -1578,10 +1675,11 @@
       "session": "Session 1",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1334r9b"
     },
     {
-      "k": "z8iwum",
+      "k": "123d6f9",
       "type": "SHOW",
       "date": "2025-01-17",
       "name": "Pajama Drive",
@@ -1593,10 +1691,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19danmo"
     },
     {
-      "k": "vul4od",
+      "k": "p0jm7i",
       "type": "SHOW",
       "date": "2025-01-17",
       "name": "Pajama Drive",
@@ -1608,10 +1707,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19dar3e"
     },
     {
-      "k": "tquxsh",
+      "k": "120ea3t",
       "type": "SHOW",
       "date": "2025-01-19",
       "name": "Ingin Bertemu",
@@ -1623,10 +1723,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19dbfcx"
     },
     {
-      "k": "qcx5m8",
+      "k": "oxlbm1",
       "type": "SHOW",
       "date": "2025-01-19",
       "name": "Ingin Bertemu",
@@ -1638,10 +1739,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19dc4jm"
     },
     {
-      "k": "1cq3khb",
+      "k": "33t9fy",
       "type": "SHOW",
       "date": "2025-01-23",
       "name": "Aturan Anti Cinta",
@@ -1653,10 +1755,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19dc5fs"
     },
     {
-      "k": "18zoyud",
+      "k": "145zln7",
       "type": "EXCLUSIVE",
       "date": "2025-01-24",
       "name": "JKT48 13th Anniversary Concert - 24th Jan",
@@ -1668,10 +1771,11 @@
       "session": "Session 1",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "dvg8yf"
     },
     {
-      "k": "1lq4965",
+      "k": "1wii1l9",
       "type": "SHOW",
       "date": "2025-01-24",
       "name": "Cara Meminum Ramune",
@@ -1683,10 +1787,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19dc5ft"
     },
     {
-      "k": "1ic6gzw",
+      "k": "1jfp6ks",
       "type": "SHOW",
       "date": "2025-01-24",
       "name": "Cara Meminum Ramune",
@@ -1698,10 +1803,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19dcy3t"
     },
     {
-      "k": "zcxubu",
+      "k": "1oywynf",
       "type": "SHOW",
       "date": "2025-01-25",
       "name": "Pajama Drive",
@@ -1713,10 +1819,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19ddmfe"
     },
     {
-      "k": "12qvmi3",
+      "k": "30l8bs",
       "type": "SHOW",
       "date": "2025-01-25",
       "name": "Pajama Drive",
@@ -1728,10 +1835,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19dcaee"
     },
     {
-      "k": "oczrwt",
+      "k": "blw2f7",
       "type": "SHOW",
       "date": "2025-01-26",
       "name": "Ingin Bertemu",
@@ -1743,10 +1851,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19ddnz3"
     },
     {
-      "k": "trd0jr",
+      "k": "o4a8j1",
       "type": "EVENT",
       "date": "2025-01-28",
       "name": "OFC EVENT - PINS & WINS! Sesi 1",
@@ -1758,10 +1867,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1ulxtfz"
     },
     {
-      "k": "1umcwdl",
+      "k": "1760r1t",
       "type": "SHOW",
       "date": "2025-02-01",
       "name": "Sambil Menggandeng Erat Tanganku",
@@ -1773,10 +1883,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19df7n5"
     },
     {
-      "k": "sydbnv",
+      "k": "w0on69",
       "type": "SHOW",
       "date": "2025-02-01",
       "name": "Sambil Menggandeng Erat Tanganku",
@@ -1788,10 +1899,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19dfa3z"
     },
     {
-      "k": "11ul770",
+      "k": "ncxxmw",
       "type": "SHOW",
       "date": "2025-02-02",
       "name": "Sambil Menggandeng Erat Tanganku",
@@ -1803,10 +1915,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19dxp51"
     },
     {
-      "k": "6lmhd",
+      "k": "1g6ufnw",
       "type": "SHOW",
       "date": "2025-02-05",
       "name": "Pajama Drive",
@@ -1818,10 +1931,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19dxrms"
     },
     {
-      "k": "fojna7",
+      "k": "vxc6v9",
       "type": "EXCLUSIVE",
       "date": "2025-02-08",
       "name": "JKT48 26th Single Personal Meet and Greet Festival, 8th Feb 2025",
@@ -1833,10 +1947,11 @@
       "session": "Session 1",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1an8fm7"
     },
     {
-      "k": "mni6ju",
+      "k": "syqeka",
       "type": "EXCLUSIVE",
       "date": "2025-02-16",
       "name": "JKT48 26th Single Personal Meet & Greet Festival Digital Photobook - 16th Feb",
@@ -1848,10 +1963,11 @@
       "session": "Session 1",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1nemeux"
     },
     {
-      "k": "1wqpw21",
+      "k": "rctg83",
       "type": "EXCLUSIVE",
       "date": "2025-02-17",
       "name": "JKT48 26th Single Personal Meet & Greet Festival Digital Photobook - 17th Feb",
@@ -1863,10 +1979,11 @@
       "session": "Session 1",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "so3l8j"
     },
     {
-      "k": "btvh5z",
+      "k": "voz17v",
       "type": "EXCLUSIVE",
       "date": "2025-02-24",
       "name": "JKT48 26th Single Personal Meet & Greet Festival Digital Photobook - 24th Feb",
@@ -1878,10 +1995,11 @@
       "session": "Session 3",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1o1wca5"
     },
     {
-      "k": "1u4ve35",
+      "k": "1w5o7i1",
       "type": "EXCLUSIVE",
       "date": "2025-02-27",
       "name": "JKT48 26th Single Personal Meet & Greet Festival Digital Photobook - 27th Feb",
@@ -1893,10 +2011,27 @@
       "session": "Session 2",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "11mxqp"
     },
     {
-      "k": "1f9wkh9",
+      "k": "jxp4yj",
+      "type": "EXCLUSIVE",
+      "date": "2025-02-27",
+      "name": "JKT48 26th Single Personal Meet & Greet Festival Digital Photobook - 27th Feb",
+      "start": "18:00",
+      "used": 0,
+      "raffle": "",
+      "member": "Michelle Levia",
+      "lane": "Lane 5",
+      "session": "Session 2",
+      "bought": 1,
+      "cat": "",
+      "status": "",
+      "tx": "nurx6b"
+    },
+    {
+      "k": "xlratr",
       "type": "EXCLUSIVE",
       "date": "2025-03-15",
       "name": "Heart & Harmony - 15th Mar",
@@ -1908,10 +2043,11 @@
       "session": "Session 1",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "keadsb"
     },
     {
-      "k": "fve53a",
+      "k": "tizsok",
       "type": "EXCLUSIVE",
       "date": "2025-03-16",
       "name": "Heart & Harmony - 16th Mar",
@@ -1923,10 +2059,11 @@
       "session": "Session 1",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "tt4lp3"
     },
     {
-      "k": "15nixjz",
+      "k": "1tmuqzx",
       "type": "EXCLUSIVE",
       "date": "2025-03-23",
       "name": "Heart & Harmony - 23rd Mar",
@@ -1938,10 +2075,11 @@
       "session": "Session 4",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1hjkxpz"
     },
     {
-      "k": "1jzmnzd",
+      "k": "19wzywh",
       "type": "EXCLUSIVE",
       "date": "2025-04-16",
       "name": "Ramadan Event 2025 - 16th Apr",
@@ -1953,10 +2091,11 @@
       "session": "Session 1",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "p0ugvl"
     },
     {
-      "k": "sxk3ak",
+      "k": "iseuyg",
       "type": "EXCLUSIVE",
       "date": "2025-04-26",
       "name": "Ramadan Event 2025 - 26th Apr",
@@ -1968,10 +2107,11 @@
       "session": "Session 1",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1tmi3w5"
     },
     {
-      "k": "c1stu4",
+      "k": "1oqp9vp",
       "type": "SHOW",
       "date": "2025-04-26",
       "name": "Ingin Bertemu",
@@ -1983,10 +2123,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19esixu"
     },
     {
-      "k": "v11gi8",
+      "k": "1m6nbw0",
       "type": "SHOW",
       "date": "2025-04-27",
       "name": "Pajama Drive",
@@ -1998,10 +2139,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19etart"
     },
     {
-      "k": "rn3obz",
+      "k": "193ul0b",
       "type": "SHOW",
       "date": "2025-04-27",
       "name": "Pajama Drive",
@@ -2013,10 +2155,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19eu7kl"
     },
     {
-      "k": "w7rrn1",
+      "k": "192plvx",
       "type": "EXCLUSIVE",
       "date": "2025-04-28",
       "name": "Ramadan Event 2025 - 28th Apr",
@@ -2028,10 +2171,11 @@
       "session": "Session 1",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "a1rjd5"
     },
     {
-      "k": "qji99f",
+      "k": "4iinr1",
       "type": "SHOW",
       "date": "2025-05-02",
       "name": "Aturan Anti Cinta",
@@ -2043,10 +2187,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19fcksj"
     },
     {
-      "k": "n5kh36",
+      "k": "1qgumf3",
       "type": "SHOW",
       "date": "2025-05-02",
       "name": "Aturan Anti Cinta",
@@ -2058,10 +2203,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19fe55y"
     },
     {
-      "k": "c5meo5",
+      "k": "d3ton7",
       "type": "SHOW",
       "date": "2025-05-03",
       "name": "Pajama Drive",
@@ -2073,10 +2219,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19fe55z"
     },
     {
-      "k": "8romhw",
+      "k": "104fh",
       "type": "SHOW",
       "date": "2025-05-03",
       "name": "Pajama Drive",
@@ -2088,10 +2235,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19fe8mq"
     },
     {
-      "k": "18myapi",
+      "k": "skp9q",
       "type": "EXCLUSIVE",
       "date": "2025-05-15",
       "name": "CODE JOURNAL - 15th May",
@@ -2103,10 +2251,11 @@
       "session": "Session 2",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1j2oo69"
     },
     {
-      "k": "o6m1bj",
+      "k": "1vjty23",
       "type": "EXCLUSIVE",
       "date": "2025-05-16",
       "name": "CODE JOURNAL - 16th May",
@@ -2118,10 +2267,11 @@
       "session": "Session 2",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1y9iulh"
     },
     {
-      "k": "1c4lawg",
+      "k": "e4gcxi",
       "type": "EXCLUSIVE",
       "date": "2025-05-17",
       "name": "CODE JOURNAL - 17th May",
@@ -2133,10 +2283,11 @@
       "session": "Session 6",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1pg8nu7"
     },
     {
-      "k": "10ikosa",
+      "k": "10f9778",
       "type": "EXCLUSIVE",
       "date": "2025-06-18",
       "name": "JKT48 Original Setlist Prelude - 18th Jun",
@@ -2148,10 +2299,11 @@
       "session": "Session 1",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "m8qkwz"
     },
     {
-      "k": "fbim7i",
+      "k": "1f82p0",
       "type": "EXCLUSIVE",
       "date": "2025-06-19",
       "name": "JKT48 Original Setlist Prelude - 19th Jun",
@@ -2163,10 +2315,11 @@
       "session": "Session 3",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "v6pwin"
     },
     {
-      "k": "10uokml",
+      "k": "1s5rg1d",
       "type": "EXCLUSIVE",
       "date": "2025-06-22",
       "name": "JKT48 Original Setlist Prelude - 22nd Jun",
@@ -2178,10 +2331,11 @@
       "session": "Session 4",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "17friel"
     },
     {
-      "k": "1o7buu0",
+      "k": "1x0fq9e",
       "type": "EXCLUSIVE",
       "date": "2025-06-23",
       "name": "JKT48 Original Setlist Prelude - 23rd Jun",
@@ -2193,10 +2347,11 @@
       "session": "Session 1",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "185gayr"
     },
     {
-      "k": "zkggl3",
+      "k": "5txjek",
       "type": "SHOW",
       "date": "2025-06-27",
       "name": "Aturan Anti Cinta",
@@ -2208,10 +2363,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19g7hbi"
     },
     {
-      "k": "19gsc9c",
+      "k": "7jt04",
       "type": "SHOW",
       "date": "2025-06-28",
       "name": "Pajama Drive",
@@ -2223,10 +2379,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19g7bjh"
     },
     {
-      "k": "162uk33",
+      "k": "1m5v2f0",
       "type": "SHOW",
       "date": "2025-06-28",
       "name": "Pajama Drive",
@@ -2238,10 +2395,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19g86nq"
     },
     {
-      "k": "db3mkq",
+      "k": "1gpusvx",
       "type": "SHOW",
       "date": "2025-07-02",
       "name": "Pajama Drive",
@@ -2253,10 +2411,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19g904c"
     },
     {
-      "k": "1421f5y",
+      "k": "1r3bjdk",
       "type": "EXCLUSIVE",
       "date": "2025-07-07",
       "name": "MILES & MEMORIES OF JKT48 ALL IN TOUR 2025 Digital Photobook - 7th July",
@@ -2268,10 +2427,11 @@
       "session": "Session 2",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1lmn1tn"
     },
     {
-      "k": "156k4sy",
+      "k": "1m242ja",
       "type": "SHOW",
       "date": "2025-07-16",
       "name": "Pajama Drive",
@@ -2283,10 +2443,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19grdf1"
     },
     {
-      "k": "18khwz7",
+      "k": "3bckd",
       "type": "SHOW",
       "date": "2025-07-16",
       "name": "Pajama Drive",
@@ -2298,10 +2459,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19g91qr"
     },
     {
-      "k": "1m23caa",
+      "k": "1ng9u3b",
       "type": "SHOW",
       "date": "2025-08-01",
       "name": "Sambil Menggandeng Erat Tanganku",
@@ -2313,10 +2475,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19gridq"
     },
     {
-      "k": "osro6s",
+      "k": "1cjuqew",
       "type": "SHOW",
       "date": "2025-08-08",
       "name": "Pajama Drive",
@@ -2328,10 +2491,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19gt1v1"
     },
     {
-      "k": "letw0j",
+      "k": "zh2fee",
       "type": "SHOW",
       "date": "2025-08-08",
       "name": "Pajama Drive",
@@ -2343,10 +2507,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19guej0"
     },
     {
-      "k": "aevtli",
+      "k": "1l546xn",
       "type": "SHOW",
       "date": "2025-08-09",
       "name": "Ingin Bertemu",
@@ -2358,10 +2523,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19gt1v2"
     },
     {
-      "k": "70y1f9",
+      "k": "182bxq5",
       "type": "SHOW",
       "date": "2025-08-09",
       "name": "Ingin Bertemu",
@@ -2373,10 +2539,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19gugc1"
     },
     {
-      "k": "136rk8v",
+      "k": "1u0lg59",
       "type": "EXCLUSIVE",
       "date": "2025-08-13",
       "name": "FULL HOUSE CONCERT  Digital Photobook - 13th Aug",
@@ -2388,10 +2555,11 @@
       "session": "Session 1",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "251ndz"
     },
     {
-      "k": "19tq3ri",
+      "k": "apegyu",
       "type": "EXCLUSIVE",
       "date": "2025-08-15",
       "name": "FULL HOUSE CONCERT  Digital Photobook - 15th Aug",
@@ -2403,10 +2571,11 @@
       "session": "Session 2",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1e2v2f5"
     },
     {
-      "k": "yk6j2i",
+      "k": "152jxdm",
       "type": "EXCLUSIVE",
       "date": "2025-08-15",
       "name": "FULL HOUSE CONCERT  Digital Photobook - 15th Aug",
@@ -2418,10 +2587,11 @@
       "session": "Session 3",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "zrhrkp"
     },
     {
-      "k": "1a80ukm",
+      "k": "5lenw6",
       "type": "EVENT",
       "date": "2025-08-26",
       "name": "OFC Event - SUDDEN VERSUS #3 - Good Luck, Have Fun! Sesi 1",
@@ -2433,10 +2603,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1une4jd"
     },
     {
-      "k": "vu4zzb",
+      "k": "1t02znc",
       "type": "EVENT",
       "date": "2025-08-26",
       "name": "OFC Event - SUDDEN VERSUS #3 - Good Luck, Have Fun! Sesi 2",
@@ -2448,10 +2619,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1une4je"
     },
     {
-      "k": "1bad0jc",
+      "k": "rh5058",
       "type": "SHOW",
       "date": "2025-08-29",
       "name": "Pajama Drive",
@@ -2463,10 +2635,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": "refund"
+      "status": "refund",
+      "tx": "19gwvjh"
     },
     {
-      "k": "1k6kw34",
+      "k": "hi8xeb",
       "type": "SHOW",
       "date": "2025-08-30",
       "name": "Ingin Bertemu",
@@ -2478,10 +2651,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": "refund"
+      "status": "refund",
+      "tx": "19gxi6k"
     },
     {
-      "k": "iilbde",
+      "k": "6cwsyn",
       "type": "SHOW",
       "date": "2025-08-30",
       "name": "Aturan Anti Cinta",
@@ -2493,10 +2667,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19gxk3a"
     },
     {
-      "k": "1tz2q2z",
+      "k": "um5p8j",
       "type": "EXCLUSIVE",
       "date": "2025-09-12",
       "name": "Cake A Wish - 12th Sep",
@@ -2508,10 +2683,11 @@
       "session": "Session 1",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "wxgmsh"
     },
     {
-      "k": "8sdxwg",
+      "k": "1i8oti2",
       "type": "EXCLUSIVE",
       "date": "2025-09-14",
       "name": "Cake A Wish - 14th Sep",
@@ -2523,10 +2699,11 @@
       "session": "Session 1",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "imhr8j"
     },
     {
-      "k": "1miuao6",
+      "k": "1u484ca",
       "type": "EXCLUSIVE",
       "date": "2025-09-16",
       "name": "Cake A Wish - 16th Sep",
@@ -2538,10 +2715,11 @@
       "session": "Session 2",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "11s5bq5"
     },
     {
-      "k": "14h3rfv",
+      "k": "11nynl5",
       "type": "EXCLUSIVE",
       "date": "2025-09-22",
       "name": "Cake A Wish - 22nd Sep",
@@ -2553,10 +2731,11 @@
       "session": "Session 1",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1w28isn"
     },
     {
-      "k": "1ihs2zh",
+      "k": "wcu2yg",
       "type": "SHOW",
       "date": "2025-09-26",
       "name": "Ingin Bertemu",
@@ -2568,10 +2747,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19hj550"
     },
     {
-      "k": "17z1pc1",
+      "k": "kor449",
       "type": "EXCLUSIVE",
       "date": "2025-10-08",
       "name": "Pertaruhan Cinta - 8th Oct",
@@ -2583,10 +2763,11 @@
       "session": "Session 1",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "azf5t"
     },
     {
-      "k": "2m3fmp",
+      "k": "1bxelo9",
       "type": "EXCLUSIVE",
       "date": "2025-10-13",
       "name": "Pertaruhan Cinta - 13th Oct",
@@ -2598,10 +2779,11 @@
       "session": "Session 1",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "pj1cch"
     },
     {
-      "k": "1cz51vk",
+      "k": "1hpg3rk",
       "type": "EXCLUSIVE",
       "date": "2025-10-13",
       "name": "Pertaruhan Cinta - 13th Oct",
@@ -2613,10 +2795,11 @@
       "session": "Session 2",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "17gvpq1"
     },
     {
-      "k": "16s29fp",
+      "k": "7edp4n",
       "type": "EXCLUSIVE",
       "date": "2025-10-15",
       "name": "Pertaruhan Cinta - 15th Oct",
@@ -2628,10 +2811,11 @@
       "session": "Session 1",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1l47997"
     },
     {
-      "k": "1dj94ko",
+      "k": "11au02o",
       "type": "EXCLUSIVE",
       "date": "2025-11-08",
       "name": "BTS MV \"Oh my pumpkin!\" JKT48 Digital Photobook - 8th Nov",
@@ -2643,10 +2827,11 @@
       "session": "Session 1",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "11xnokh"
     },
     {
-      "k": "1n6xpps",
+      "k": "1u12agk",
       "type": "EXCLUSIVE",
       "date": "2025-11-08",
       "name": "BTS MV \"Oh my pumpkin!\" JKT48 Digital Photobook - 8th Nov",
@@ -2658,10 +2843,11 @@
       "session": "Session 2",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "7s22zx"
     },
     {
-      "k": "1dhv6j7",
+      "k": "1nssmxv",
       "type": "EXCLUSIVE",
       "date": "2025-11-09",
       "name": "BTS MV \"Oh my pumpkin!\" JKT48 Digital Photobook - 9th Nov",
@@ -2673,10 +2859,11 @@
       "session": "Session 1",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1sinw3d"
     },
     {
-      "k": "i9ovd4",
+      "k": "ll7fge",
       "type": "EXCLUSIVE",
       "date": "2025-11-13",
       "name": "BTS MV \"Oh my pumpkin!\" JKT48 Digital Photobook - 13th Nov",
@@ -2688,10 +2875,11 @@
       "session": "Session 2",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "11wtejj"
     },
     {
-      "k": "ddvurc",
+      "k": "d7urey",
       "type": "EXCLUSIVE",
       "date": "2025-11-26",
       "name": "BTS MV \"Oh my pumpkin!\" JKT48 Digital Photobook - 26th Nov",
@@ -2703,10 +2891,11 @@
       "session": "Session 1",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "gjx8jf"
     },
     {
-      "k": "1bizad3",
+      "k": "16x2x5b",
       "type": "EXCLUSIVE",
       "date": "2025-12-22",
       "name": "THE FIRST SNOW - 22th Dec",
@@ -2718,10 +2907,11 @@
       "session": "Session 1",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "yg8dtt"
     },
     {
-      "k": "1146bky",
+      "k": "lxoox8",
       "type": "EXCLUSIVE",
       "date": "2025-12-23",
       "name": "THE FIRST SNOW - 23rd Dec",
@@ -2733,10 +2923,11 @@
       "session": "Session 1",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1u4bzg3"
     },
     {
-      "k": "1ueu9vu",
+      "k": "1xwng98",
       "type": "SHOW",
       "date": "2025-12-26",
       "name": "Aturan Anti Cinta",
@@ -2748,10 +2939,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19z7hrf"
     },
     {
-      "k": "5a23kz",
+      "k": "1saak03",
       "type": "SHOW",
       "date": "2025-12-27",
       "name": "Pertaruhan Cinta",
@@ -2763,10 +2955,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19z864p"
     },
     {
-      "k": "e69z44",
+      "k": "1jm23nk",
       "type": "SHOW",
       "date": "2025-12-28",
       "name": "KIRA KIRA GIRLS",
@@ -2778,10 +2971,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19z8ucl"
     },
     {
-      "k": "185go79",
+      "k": "vdweul",
       "type": "SHOW",
       "date": "2025-12-28",
       "name": "Pertaruhan Cinta",
@@ -2793,10 +2987,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19z8zkh"
     },
     {
-      "k": "1bjegdi",
+      "k": "18gpxbu",
       "type": "SHOW",
       "date": "2025-12-28",
       "name": "Pertaruhan Cinta",
@@ -2808,10 +3003,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19z8ud9"
     },
     {
-      "k": "1ihp204",
+      "k": "12x5ts7",
       "type": "SHOW",
       "date": "2026-01-08",
       "name": "Pertaruhan Cinta",
@@ -2823,10 +3019,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19z9suk"
     },
     {
-      "k": "143t7eu",
+      "k": "1bigmco",
       "type": "SHOW",
       "date": "2026-01-09",
       "name": "Cara Meminum Ramune",
@@ -2838,10 +3035,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19zb4wb"
     },
     {
-      "k": "ppxcu7",
+      "k": "1it2kkl",
       "type": "SHOW",
       "date": "2026-01-10",
       "name": "Sambil Menggandeng Erat Tanganku",
@@ -2853,10 +3051,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19zb7f3"
     },
     {
-      "k": "bc1i8x",
+      "k": "1rec3l8",
       "type": "SHOW",
       "date": "2026-01-11",
       "name": "Cara Meminum Ramune",
@@ -2868,10 +3067,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19zb9x0"
     },
     {
-      "k": "1yiu6nv",
+      "k": "1adq413",
       "type": "EXCLUSIVE",
       "date": "2026-01-13",
       "name": "JKT48 14th Anniversary Concert & Gracia Graduation Ceremony - 13th Jan",
@@ -2883,10 +3083,11 @@
       "session": "Session 1",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1rqk80l"
     },
     {
-      "k": "1hldv1k",
+      "k": "1dji3my",
       "type": "SHOW",
       "date": "2026-01-16",
       "name": "Sambil Menggandeng Erat Tanganku",
@@ -2898,10 +3099,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19ztt0r"
     },
     {
-      "k": "ztk8a1",
+      "k": "191ylnp",
       "type": "SHOW",
       "date": "2026-01-17",
       "name": "Cara Meminum Ramune",
@@ -2913,10 +3115,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19zui79"
     },
     {
-      "k": "137i0ga",
+      "k": "1m4s603",
       "type": "SHOW",
       "date": "2026-01-17",
       "name": "Cara Meminum Ramune",
@@ -2928,10 +3131,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19zuev6"
     },
     {
-      "k": "1ctk9u",
+      "k": "z8w4e3",
       "type": "SHOW",
       "date": "2026-01-18",
       "name": "Sambil Menggandeng Erat Tanganku",
@@ -2943,10 +3147,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19zuiyq"
     },
     {
-      "k": "kc26yo",
+      "k": "cb3rq",
       "type": "SHOW",
       "date": "2026-01-22",
       "name": "Cara Meminum Ramune",
@@ -2958,10 +3163,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19zv933"
     },
     {
-      "k": "5y6cde",
+      "k": "8xl8pp",
       "type": "SHOW",
       "date": "2026-01-23",
       "name": "Pertaruhan Cinta",
@@ -2973,10 +3179,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19zvxic"
     },
     {
-      "k": "1qlejr8",
+      "k": "hiu1lm",
       "type": "SHOW",
       "date": "2026-01-24",
       "name": "Sambil Menggandeng Erat Tanganku",
@@ -2988,10 +3195,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19zv9vj"
     },
     {
-      "k": "gidb9",
+      "k": "8ulqf3",
       "type": "SHOW",
       "date": "2026-01-25",
       "name": "Sambil Menggandeng Erat Tanganku",
@@ -3003,10 +3211,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19zw39f"
     },
     {
-      "k": "1mb5kme",
+      "k": "1q5oj67",
       "type": "SHOW",
       "date": "2026-01-31",
       "name": "Sambil Menggandeng Erat Tanganku",
@@ -3018,10 +3227,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19zxnqp"
     },
     {
-      "k": "1pp3csn",
+      "k": "1d2vgdb",
       "type": "SHOW",
       "date": "2026-01-31",
       "name": "Sambil Menggandeng Erat Tanganku",
@@ -3033,10 +3243,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19zy8ma"
     },
     {
-      "k": "1w7i7y4",
+      "k": "1h6h2m8",
       "type": "SHOW",
       "date": "2026-02-01",
       "name": "Cara Meminum Ramune",
@@ -3048,10 +3259,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19zyelp"
     },
     {
-      "k": "16toaxw",
+      "k": "1gdyz0p",
       "type": "SHOW",
       "date": "2026-02-06",
       "name": "Cara Meminum Ramune",
@@ -3063,10 +3275,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19zz6dq"
     },
     {
-      "k": "sfsgcm",
+      "k": "1oz93r7",
       "type": "SHOW",
       "date": "2026-02-07",
       "name": "Sambil Menggandeng Erat Tanganku",
@@ -3078,10 +3291,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "19zzuli"
     },
     {
-      "k": "1p330qr",
+      "k": "gdejyz",
       "type": "EXCLUSIVE",
       "date": "2026-02-12",
       "name": "JKT48 27th Single - Andai 'Ku Bukan Idola - Idol Nanka Janakattara - 12th Feb",
@@ -3093,10 +3307,11 @@
       "session": "Session 1",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "l3c2yp"
     },
     {
-      "k": "1fmh527",
+      "k": "121668v",
       "type": "EXCLUSIVE",
       "date": "2026-02-13",
       "name": "JKT48 27th Single - Andai 'Ku Bukan Idola - Idol Nanka Janakattara - 13th Feb",
@@ -3108,10 +3323,11 @@
       "session": "Session 1",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "rlq8fd"
     },
     {
-      "k": "xf6065",
+      "k": "1wnx0b3",
       "type": "EVENT",
       "date": "2026-02-22",
       "name": "JKT48 SCHOOL",
@@ -3123,10 +3339,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1unexy3"
     },
     {
-      "k": "s1blz2",
+      "k": "1ri9cem",
       "type": "EVENT",
       "date": "2026-03-15",
       "name": "JKT48 OFC Event “JKT48 Psychology Project: Team Passion",
@@ -3138,10 +3355,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1uni02h"
     },
     {
-      "k": "1u0ezlw",
+      "k": "5fcgqh",
       "type": "EVENT",
       "date": "2026-03-15",
       "name": "JKT48 SCHOOL",
@@ -3153,10 +3371,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1unjhtq"
     },
     {
-      "k": "1fmj50m",
+      "k": "1tydzpe",
       "type": "EVENT",
       "date": "2026-03-16",
       "name": "ANDAI ‘KU BUKAN IDOLA",
@@ -3168,10 +3387,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1unjh5x"
     },
     {
-      "k": "1e9iri4",
+      "k": "1ezx9k2",
       "type": "SHOW",
       "date": "2026-03-28",
       "name": "Cara Meminum Ramune",
@@ -3183,10 +3403,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1lpeb9r"
     },
     {
-      "k": "99j4me",
+      "k": "8vcfej",
       "type": "EXCLUSIVE",
       "date": "2026-04-15",
       "name": "Love Dream Passion - Music Video Behind the Scenes",
@@ -3198,10 +3419,11 @@
       "session": "Sesi 1",
       "bought": 3,
       "cat": "Video Call",
-      "status": ""
+      "status": "",
+      "tx": "j9d59a"
     },
     {
-      "k": "1kjdp2x",
+      "k": "zqtlaw",
       "type": "EXCLUSIVE",
       "date": "2026-04-16",
       "name": "Love Dream Passion - Music Video Behind the Scenes",
@@ -3213,10 +3435,11 @@
       "session": "Sesi 3",
       "bought": 3,
       "cat": "Video Call",
-      "status": ""
+      "status": "",
+      "tx": "j9d64o"
     },
     {
-      "k": "16vhep0",
+      "k": "1g6as3e",
       "type": "EXCLUSIVE",
       "date": "2026-04-18",
       "name": "Love Dream Passion - Music Video Behind the Scenes",
@@ -3228,10 +3451,11 @@
       "session": "Sesi 1",
       "bought": 3,
       "cat": "Video Call",
-      "status": ""
+      "status": "",
+      "tx": "j9d6u7"
     },
     {
-      "k": "g925o4",
+      "k": "1ne80i2",
       "type": "SHOW",
       "date": "2026-04-19",
       "name": "Cara Meminum Ramune",
@@ -3243,10 +3467,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "kh8pjz"
     },
     {
-      "k": "1uv41bu",
+      "k": "7hcli9",
       "type": "SHOW",
       "date": "2026-04-24",
       "name": "DREAM BAKUDAN",
@@ -3258,10 +3483,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1usvtjk"
     },
     {
-      "k": "5qlgzq",
+      "k": "c85qau",
       "type": "SHOW",
       "date": "2026-04-24",
       "name": "DREAM BAKUDAN",
@@ -3273,10 +3499,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1vx90eh"
     },
     {
-      "k": "gq3lft",
+      "k": "1lzd1re",
       "type": "SHOW",
       "date": "2026-04-25",
       "name": "ITADAKI♥LOVE",
@@ -3288,25 +3515,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1vx90ei"
     },
     {
-      "k": "17ad87k",
-      "type": "EVENT",
-      "date": "2026-04-26",
-      "name": "Group 1 - Trial Video Call bersama Member JKT48 Generasi 14",
-      "start": "11:45",
-      "used": 0,
-      "raffle": "LOSE",
-      "member": "",
-      "lane": "",
-      "session": "",
-      "bought": 1,
-      "cat": "",
-      "status": ""
-    },
-    {
-      "k": "1cnqxkn",
+      "k": "1ncwpva",
       "type": "EVENT",
       "date": "2026-04-26",
       "name": "Group 2 - Trial Video Call bersama Member JKT48 Generasi 14",
@@ -3318,14 +3531,15 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "m4jso8"
     },
     {
-      "k": "1jmt8hj",
+      "k": "19gigpt",
       "type": "EVENT",
       "date": "2026-04-26",
-      "name": "Group 4 - Trial Video Call bersama Member JKT48 Generasi 14",
-      "start": "13:15",
+      "name": "Group 1 - Trial Video Call bersama Member JKT48 Generasi 14",
+      "start": "11:45",
       "used": 0,
       "raffle": "LOSE",
       "member": "",
@@ -3333,10 +3547,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "m4jpyy"
     },
     {
-      "k": "a0j7kp",
+      "k": "16qwgi9",
       "type": "EVENT",
       "date": "2026-04-26",
       "name": "Group 3 - Trial Video Call bersama Member JKT48 Generasi 14",
@@ -3348,10 +3563,27 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "m4jtgh"
     },
     {
-      "k": "11klnm5",
+      "k": "1qgeekx",
+      "type": "EVENT",
+      "date": "2026-04-26",
+      "name": "Group 4 - Trial Video Call bersama Member JKT48 Generasi 14",
+      "start": "13:15",
+      "used": 0,
+      "raffle": "LOSE",
+      "member": "",
+      "lane": "",
+      "session": "",
+      "bought": 1,
+      "cat": "",
+      "status": "",
+      "tx": "m4ju6b"
+    },
+    {
+      "k": "1dkc616",
       "type": "EVENT",
       "date": "2026-04-26",
       "name": "Group 5 - Trial Video Call bersama Member JKT48 Generasi 14",
@@ -3363,10 +3595,27 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "m4juau"
     },
     {
-      "k": "1scdrm",
+      "k": "jcuhb3",
+      "type": "SHOW",
+      "date": "2026-05-01",
+      "name": "Cara Meminum Ramune",
+      "start": "19:00",
+      "used": 0,
+      "raffle": "LOSE",
+      "member": "",
+      "lane": "",
+      "session": "",
+      "bought": 1,
+      "cat": "",
+      "status": "",
+      "tx": "3mc850"
+    },
+    {
+      "k": "d681nf",
       "type": "SHOW",
       "date": "2026-05-01",
       "name": "Cara Meminum Ramune",
@@ -3378,25 +3627,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "3mcamq"
     },
     {
-      "k": "1ocl02c",
-      "type": "SHOW",
-      "date": "2026-05-01",
-      "name": "Cara Meminum Ramune",
-      "start": "19:00",
-      "used": 0,
-      "raffle": "LOSE",
-      "member": "",
-      "lane": "",
-      "session": "",
-      "bought": 1,
-      "cat": "",
-      "status": ""
-    },
-    {
-      "k": "176prq4",
+      "k": "ezpmnz",
       "type": "SHOW",
       "date": "2026-05-02",
       "name": "Pajama Drive",
@@ -3408,10 +3643,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "4qpfxy"
     },
     {
-      "k": "1h75x6a",
+      "k": "pxhkti",
       "type": "SHOW",
       "date": "2026-05-02",
       "name": "Pajama Drive",
@@ -3423,10 +3659,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "vnipwz"
     },
     {
-      "k": "1xuq22n",
+      "k": "1etst2b",
       "type": "EXCLUSIVE",
       "date": "2026-05-10",
       "name": "We Are Love, Dream Team, Passion On Fire!",
@@ -3438,10 +3675,11 @@
       "session": "Sesi 4",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "18biuz1"
     },
     {
-      "k": "ju0e14",
+      "k": "ag2t3h",
       "type": "EXCLUSIVE",
       "date": "2026-05-11",
       "name": "We Are Love, Dream Team, Passion On Fire!",
@@ -3453,10 +3691,11 @@
       "session": "Sesi 2",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "18biya6"
     },
     {
-      "k": "1c768kd",
+      "k": "de2gki",
       "type": "EXCLUSIVE",
       "date": "2026-05-11",
       "name": "We Are Love, Dream Team, Passion On Fire!",
@@ -3468,10 +3707,11 @@
       "session": "Sesi 3",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "18bixda"
     },
     {
-      "k": "1qgee3d",
+      "k": "3pz09g",
       "type": "EXCLUSIVE",
       "date": "2026-05-12",
       "name": "We Are Love, Dream Team, Passion On Fire!",
@@ -3483,10 +3723,11 @@
       "session": "Sesi 3",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "18biwf8"
     },
     {
-      "k": "8l57kk",
+      "k": "h5jrsx",
       "type": "EXCLUSIVE",
       "date": "2026-05-13",
       "name": "We Are Love, Dream Team, Passion On Fire!",
@@ -3498,10 +3739,11 @@
       "session": "Sesi 3",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "18bizzq"
     },
     {
-      "k": "u8qhc5",
+      "k": "7p8qaw",
       "type": "EXCLUSIVE",
       "date": "2026-05-15",
       "name": "We Are Love, Dream Team, Passion On Fire!",
@@ -3513,10 +3755,11 @@
       "session": "Sesi 1",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "18biwng"
     },
     {
-      "k": "144e0y7",
+      "k": "a4przx",
       "type": "EXCLUSIVE",
       "date": "2026-05-23",
       "name": "Personal Meet and Greet Festival: LOVE DREAM PASSION, Meet & Greet - 23 May",
@@ -3528,10 +3771,11 @@
       "session": "Sesi 2",
       "bought": 5,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "xd7lsn"
     },
     {
-      "k": "1awmpz7",
+      "k": "7iwcrj",
       "type": "EXCLUSIVE",
       "date": "2026-05-23",
       "name": "Personal Meet and Greet Festival: LOVE DREAM PASSION, Meet & Greet - 23 May",
@@ -3543,10 +3787,11 @@
       "session": "Sesi 2",
       "bought": 5,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1jnhr2d"
     },
     {
-      "k": "hgzblx",
+      "k": "1r4rt5k",
       "type": "EXCLUSIVE",
       "date": "2026-05-23",
       "name": "Personal Meet and Greet Festival: LOVE DREAM PASSION, 2Shot - 23 May",
@@ -3558,10 +3803,11 @@
       "session": "Sesi 3",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "tz9wzg"
     },
     {
-      "k": "s9pi16",
+      "k": "d48s2g",
       "type": "EXCLUSIVE",
       "date": "2026-05-23",
       "name": "Personal Meet and Greet Festival: LOVE DREAM PASSION, Meet & Greet - 23 May",
@@ -3573,10 +3819,27 @@
       "session": "Sesi 5",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "xd7p4n"
     },
     {
-      "k": "wt7chr",
+      "k": "d48qfw",
+      "type": "EXCLUSIVE",
+      "date": "2026-05-23",
+      "name": "Personal Meet and Greet Festival: LOVE DREAM PASSION, Meet & Greet - 23 May",
+      "start": "15:00",
+      "used": 2,
+      "raffle": "",
+      "member": "Nur Intan",
+      "lane": "Jalur 22",
+      "session": "Sesi 5",
+      "bought": 2,
+      "cat": "",
+      "status": "",
+      "tx": "xd7ni3"
+    },
+    {
+      "k": "1gihkel",
       "type": "SHOW",
       "date": "2026-05-24",
       "name": "Pajama Drive",
@@ -3588,10 +3851,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "6qo2ev"
     },
     {
-      "k": "1o4he9n",
+      "k": "1potp2d",
       "type": "EXCLUSIVE",
       "date": "2026-06-15",
       "name": "JKT48 Personal Meet and Greet Festival: LOVE DREAM PASSION",
@@ -3603,10 +3867,11 @@
       "session": "Sesi 3",
       "bought": 3,
       "cat": "Video Call",
-      "status": ""
+      "status": "",
+      "tx": "1qnrfrn"
     },
     {
-      "k": "h11vpl",
+      "k": "1pc6pam",
       "type": "SHOW",
       "date": "2026-06-19",
       "name": "Sambil Menggandeng Erat Tanganku",
@@ -3618,10 +3883,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1qkibzi"
     },
     {
-      "k": "9uucx3",
+      "k": "90z3wf",
       "type": "SHOW",
       "date": "2026-06-20",
       "name": "Pajama Drive",
@@ -3633,10 +3899,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "15wp1hd"
     },
     {
-      "k": "128qu9g",
+      "k": "14lp06l",
       "type": "SHOW",
       "date": "2026-06-20",
       "name": "Cara Meminum Ramune",
@@ -3648,10 +3915,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "15wp1he"
     },
     {
-      "k": "tt08nu",
+      "k": "1s7lli6",
       "type": "EXCLUSIVE",
       "date": "2026-06-22",
       "name": "JKT48 Personal Meet and Greet Festival: LOVE DREAM PASSION",
@@ -3663,10 +3931,11 @@
       "session": "Sesi 1",
       "bought": 2,
       "cat": "Video Call",
-      "status": ""
+      "status": "",
+      "tx": "v19be5"
     },
     {
-      "k": "e9crm",
+      "k": "cpl96i",
       "type": "EXCLUSIVE",
       "date": "2026-06-24",
       "name": "JKT48 Personal Meet and Greet Festival: LOVE DREAM PASSION",
@@ -3678,10 +3947,11 @@
       "session": "Sesi 1",
       "bought": 3,
       "cat": "Video Call",
-      "status": ""
+      "status": "",
+      "tx": "1b4vfi9"
     },
     {
-      "k": "1idn7j7",
+      "k": "1ainhck",
       "type": "EXCLUSIVE",
       "date": "2026-06-24",
       "name": "JKT48 Personal Meet and Greet Festival: LOVE DREAM PASSION",
@@ -3693,10 +3963,11 @@
       "session": "Sesi 2",
       "bought": 3,
       "cat": "Video Call",
-      "status": ""
+      "status": "",
+      "tx": "119u4nu"
     },
     {
-      "k": "xexql5",
+      "k": "1yu2qww",
       "type": "SHOW",
       "date": "2026-06-25",
       "name": "ITADAKI♥LOVE - Surabaya",
@@ -3708,10 +3979,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "p6ev68"
     },
     {
-      "k": "gaa7vp",
+      "k": "p30fb0",
       "type": "EXCLUSIVE",
       "date": "2026-06-27",
       "name": "Team Passion, Meet and Greet Yogyakarta",
@@ -3723,10 +3995,11 @@
       "session": "Sesi 2 (PASSION) · 27/06",
       "bought": 6,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "3avse8"
     },
     {
-      "k": "ptibhy",
+      "k": "z7q28",
       "type": "EXCLUSIVE",
       "date": "2026-06-27",
       "name": "Team Passion, 2shot Yogyakarta",
@@ -3738,10 +4011,11 @@
       "session": "Sesi 3 (PASSION) · 27/06",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "175d8g3"
     },
     {
-      "k": "kkz8ni",
+      "k": "1e7xm5y",
       "type": "EXCLUSIVE",
       "date": "2026-06-27",
       "name": "Team Passion, 2shot Yogyakarta",
@@ -3753,10 +4027,11 @@
       "session": "Sesi 3 (PASSION) · 27/06",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "175dek1"
     },
     {
-      "k": "113x7oa",
+      "k": "1i3hpl3",
       "type": "EXCLUSIVE",
       "date": "2026-06-27",
       "name": "Team Passion, 2shot Yogyakarta",
@@ -3768,10 +4043,11 @@
       "session": "Sesi 4 (PASSION) · 27/06",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "167ck0m"
     },
     {
-      "k": "tw0lq8",
+      "k": "glc3uu",
       "type": "EXCLUSIVE",
       "date": "2026-06-27",
       "name": "Team Passion, 2shot Yogyakarta",
@@ -3783,10 +4059,11 @@
       "session": "Sesi 4 (PASSION) · 27/06",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "175debz"
     },
     {
-      "k": "23a6mm",
+      "k": "1m5z370",
       "type": "SHOW",
       "date": "2026-08-07",
       "name": "Pajama Drive",
@@ -3798,10 +4075,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1yepa5j"
     },
     {
-      "k": "1qa7oym",
+      "k": "1j3ip6m",
       "type": "SHOW",
       "date": "2026-08-13",
       "name": "Pajama Drive",
@@ -3813,10 +4091,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "e7u421"
     },
     {
-      "k": "hpen1x",
+      "k": "vu10rn",
       "type": "EXCLUSIVE",
       "date": "2026-08-15",
       "name": "Theater Sementara 2026",
@@ -3828,10 +4107,11 @@
       "session": "Sesi 2",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "wjdv13"
     },
     {
-      "k": "16tmj22",
+      "k": "f90cdn",
       "type": "EXCLUSIVE",
       "date": "2026-08-15",
       "name": "Theater Sementara 2026",
@@ -3843,10 +4123,11 @@
       "session": "Sesi 3",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "wjdv16"
     },
     {
-      "k": "1i3brgu",
+      "k": "yqshmo",
       "type": "EXCLUSIVE",
       "date": "2026-08-15",
       "name": "Theater Sementara 2026",
@@ -3858,10 +4139,11 @@
       "session": "Sesi 4",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1eucqmz"
     },
     {
-      "k": "1wtgv4v",
+      "k": "s18bta",
       "type": "SHOW",
       "date": "2026-08-16",
       "name": "Pajama Drive",
@@ -3873,10 +4155,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "137ispk"
     },
     {
-      "k": "1nnm0ov",
+      "k": "xu96pb",
       "type": "SHOW",
       "date": "2026-08-16",
       "name": "Sambil Menggandeng Erat Tanganku",
@@ -3888,10 +4171,11 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "137ispl"
     },
     {
-      "k": "12fv120",
+      "k": "i9f0st",
       "type": "EXCLUSIVE",
       "date": "2026-08-19",
       "name": "Theater Sementara 2026",
@@ -3903,10 +4187,11 @@
       "session": "Sesi 1",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1eude72"
     },
     {
-      "k": "10754v0",
+      "k": "70h4jj",
       "type": "EXCLUSIVE",
       "date": "2026-08-19",
       "name": "Theater Sementara 2026",
@@ -3918,10 +4203,11 @@
       "session": "Sesi 2",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "ege9f0"
     },
     {
-      "k": "1sesb2y",
+      "k": "xx2cnu",
       "type": "EXCLUSIVE",
       "date": "2026-08-24",
       "name": "Theater Sementara 2026",
@@ -3933,10 +4219,11 @@
       "session": "Sesi 1",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "egea6h"
     },
     {
-      "k": "1wh8paz",
+      "k": "17113eo",
       "type": "EXCLUSIVE",
       "date": "2026-09-13",
       "name": "Cheerful Little Wishes",
@@ -3948,10 +4235,11 @@
       "session": "Sesi 3",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1n3c7pq"
     },
     {
-      "k": "1lzme80",
+      "k": "17yr6qw",
       "type": "EXCLUSIVE",
       "date": "2026-09-13",
       "name": "Cheerful Little Wishes",
@@ -3963,10 +4251,11 @@
       "session": "Sesi 4",
       "bought": 3,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1n3c9f5"
     },
     {
-      "k": "1qky01c",
+      "k": "p1oz60",
       "type": "SHOW",
       "date": "2026-09-25",
       "name": "Cara Meminum Ramune",
@@ -3978,97 +4267,120 @@
       "session": "",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "12mfvtt"
     },
     {
-      "k": "wshc4z",
+      "k": "184mvlk",
       "type": "EXCLUSIVE",
       "date": "2026-10-24",
       "name": "JKT48 2Shot @ Personal Meet and Greet Festival “Ayo Senyumlah”",
       "start": "10:00",
-      "used": 0,
+      "used": 1,
       "raffle": "",
       "member": "Christabella Bonita",
       "lane": "Jalur 11",
       "session": "Sesi 1",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "nbpj72"
     },
     {
-      "k": "1p4uk0s",
+      "k": "12hfi15",
       "type": "EXCLUSIVE",
       "date": "2026-10-24",
       "name": "JKT48 2Shot @ Personal Meet and Greet Festival “Ayo Senyumlah”",
       "start": "12:00",
-      "used": 0,
+      "used": 1,
       "raffle": "",
       "member": "Astrella Virgiananda",
       "lane": "Jalur 11",
       "session": "Sesi 3",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "1nf64k6"
     },
     {
-      "k": "1qw4c33",
+      "k": "177w53l",
       "type": "EXCLUSIVE",
       "date": "2026-10-24",
       "name": "JKT48 2Shot @ Personal Meet and Greet Festival “Ayo Senyumlah”",
       "start": "12:00",
-      "used": 0,
+      "used": 1,
       "raffle": "",
       "member": "Michelle Levia",
       "lane": "Jalur 7",
       "session": "Sesi 3",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "nbpkuj"
     },
     {
-      "k": "17kfqtn",
+      "k": "c3hg8a",
       "type": "EXCLUSIVE",
       "date": "2026-10-24",
       "name": "JKT48 2Shot @ Personal Meet and Greet Festival “Ayo Senyumlah”",
       "start": "12:00",
-      "used": 0,
+      "used": 1,
       "raffle": "",
       "member": "Abigail Rachel",
       "lane": "Jalur 8",
       "session": "Sesi 3",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "nbpgnc"
     },
     {
-      "k": "irtzsv",
+      "k": "6efwrn",
       "type": "EXCLUSIVE",
       "date": "2026-10-24",
       "name": "JKT48 2Shot @ Personal Meet and Greet Festival “Ayo Senyumlah”",
       "start": "16:00",
-      "used": 0,
+      "used": 1,
       "raffle": "",
       "member": "Nur Intan",
       "lane": "Jalur 12",
       "session": "Sesi 6",
       "bought": 1,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "nbphl9"
     },
     {
-      "k": "165w3yg",
+      "k": "o0xjqu",
       "type": "EXCLUSIVE",
       "date": "2026-10-24",
       "name": "JKT48 Photocard @ Personal Meet and Greet Festival “Ayo Senyumlah”",
       "start": "18:00",
-      "used": 0,
+      "used": 2,
       "raffle": "",
       "member": "Nur Intan",
       "lane": "Jalur 18",
       "session": "Sesi 8",
       "bought": 2,
       "cat": "",
-      "status": ""
+      "status": "",
+      "tx": "gbylbr"
+    },
+    {
+      "k": "o0xjrr",
+      "type": "EXCLUSIVE",
+      "date": "2026-10-24",
+      "name": "JKT48 Photocard @ Personal Meet and Greet Festival “Ayo Senyumlah”",
+      "start": "18:00",
+      "used": 5,
+      "raffle": "",
+      "member": "Nur Intan",
+      "lane": "Jalur 18",
+      "session": "Sesi 8",
+      "bought": 5,
+      "cat": "",
+      "status": "",
+      "tx": "gbylco"
     }
   ],
   "prices": {
