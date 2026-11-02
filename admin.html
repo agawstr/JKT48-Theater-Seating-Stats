@@ -321,32 +321,53 @@ button.tt-c{font:inherit;color:inherit;text-align:left;cursor:pointer}
   // ambil semua halaman & semua jenis tiket; baris ganda digabung; kode tiket diganti hash (tidak bisa dibalik)
   const h = s => { let x = 5381; for (const c of s) x = ((x << 5) + x + c.charCodeAt(0)) | 0; return (x >>> 0).toString(36); };
   const rank = r => /WIN|WON|MENANG/i.test(r) ? 3 : /LOSE|LOST|KALAH/i.test(r) ? 2 : r ? 1 : 0;
-  const byRef = new Map(), sigs = new Map();
-  let fetched = 0, expected = 0;
-  for (let p = 1, total = 1; p <= total; p++) {
+  const SINCE = '__SINCE__'; // kosong = ambil semua; terisi = hanya halaman terbaru sejak tanggal itu
+  const byRef = new Map(), pages = {};
+  let fetched = 0, expected = 0, partial = false;
+  const getPage = async p => {
     const res = await fetch(API + '?lang=id&limit=' + LIMIT + '&page=' + p, { headers: { Authorization: 'Bearer ' + token } });
     const j = await res.json();
-    if (!j.status) { console.error('Gagal: ' + j.message); return; }
-    total = (j._meta && j._meta.total_page) || 1;
+    if (!j.status) throw new Error(j.message);
     expected = (j._meta && j._meta.count_total) || expected;
+    console.log('Halaman ' + p + ' / ' + ((j._meta && j._meta.total_page) || 1));
+    return j;
+  };
+  // kunci = kode referensi + tanggal + nomor transaksi: dua pembelian terpisah untuk slot yang sama tidak lagi tergabung
+  // (baris pasangan "kalah" + tiket biasa dari transaksi yang sama tetap digabung)
+  const take = j => {
     fetched += j.data.length;
-    console.log('Halaman ' + p + ' / ' + total);
     for (const t of j.data) {
-      const sig = [t.start_time, t.member_name, t.lane_label, t.session_label].join('|');
-      let k = h(t.reference_code + '|' + t.date);
-      // kode & tanggal sama tapi slot beda (jam / member / lane / sesi) = tiket berbeda, jangan digabung
-      for (let n = 1; byRef.has(k) && sigs.get(k) !== sig; n++) k = h(t.reference_code + '|' + t.date + '#' + n);
-      const used = +t.used_count || 0, raffle = String(t.raffle_status || ''), old = byRef.get(k);
-      if (old) { old.used = Math.max(old.used, used); if (rank(raffle) > rank(old.raffle)) old.raffle = raffle; }
-      else { sigs.set(k, sig); byRef.set(k, { k, type: t.ticket_type, date: t.date, name: t.name, start: t.start_time, used, raffle, member: t.member_name || '', lane: t.lane_label || '', session: t.session_label || '', bought: +t.bought_count || 1 }); }
+      const tx = (t.transaction_numbers || []).join(','), base = t.reference_code + '|' + t.date;
+      const k = h(base + '|' + tx), used = +t.used_count || 0, raffle = String(t.raffle_status || ''), bought = +t.bought_count || 1, old = byRef.get(k);
+      if (old) { old.used = Math.max(old.used, used); old.bought = Math.max(old.bought, bought); if (rank(raffle) > rank(old.raffle)) old.raffle = raffle; }
+      else byRef.set(k, { k, kl: [h(base), ...[1, 2, 3, 4].map(n => h(base + '#' + n))], tx: h(tx), type: t.ticket_type, date: t.date, name: t.name, start: t.start_time, used, raffle, member: t.member_name || '', lane: t.lane_label || '', session: t.session_label || '', bought });
     }
-    await wait(300);
-  }
+  };
+  try {
+    pages[1] = await getPage(1);
+    const total = (pages[1]._meta && pages[1]._meta.total_page) || 1;
+    const order = Array.from({length: total}, (_, i) => i + 1);
+    if (SINCE && total > 1) {
+      pages[total] = await getPage(total);
+      const a = pages[1].data[0], b = pages[total].data[pages[total].data.length - 1];
+      if (a && b && a.date <= b.date) { order.reverse(); partial = true; } // data urut tanggal naik: mulai dari halaman terakhir (terbaru)
+    }
+    for (const p of order) {
+      if (!pages[p]) { await wait(300); pages[p] = await getPage(p); }
+      take(pages[p]);
+      const d = pages[p].data;
+      if (partial && d.length && d[d.length - 1].date < SINCE) break; // halaman ini sudah lebih lama dari batas, sisanya lebih lama lagi
+    }
+  } catch (e) { console.error('Gagal: ' + e.message); return; }
   const per = {};
   byRef.forEach(t => per[t.type] = (per[t.type] || 0) + 1);
   const dates = [...byRef.values()].map(t => t.date).sort();
   console.log('LAPORAN: baris dari server ' + fetched + ' (server melaporkan ' + expected + ') -> tiket unik ' + byRef.size + ' | ' + JSON.stringify(per) + ' | ' + dates[0] + ' s/d ' + dates[dates.length - 1]);
-  if (fetched !== expected) console.warn('Jumlah baris yang diterima TIDAK sama dengan yang dilaporkan server. Data mungkin kurang; jalankan ulang.');
+  if (!partial && fetched !== expected) console.warn('Jumlah baris yang diterima TIDAK sama dengan yang dilaporkan server. Data mungkin kurang; jalankan ulang.');
+  const slots = new Map();
+  for (const t of byRef.values()) { if (t.raffle) continue; const sl = [t.date, t.start, t.name, t.member, t.lane, t.session].join('|'); (slots.get(sl) || slots.set(sl, []).get(sl)).push(t); }
+  const multi = [...slots.values()].filter(x => x.length > 1);
+  console.log('Mode: ' + (partial ? 'hanya yang baru sejak ' + SINCE : 'semua data') + ' | slot dengan lebih dari satu transaksi (jumlah tiket dijumlahkan): ' + (multi.map(x => x[0].date + ' ' + x[0].name + (x[0].member ? ' / ' + x[0].member : '') + ' [' + x.map(y => y.bought).join(' + ') + ' tiket]').join('; ') || 'tidak ada'));
   const s = JSON.stringify({ tickets: [...byRef.values()] });
   let ok = false;
   if (typeof copy === 'function') { copy(s); ok = true; }
@@ -365,6 +386,7 @@ button.tt-c{font:inherit;color:inherit;text-align:left;cursor:pointer}
     <textarea id="jk-in" rows="4" placeholder="Tempel hasil dari Console di sini..."></textarea>
     <label class="jk-opt"><input type="checkbox" id="jk-all"> Sertakan juga show yang tiketnya belum terpakai</label>
     <label class="jk-opt"><input type="checkbox" id="jk-tk" checked> Simpan juga data tiket (lotre, meet &amp; greet, event) untuk tab Tiket &amp; Event</label>
+    <label class="jk-opt"><input type="checkbox" id="jk-new" checked> Hanya ambil yang baru (sejak 30 hari sebelum impor terakhir; impor pertama selalu mengambil semua)</label>
     <div id="jk-out" role="status"></div>
     <div class="jk-act"><button class="btn" id="jk-parse" type="button">Analisis</button><button class="btn" id="jk-add" type="button" disabled>Tambahkan</button></div>
   </div>
@@ -704,7 +726,7 @@ $('btn-zip').addEventListener('click', async () => {
     }
     pub.push(o);
   }
-  files.unshift({name: 'data.json', data: new TextEncoder().encode(JSON.stringify({records: pub, tickets: opt.tickets ? tickets.map(t => ({...t, ...(opt.mask ? {member: mask(t.member)} : {}), ...(opt.blur && BLUR_CATS.includes(tcat(t)) ? {bought: 1} : {})})) : [], updated: new Date().toISOString().slice(0, 10)}, null, 1))});
+  files.unshift({name: 'data.json', data: new TextEncoder().encode(JSON.stringify({records: pub, tickets: opt.tickets ? tickets.map(t => ({...t, tx: undefined, ...(opt.mask ? {member: mask(t.member)} : {}), ...(opt.blur && BLUR_CATS.includes(tcat(t)) ? {bought: 1} : {})})) : [], updated: new Date().toISOString().slice(0, 10)}, null, 1))});
   dl(makeZip(files), 'data-publish.zip');
   markExported();
   } finally { btn.disabled = false; btn.textContent = label; }
@@ -736,7 +758,7 @@ $('file-import').addEventListener('change', async e => {
 // ---------- Impor dari jkt48.com ----------
 let jkNew = [];
 $('btn-jk').addEventListener('click', () => {
-  $('jk-code').value = $('jk-src').textContent.trim();
+  $('jk-code').value = jkCode();
   openEl('jk-modal');
   $('jk-in').focus();
 });
@@ -749,6 +771,16 @@ $('jk-copy').addEventListener('click', async () => {
 });
 const jkHash = s => { let x = 5381; for (const c of s) x = ((x << 5) + x + c.charCodeAt(0)) | 0; return (x >>> 0).toString(36); };
 const rafRank = r => { const c = raffleOf(r); return c === 'win' ? 3 : c === 'lose' ? 2 : c ? 1 : 0; };
+const localDay = d => [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
+function jkCode() { // kode Console; mode "baru saja" memakai tanggal impor terakhir dikurangi 30 hari (untuk menangkap status terpakai/kalah yang berubah)
+  let since = '';
+  try {
+    const last = localStorage.getItem('jkt48_last_import');
+    if ($('jk-new').checked && last && tickets.length) { const d = new Date(last + 'T00:00:00'); d.setDate(d.getDate() - 30); since = localDay(d); }
+  } catch (e) {}
+  return $('jk-src').textContent.trim().replace('__SINCE__', since);
+}
+$('jk-new').addEventListener('change', () => { $('jk-code').value = jkCode(); });
 let jkTk = [];
 $('jk-parse').addEventListener('click', () => {
   let rows;
@@ -759,18 +791,21 @@ $('jk-parse').addEventListener('click', () => {
   } catch (e) { $('jk-out').textContent = 'Format tidak dikenali. Tempel hasil dari kode Console (atau respons API mentah).'; return; }
   const merged = new Map(), list0 = [];
   for (const t of rows) { // terima hasil kode Console, hasil versi lama, atau respons API mentah
+    const rawTx = Array.isArray(t.transaction_numbers) ? t.transaction_numbers.join(',') : null, base = t.reference_code ? t.reference_code + '|' + t.date : '';
     const n = {
-      k: t.k || (t.reference_code ? jkHash(t.reference_code + '|' + t.date) : ''),
+      k: t.k || (base ? jkHash(base + '|' + (rawTx ?? '')) : ''),
       type: String(t.type || t.ticket_type || 'SHOW').toUpperCase(), date: String(t.date || ''), name: String(t.name || '').trim(),
       start: String(t.start || t.start_time || ''), used: +(t.used ?? t.used_count) || 0, raffle: String(t.raffle ?? t.raffle_status ?? '').toUpperCase(),
-      member: String(t.member ?? t.member_name ?? ''), lane: String(t.lane ?? t.lane_label ?? ''), session: String(t.session ?? t.session_label ?? ''), bought: +(t.bought ?? t.bought_count) || 1
+      member: String(t.member ?? t.member_name ?? ''), lane: String(t.lane ?? t.lane_label ?? ''), session: String(t.session ?? t.session_label ?? ''), bought: +(t.bought ?? t.bought_count) || 1,
+      tx: String(t.tx || (rawTx !== null ? jkHash(rawTx) : '')),
+      kl: Array.isArray(t.kl) ? t.kl : (base ? [jkHash(base), ...[1, 2, 3, 4].map(i => jkHash(base + '#' + i))] : [])
     };
     if (!/^\d{4}-\d{2}-\d{2}$/.test(n.date)) continue;
     const old = n.k && merged.get(n.k);
     if (old) { old.used = Math.max(old.used, n.used); if (rafRank(n.raffle) > rafRank(old.raffle)) old.raffle = n.raffle; }
     else { list0.push(n); if (n.k) merged.set(n.k, n); }
   }
-  jkTk = list0.map(sanitizeTicket);
+  jkTk = list0.map(n => { const s = sanitizeTicket(n); s._kl = n.kl; return s; });
   const all = $('jk-all').checked, seen = new Set(), list = [];
   for (const t of list0) {
     if (t.type !== 'SHOW' || (!t.used && !all)) continue;
@@ -792,9 +827,20 @@ $('jk-parse').addEventListener('click', () => {
   $('jk-add').textContent = `Tambahkan ${jkNew.length} show` + (tk ? ` + ${jkTk.length} tiket` : '');
 });
 const tkey = t => t.k || [t.type, t.date, t.name, t.start, t.member, t.lane, t.session].join('|');
-function mergeTickets(list) { // tiket dengan kunci sama diperbarui, sisanya ditambah
-  const m = new Map(tickets.map(t => [tkey(t), t]));
-  list.map(sanitizeTicket).filter(t => t.date).forEach(t => { const o = m.get(tkey(t)); if (o && o.cat && !t.cat) t.cat = o.cat; if (o && o.status && !t.status) t.status = o.status; m.set(tkey(t), t); });
+function mergeTickets(list) { // kunci sama = diperbarui, sisanya ditambah; tiket lama (kunci tanpa transaksi) diambil alih satu per satu
+  const m = new Map(tickets.map(t => [tkey(t), t])), claimed = new Set();
+  list.map(x => { const s = sanitizeTicket(x); s._kl = x._kl || x.kl || []; return s; }).filter(t => t.date).forEach(t => {
+    let o = m.get(tkey(t));
+    if (!o && t.tx && t._kl.length) { // migrasi: tiket yang disimpan sebelum nomor transaksi dipakai
+      const lg = tickets.find(x => !x.tx && !claimed.has(x) && t._kl.includes(tkey(x)) && x.start === t.start && x.member === t.member && x.lane === t.lane && x.session === t.session);
+      if (lg) { claimed.add(lg); o = lg; m.delete(tkey(lg)); }
+    }
+    if (o && o.cat && !t.cat) t.cat = o.cat;
+    if (o && o.status && !t.status) t.status = o.status;
+    if (!o && !t.cat) { const sib = tickets.find(x => x.cat && tname(x) === tname(t)); if (sib) t.cat = sib.cat; } // seri yang sama: pakai kategori yang sudah kamu atur
+    delete t._kl;
+    m.set(tkey(t), t);
+  });
   tickets = [...m.values()];
   try { localStorage.setItem(KEY + '_tickets', JSON.stringify(tickets)); } catch (e) { alert('Gagal menyimpan data tiket (penyimpanan penuh?)'); }
   bumpDirty();
@@ -803,7 +849,7 @@ try { tickets = (JSON.parse(localStorage.getItem(KEY + '_tickets')) || []).map(s
 $('jk-add').addEventListener('click', () => {
   const now = Date.now(), n = jkNew.length, nt = $('jk-tk').checked ? jkTk.length : 0;
   jkNew.forEach((x, i) => records.push(sanitize({id: now + i, seat: '?', setlist: x.setlist, date: x.date, sesi: x.sesi}, i)));
-  if (nt) mergeTickets(jkTk);
+  if (nt) { mergeTickets(jkTk); try { localStorage.setItem('jkt48_last_import', localDay(new Date())); } catch (e) {} }
   save(); renderAll();
   jkNew = []; jkTk = []; $('jk-add').disabled = true; $('jk-out').textContent = ''; $('jk-in').value = '';
   closeEl('jk-modal');
