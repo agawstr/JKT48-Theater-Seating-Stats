@@ -52,6 +52,17 @@ const MON_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', '
 const fmtDate = d => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || ''); return m ? `${+m[3]} ${MON_ID[+m[2] - 1]} ${m[1]}` : (d || ''); }; // 2026-09-25 -> 25 Sep 2026
 const cmp = (a, b) => b.date.localeCompare(a.date) || ((SO[b.sesi] || 0) - (SO[a.sesi] || 0));
 
+// sesi lepas: Chekicha / 2-Shot yang dilakukan di luar menonton theater (punya tanggal, member, dan foto sendiri)
+let solo = [];
+const sanitizeSolo = (s, i) => ({
+  id: Number(s.id) || Date.now() + i,
+  date: String(s.date || ''),
+  kind: s.kind === 'ts' ? 'ts' : 'ck',
+  type: s.type === 'birthday' ? 'birthday' : 'roulette',
+  member: String(s.member || ''),
+  photo: okPhoto(s.photo) ? s.photo : '',
+  note: String(s.note || '').slice(0, 200)
+});
 function sanitize(r, i) {
   r = r || {};
   const o = {
@@ -229,7 +240,9 @@ const viewEx = skip => { // saat putar ulang: hanya N show pertama menurut tangg
   const l = records.filter(r => matchF(r, skip));
   return replayN === null ? l : l.sort((a, b) => cmp(b, a)).slice(0, replayN);
 };
-const view = () => viewEx([]); // record yang lolos semua filter (dipakai peta)
+const view = () => viewEx([]);
+// jumlah sesi lepas yang lolos filter aktif (filter setlist/baris tidak berlaku untuk sesi lepas, jadi ikut disembunyikan)
+const soloIn = kind => solo.filter(s => s.kind === kind && !filter.setlist && !filter.row && (!filter.member || s.member === filter.member) && (!filter.from || s.date >= filter.from) && (!filter.to || s.date <= filter.to)).length; // record yang lolos semua filter (dipakai peta)
 
 // warna heatmap: makin sering makin terang
 const HEAT = [
@@ -291,8 +304,8 @@ function renderStats() {
     card('Total show', view().length),
     card('Kursi favorit', ...st(by(r => r.seat, seatTie))),
     card('Baris favorit', ...st(by(r => r.seat[0], (a, b) => a.localeCompare(b)))),
-    card('2-Shot', view().filter(r => r.twoshot === 'Ya').length),
-    card('Chekicha', view().filter(r => r.chekicha === 'Ya').length),
+    card('2-Shot', view().filter(r => r.twoshot === 'Ya').length + soloIn('ts'), soloIn('ts') ? 'termasuk ' + soloIn('ts') + ' di luar show' : ''),
+    card('Chekicha', view().filter(r => r.chekicha === 'Ya').length + soloIn('ck'), soloIn('ck') ? 'termasuk ' + soloIn('ck') + ' di luar show' : ''),
     card('Member terbanyak', ...st(by(r => extras(r).map(x => x.member)))),
     ...(tot ? [card('Total biaya', rupiah(tot)), card('Rata-rata / show', rupiah(tot / paid.length), `dari ${paid.length} show berbayar`)] : [])
   ].join('');
@@ -440,7 +453,8 @@ $('cal-nav').addEventListener('click', e => {
 function renderGallery() {
   const g = $('gallery');
   if (!g) return;
-  const items = records.flatMap(r => extras(r).filter(x => x.photo).map(x => ({...x, r}))).sort((a, b) => cmp(a.r, b.r));
+  const soloItems = solo.filter(w => w.photo).map(w => { const K = KINDS.find(k => k.k === w.kind); return {label: K.short[w.type], icon: K.icon, member: w.member, photo: w.photo, r: {id: w.id, date: w.date, sesi: '', setlist: 'Di luar show'}}; });
+  const items = [...records.flatMap(r => extras(r).filter(x => x.photo).map(x => ({...x, r}))), ...soloItems].sort((a, b) => cmp(a.r, b.r));
   const sel = $('g-member'), cur = sel.value;
   const mem = [...new Set(items.map(x => x.member).filter(Boolean))].sort();
   sel.innerHTML = '<option value="">Semua member</option>' + mem.map(m => `<option${m === cur ? ' selected' : ''}>${esc(m)}</option>`).join('');
