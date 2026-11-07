@@ -1210,25 +1210,27 @@ const saveSolo = () => { try { localStorage.setItem(SOLO_KEY, JSON.stringify(sol
 const soloKey = w => (w.kind === 'ck' ? 'ck_' : 'ts_') + (w.type === 'birthday' ? 'bday' : 'roulette');
 const soloLabel = w => KINDS.find(k => k.k === w.kind).short[w.type];
 let soloEdit = 0, soloPhoto = '', soloDraft = null;
-const soloForm = () => ({date: $('so-date').value, kind: $('so-kind').value, type: $('so-type').value, member: $('so-member').value.trim(), note: $('so-note').value.trim()});
+const soloForm = () => ({date: $('so-date').value, kind: $('so-kind').value, type: $('so-type').value, member: $('so-member').value.trim(), setlist: $('so-setlist').value.trim(), note: $('so-note').value.trim()});
 function renderSolo() {
   const el = $('solo');
   if (!el) return;
-  const today = new Date().toISOString().slice(0, 10), ed = soloDraft || solo.find(w => w.id === soloEdit) || {date: today, kind: 'ck', type: 'roulette', member: '', note: ''};
+  const today = new Date().toISOString().slice(0, 10), ed = soloDraft || solo.find(w => w.id === soloEdit) || {date: today, kind: 'ck', type: 'roulette', member: '', setlist: '', note: ''};
   const members = [...new Set([...records.flatMap(r => [r.member, r.ckMember]), ...tickets.map(t => t.member), ...solo.map(w => w.member)].filter(Boolean))].sort();
+  const setlists = [...new Set([...records.map(r => r.setlist), ...tickets.filter(t => t.type === 'SHOW').map(t => t.name)].filter(Boolean))].sort();
   const price = w => priceOf(soloKey(w), (w.date || today).slice(0, 7));
   const list = solo.slice().sort((x, y) => y.date.localeCompare(x.date) || y.id - x.id), total = list.reduce((s, w) => s + price(w), 0);
   const opt = (v, l, cur) => `<option value="${v}"${v === cur ? ' selected' : ''}>${l}</option>`;
-  el.innerHTML = `<p class="tt-note">Catat Chekicha atau 2-Shot yang kamu lakukan <b>di luar menonton theater</b> (di tanggal show, tapi tidak sedang nonton). Yang dicatat di sini ikut tampil di Galeri publik dan di jumlah 2-Shot / Chekicha, dan harganya otomatis masuk ke Pengeluaran. Chekicha yang kamu lakukan saat menonton tetap dicatat di riwayat show.</p>
+  el.innerHTML = `<p class="tt-note">Catat Chekicha atau 2-Shot yang kamu lakukan <b>di luar menonton theater</b> (di tanggal show, tapi tidak sedang nonton). Yang dicatat di sini ikut tampil di Galeri publik dan di jumlah 2-Shot / Chekicha, dan harganya otomatis masuk ke Pengeluaran. Chekicha yang kamu lakukan saat menonton tetap dicatat di riwayat show. Setlist hari itu opsional: kalau diisi, tetap tercantum di keterangan foto bersama tanda "di luar show".</p>
     <div class="aw-form">
       <label>Tanggal<input type="date" id="so-date" value="${esc(ed.date)}"></label>
       <label>Jenis<select id="so-kind">${opt('ck', 'Chekicha', ed.kind)}${opt('ts', '2-Shot', ed.kind)}</select></label>
       <label>Tipe<select id="so-type">${opt('roulette', 'Roulette', ed.type)}${opt('birthday', 'Birthday', ed.type)}</select></label>
       <label>Member<input id="so-member" list="so-members" placeholder="Nama member" value="${esc(ed.member)}" autocomplete="off"><datalist id="so-members">${members.map(m => `<option value="${esc(m)}">`).join('')}</datalist></label>
+      <label class="aw-wide">Setlist hari itu (opsional)<input id="so-setlist" list="so-setlists" placeholder="terisi otomatis kalau ada show di tanggal itu" value="${esc(ed.setlist || '')}" autocomplete="off"><datalist id="so-setlists">${setlists.map(t => `<option value="${esc(t)}">`).join('')}</datalist></label>
       <label class="aw-wide">Foto (opsional)<input type="file" id="so-file" accept="image/*">${soloPhoto ? `<span class="so-prev"><img src="${soloPhoto}" alt="Pratinjau foto"><button type="button" class="btn-s" data-sorm="1">Hapus foto</button></span>` : ''}</label>
       <label class="aw-wide">Catatan (opsional)<input id="so-note" placeholder="mis. event, momen, hasil foto" value="${esc(ed.note || '')}" autocomplete="off"></label>
       <div class="aw-act"><span class="tt-note" id="so-price" style="margin-right:auto"></span>${soloEdit ? '<button type="button" class="btn-s" data-socancel="1">Batal</button>' : ''}<button type="button" class="btn" data-sosave="1">${soloEdit ? 'Simpan perubahan' : '＋ Tambah'}</button></div></div>
-    <div><h3 class="tt-h">Semua sesi lepas · ${list.length} sesi · ${rupiah(total)}</h3>${list.map(w => `<div class="so-row">${w.photo ? `<img src="${esc(w.photo)}" alt="Foto" data-photo>` : '<span class="so-ph">📸</span>'}<span><b>${esc(soloLabel(w))}</b>${w.member ? ' dengan ' + esc(w.member) : ''}<small>${esc(fmtDate(w.date))}${w.note ? ' · ' + esc(w.note) : ''}</small></span><b class="so-p">${rupiah(price(w))}</b><span class="aw-b"><button type="button" class="btn-s" data-soedit="${w.id}" aria-label="Ubah">✎</button><button type="button" class="btn-s" data-sodel="${w.id}" aria-label="Hapus">✕</button></span></div>`).join('') || '<div class="empty">Belum ada sesi lepas.</div>'}</div>`;
+    <div><h3 class="tt-h">Semua sesi lepas · ${list.length} sesi · ${rupiah(total)}</h3>${list.map(w => `<div class="so-row">${w.photo ? `<img src="${esc(w.photo)}" alt="Foto" data-photo>` : '<span class="so-ph">📸</span>'}<span><b>${esc(soloLabel(w))}</b>${w.member ? ' dengan ' + esc(w.member) : ''}<small>${esc(fmtDate(w.date))}${w.setlist ? ' · ' + esc(w.setlist) : ''}${w.note ? ' · ' + esc(w.note) : ''}</small></span><b class="so-p">${rupiah(price(w))}</b><span class="aw-b"><button type="button" class="btn-s" data-soedit="${w.id}" aria-label="Ubah">✎</button><button type="button" class="btn-s" data-sodel="${w.id}" aria-label="Hapus">✕</button></span></div>`).join('') || '<div class="empty">Belum ada sesi lepas.</div>'}</div>`;
   soloPrice();
 }
 function soloPrice() { // harga otomatis menurut jenis, tipe, dan bulan
@@ -1242,7 +1244,13 @@ $('solo').addEventListener('change', async e => {
     soloDraft = soloForm();
     try { soloPhoto = await compress(file); } catch (err) { alert(err.message); }
     renderSolo();
-  } else if (['so-date', 'so-kind', 'so-type'].includes(e.target.id)) soloPrice();
+  } else if (['so-date', 'so-kind', 'so-type'].includes(e.target.id)) {
+    if (e.target.id === 'so-date' && !$('so-setlist').value) { // isi setlist otomatis dari show / tiket pada tanggal itu
+      const d = $('so-date').value, hit = records.find(r => r.date === d) || tickets.find(t => t.type === 'SHOW' && t.date === d);
+      if (hit) $('so-setlist').value = hit.setlist || hit.name;
+    }
+    soloPrice();
+  }
 });
 $('solo').addEventListener('click', async e => {
   const q = s => e.target.closest(s);
@@ -1258,7 +1266,7 @@ $('solo').addEventListener('click', async e => {
   else if (q('[data-soedit]')) {
     const w = solo.find(x => x.id === Number(q('[data-soedit]').dataset.soedit));
     if (!w) return;
-    soloEdit = w.id; soloPhoto = w.photo; soloDraft = {date: w.date, kind: w.kind, type: w.type, member: w.member, note: w.note};
+    soloEdit = w.id; soloPhoto = w.photo; soloDraft = {date: w.date, kind: w.kind, type: w.type, member: w.member, setlist: w.setlist, note: w.note};
     renderSolo(); $('so-date').scrollIntoView({behavior: 'smooth', block: 'center'});
   } else if (q('[data-sodel]')) {
     const id = Number(q('[data-sodel]').dataset.sodel), w = solo.find(x => x.id === id);
