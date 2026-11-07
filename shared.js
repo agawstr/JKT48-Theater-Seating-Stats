@@ -46,7 +46,7 @@ const KINDS = [
 ];
 // daftar 2-Shot / Chekicha yang aktif di satu record (roulette ditampilkan singkat)
 const extras = r => KINDS.filter(K => r[K.f] === 'Ya')
-  .map(K => ({label: K.short[r[K.t]] || K.short.roulette, icon: K.icon, member: r[K.m], photo: r[K.p]}));
+  .map(K => ({label: K.short[r[K.t]] || K.short.roulette, icon: K.icon, member: r[K.m], photo: r[K.p], k: K.k}));
 const SO = {Malam: 2, Siang: 1};
 const MON_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 const fmtDate = d => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || ''); return m ? `${+m[3]} ${MON_ID[+m[2] - 1]} ${m[1]}` : (d || ''); }; // 2026-09-25 -> 25 Sep 2026
@@ -61,6 +61,7 @@ const sanitizeSolo = (s, i) => ({
   type: s.type === 'birthday' ? 'birthday' : 'roulette',
   member: String(s.member || ''),
   photo: okPhoto(s.photo) ? s.photo : '',
+  setlist: String(s.setlist || '').slice(0, 80), // setlist pada hari itu (opsional), tetap dicantumkan di keterangan
   note: String(s.note || '').slice(0, 200)
 });
 function sanitize(r, i) {
@@ -453,16 +454,18 @@ $('cal-nav').addEventListener('click', e => {
 function renderGallery() {
   const g = $('gallery');
   if (!g) return;
-  const soloItems = solo.filter(w => w.photo).map(w => { const K = KINDS.find(k => k.k === w.kind); return {label: K.short[w.type], icon: K.icon, member: w.member, photo: w.photo, r: {id: w.id, date: w.date, sesi: '', setlist: 'Di luar show'}}; });
+  const soloItems = solo.filter(w => w.photo).map(w => { const K = KINDS.find(k => k.k === w.kind); return {label: K.short[w.type], icon: K.icon, member: w.member, photo: w.photo, k: w.kind, solo: true, r: {id: w.id, date: w.date, sesi: '', setlist: w.setlist || 'Di luar show'}}; });
   const items = [...records.flatMap(r => extras(r).filter(x => x.photo).map(x => ({...x, r}))), ...soloItems].sort((a, b) => cmp(a.r, b.r));
   const sel = $('g-member'), cur = sel.value;
-  const mem = [...new Set(items.map(x => x.member).filter(Boolean))].sort();
+  const inK = x => !galKind || x.k === galKind; // sub-tab Galeri: Semua / 2-Shot / Chekicha
+  const mem = [...new Set(items.filter(inK).map(x => x.member).filter(Boolean))].sort();
   sel.innerHTML = '<option value="">Semua member</option>' + mem.map(m => `<option${m === cur ? ' selected' : ''}>${esc(m)}</option>`).join('');
-  const list = cur ? items.filter(x => x.member === cur) : items;
+  const list = items.filter(x => inK(x) && (!cur || !mem.includes(cur) || x.member === cur));
+  if ($('g-kinds')) $('g-kinds').innerHTML = [['', 'Semua'], ['ts', '📸 2-Shot'], ['ck', '🎴 Chekicha']].map(([k, l]) => `<button type="button" class="gk${k === galKind ? ' on' : ''}" data-gk="${k}">${l} <b>${items.filter(x => !k || x.k === k).length}</b></button>`).join('');
   $('g-info').textContent = `${list.length} foto`;
   if ($('g-tab') && dataLoaded) $('g-tab').textContent = `Galeri (${items.length})`;
   g.innerHTML = list.length ? list.map((x, i) => `<figure class="gi" style="--i:${Math.min(i, 14)}"><img src="${esc(thumbOf(x.photo))}" data-full="${esc(x.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="${esc(x.label)} dengan ${esc(x.member)}" loading="lazy">
-    <figcaption><b>${esc(x.member) || '-'}</b><span>${x.icon} ${esc(x.label)}</span><span>${esc(x.r.setlist)} · ${esc(fmtDate(x.r.date))}</span></figcaption></figure>`).join('')
+    <figcaption><b>${esc(x.member) || '-'}</b><span>${x.icon} ${esc(x.label)}</span><span>${esc(x.r.setlist)} · ${esc(fmtDate(x.r.date))}</span>${x.solo ? '<span class="gi-x">di luar show (tanpa menonton)</span>' : ''}</figcaption></figure>`).join('')
     : '<div class="empty">Belum ada foto</div>';
 }
 $('g-member')?.addEventListener('change', renderGallery);
@@ -1254,3 +1257,10 @@ document.addEventListener('click', e => {
   let t = 0;
   addEventListener('scroll', () => { if (t) return; t = requestAnimationFrame(() => { t = 0; bar.classList.toggle('stuck', scrollY > 30); }); }, {passive: true});
 })();
+
+// sub-tab Galeri: Semua / 2-Shot / Chekicha
+let galKind = '';
+if ($('gallery-bar')) {
+  $('gallery-bar').insertAdjacentHTML('beforebegin', '<div id="g-kinds" class="gk-bar"></div>');
+  $('g-kinds').addEventListener('click', e => { const b = e.target.closest('[data-gk]'); if (b) { galKind = b.dataset.gk; renderGallery(); } });
+}
