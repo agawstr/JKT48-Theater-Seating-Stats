@@ -415,3 +415,13 @@ html{scroll-behavior:smooth}
 .enter #cover{animation-delay:.24s}
 .enter #filters{animation-delay:.3s}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+/* sub-tab Galeri & keterangan sesi lepas */
+.gk-bar{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:100%;margin-bottom:12px}
+.gk{background:#181115;border:1px solid #2d1820;color:#e4e4e7;border-radius:99px;padding:6px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:transform .18s var(--ease),background .2s,border-color .2s}
+.gk b{color:#ff8c00;margin-left:4px}
+.gk:hover{border-color:#ff2a5f}
+.gk:active{transform:scale(.96)}
+.gk.on{background:#881337;border-color:#f43f5e;color:#fff}
+.gk.on b{color:#ffd23f}
+.gi-x{font-size:11px;font-style:italic;color:#7a5a1a}
