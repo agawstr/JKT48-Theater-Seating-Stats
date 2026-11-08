@@ -223,7 +223,7 @@ button.tt-c{font:inherit;color:inherit;text-align:left;cursor:pointer}
   <div id="view-solo" class="view"><div id="tsev"></div><div id="solo"></div></div>
 
   <div id="view-biaya" class="view">
-    <div class="tt-years ex-sub"><button type="button" class="tt-y ex-t on" data-ext="sum">Ringkasan</button><button type="button" class="tt-y ex-t" data-ext="away">✈️ Away</button><button type="button" class="tt-y ex-t" data-ext="live">📺 Livestream &amp; App</button><button type="button" class="tt-y ex-t" data-ext="fanbase">🫶 Fanbase</button><button type="button" class="tt-y ex-t" data-ext="project">🧩 Project</button><button type="button" class="tt-y ex-t" data-ext="merch">🛍️ Merch</button><button type="button" class="tt-y ex-t" data-ext="konser">🎤 Konser</button><button type="button" class="tt-y ex-t" data-ext="offair">🎪 Off-Air</button></div>
+    <div class="tt-years ex-sub"><button type="button" class="tt-y ex-t on" data-ext="sum">Ringkasan</button><button type="button" class="tt-y ex-t" data-ext="away">✈️ Away</button><button type="button" class="tt-y ex-t" data-ext="live">📺 Livestream &amp; App</button><button type="button" class="tt-y ex-t" data-ext="fanbase">🫶 Fanbase</button><button type="button" class="tt-y ex-t" data-ext="project">🧩 Project</button><button type="button" class="tt-y ex-t" data-ext="merch">🛍️ Merch</button><button type="button" class="tt-y ex-t" data-ext="gift">🎁 Gift</button><button type="button" class="tt-y ex-t" data-ext="konser">🎤 Konser</button><button type="button" class="tt-y ex-t" data-ext="offair">🎪 Off-Air</button></div>
     <div id="ex"></div>
     <div id="away" hidden></div>
     <div id="misc" hidden></div>
@@ -1065,12 +1065,13 @@ const MISC = [ // names: pilihan nama (tanpa tanggal); tanpa names = pakai tangg
   {k: 'live', label: 'Livestream & App', icon: '📺', color: '#f472b6', groups: [['Livestream', ['IDN', 'Showroom', 'Saweria']], ['App', ['X', 'PM']]]},
   {k: 'fanbase', label: 'Fanbase', icon: '🫶', color: '#38bdf8', groups: [['Fanbase', ['Kas']]]},
   {k: 'project', label: 'Project', icon: '🧩', color: '#c084fc', groups: [['Project', ['SSK', 'RH', 'STS']]]},
-  {k: 'merch', label: 'Merch', icon: '🛍️', color: '#fb923c', ph: 'mis. photopack, lightstick, kaos'},
+  {k: 'merch', label: 'Merch', icon: '🛍️', color: '#fb923c', nodate: true, ph: 'mis. photopack, lightstick, kaos'},
+  {k: 'gift', label: 'Gift', icon: '🎁', color: '#f87171', member: true, ph: 'Nama member'},
   {k: 'konser', label: 'Konser', icon: '🎤', color: '#facc15', ph: 'mis. tiket konser, tiket festival'},
   {k: 'offair', label: 'Off-Air', icon: '🎪', color: '#2dd4bf', ph: 'mis. nama event off-air'}
 ];
 const miscNames = M => (M.groups || []).flatMap(g => g[1]);
-const miscByName = k => !!MISC.find(M => M.k === k).groups; // true = pilih nama, tanpa tanggal
+const miscByName = k => { const M = MISC.find(x => x.k === k); return !!(M.groups || M.nodate || M.member); }; // true = tanpa tanggal
 const EX_ITEMS = [
   {k: 'theater', label: 'Tiket theater', g: 'theater', base: 200000, unit: 'show'},
   {k: 'ts_roulette', label: '2-Shot Roulette', g: 'ts', base: 100000, unit: 'sesi'},
@@ -1128,7 +1129,7 @@ function renderExpense() {
   }).join('');
   const awL = L.filter(l => l.k.startsWith('away:'));
   const awayCard = awL.length ? `<div class="tt-c" style="--c:#22d3ee;--i:9"><b class="ex-n">${rupiah(amt(awL))}</b><span class="tl">Away (fansfar)</span><small>${awL.length} catatan · ${new Set(awL.map(l => l.trip || '—')).size} perjalanan<br>${pct(amt(awL))}% dari total</small></div>` : '';
-  const miscCards = MISC.map(M => [M, L.filter(l => l.k === 'misc:' + M.k)]).filter(x => x[1].length).map(([M, a], i) => `<div class="tt-c" style="--c:${M.color};--i:${10 + i}"><b class="ex-n">${rupiah(amt(a))}</b><span class="tl">${M.icon} ${M.label}</span><small>${miscByName(M.k) ? [...a.reduce((mp, l) => mp.set(l.nm, (mp.get(l.nm) || 0) + l.amt), new Map())].map(([n, v]) => esc(n) + ' ' + rupiah(v)).join(' · ') : a.length + ' catatan'}<br>${pct(amt(a))}% dari total</small></div>`).join('');
+  const miscCards = MISC.map(M => [M, L.filter(l => l.k === 'misc:' + M.k)]).filter(x => x[1].length).map(([M, a], i) => `<div class="tt-c" style="--c:${M.color};--i:${10 + i}"><b class="ex-n">${rupiah(amt(a))}</b><span class="tl">${M.icon} ${M.label}</span><small>${(M.groups || M.member) ? [...a.reduce((mp, l) => mp.set(l.nm, (mp.get(l.nm) || 0) + l.amt), new Map())].map(([n, v]) => esc(n) + ' ' + rupiah(v)).join(' · ') : a.length + ' catatan'}<br>${pct(amt(a))}% dari total</small></div>`).join('');
   const byM = {};
   L.filter(l => l.m).forEach(l => (byM[l.m] = byM[l.m] || []).push(l));
   const mKeys = Object.keys(byM).sort().reverse(), mMax = Math.max(1, ...mKeys.map(k => amt(byM[k])));
@@ -1143,9 +1144,9 @@ function renderExpense() {
     <h4 class="tt-h">Penyesuaian harga per bulan</h4>
     ${prices.over.map((o, i) => `<div class="ex-ov"><input type="month" data-oi="${i}" data-of="m" value="${esc(o.m)}"><select data-oi="${i}" data-of="k">${EX_ITEMS.map(I => `<option value="${I.k}"${I.k === o.k ? ' selected' : ''}>${I.label}</option>`).join('')}</select><input type="number" min="0" step="1000" data-oi="${i}" data-of="p" value="${o.p}"><button type="button" class="btn-s" data-odel="${i}" aria-label="Hapus penyesuaian">✕</button></div>`).join('') || '<p class="tt-note">Belum ada penyesuaian.</p>'}
     <button type="button" class="btn-s" data-oadd="1">＋ Tambah penyesuaian</button></details>`;
-  el.innerHTML = `<p class="tt-note">🔒 Hanya terlihat di admin. Theater = jumlah show di riwayat (termasuk JKT48 School). 2-Shot dan Chekicha = sesi yang dicatat di riwayat dan di tab Sesi Lepas. 2-Shot Event, MNG, dan Video Call = jumlah tiket per sesi (tanpa undian yang kalah). Bulan mengikuti tanggal acara. Away, Livestream &amp; App, Fanbase, Project, Merch, Konser, dan Off-Air = catatan di sub-tab masing-masing (Livestream &amp; App, Fanbase, dan Project tanpa tanggal, jadi tidak masuk rincian per bulan).</p>
+  el.innerHTML = `<p class="tt-note">🔒 Hanya terlihat di admin. Theater = jumlah show di riwayat (termasuk JKT48 School). 2-Shot dan Chekicha = sesi yang dicatat di riwayat dan di tab Sesi Lepas. 2-Shot Event, MNG, dan Video Call = jumlah tiket per sesi (tanpa undian yang kalah). Bulan mengikuti tanggal acara. Away, Livestream &amp; App, Fanbase, Project, Merch, Gift, Konser, dan Off-Air = catatan di sub-tab masing-masing (Livestream &amp; App, Fanbase, Project, Merch, dan Gift tanpa tanggal, jadi tidak masuk rincian per bulan).</p>
     <div class="tt-years">${['', ...years].map(y => `<button type="button" class="tt-y${y === exYear ? ' on' : ''}" data-ey="${y}">${y || 'Semua tahun'}</button>`).join('')}</div>
-    <div class="tt-hero"><div class="tt-big"><b class="ex-big">${rupiah(total)}</b><span>total pengeluaran${exYear ? ' ' + exYear : ''}</span><small>rata-rata ${rupiah(nm ? (total - undated) / nm : 0)} per bulan (${nm} bulan)${undated ? ` · belum termasuk ${rupiah(undated)} tanpa tanggal (Livestream &amp; App, Fanbase, Project)` : ''}</small></div>
+    <div class="tt-hero"><div class="tt-big"><b class="ex-big">${rupiah(total)}</b><span>total pengeluaran${exYear ? ' ' + exYear : ''}</span><small>rata-rata ${rupiah(nm ? (total - undated) / nm : 0)} per bulan (${nm} bulan)${undated ? ` · belum termasuk ${rupiah(undated)} tanpa tanggal (Livestream &amp; App, Fanbase, Project, Merch, Gift)` : ''}</small></div>
       <div style="margin-top:14px">${stackBar(gParts(L), total)}</div>
       <div class="tt-legend">${gParts(L).filter(p => p[1]).map(p => `<span><i style="background:${p[0]}"></i>${p[2]} ${p[3]} (${pct(p[1])}%)</span>`).join('')}</div></div>
     <div class="tt-cards">${cards}${awayCard}${miscCards}</div>
@@ -1190,18 +1191,20 @@ let offairMoved = 0; // diisi setelah data Away dimuat (lihat di bawah)
 function renderMisc() {
   const el = $('misc');
   if (!el) return;
-  const M = MISC.find(x => x.k === miscKind), byName = !!M.groups, today = new Date().toISOString().slice(0, 10);
+  const M = MISC.find(x => x.k === miscKind), byName = miscByName(M.k), today = new Date().toISOString().slice(0, 10);
   const all = misc.filter(w => w.kind === M.k), years = byName ? [] : [...new Set(all.map(w => w.date.slice(0, 4)))].sort().reverse();
   const list = (exYear && !byName ? all.filter(w => w.date.startsWith(exYear)) : all).slice().sort((x, y) => (y.date || '').localeCompare(x.date || '') || y.id - x.id), total = list.reduce((s, w) => s + w.amount, 0);
-  const ed = misc.find(w => w.id === miscEdit) || {date: miscLast || today, name: byName ? miscNames(M)[0] : '', amount: '', note: ''};
+  const ed = misc.find(w => w.id === miscEdit) || {date: miscLast || today, name: M.groups ? miscNames(M)[0] : '', amount: '', note: ''};
   const names = [...new Set([...miscNames(M), ...all.map(w => w.name).filter(Boolean)])]; // nama lama di luar pilihan tetap bisa dipilih
-  const sel = byName ? `<label>Nama<select id="mi-name">${M.groups.map(g => `<optgroup label="${esc(g[0])}">${g[1].map(n => `<option${n === ed.name ? ' selected' : ''}>${esc(n)}</option>`).join('')}</optgroup>`).join('')}${names.filter(n => !miscNames(M).includes(n)).map(n => `<option${n === ed.name ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select></label>`
-    : `<label>Tanggal<input type="date" id="mi-date" value="${esc(ed.date)}"></label><label>Nama<input id="mi-name" placeholder="${esc(M.ph || '')}" value="${esc(ed.name)}" autocomplete="off"></label>`;
-  const perName = byName ? `<div class="tt-cards">${names.map((n, i) => { const a = list.filter(w => w.name === n); return `<div class="tt-c" style="--c:${M.color};--i:${i}"><b class="ex-n">${rupiah(a.reduce((s, w) => s + w.amount, 0))}</b><span class="tl">${esc(n)}</span><small>${a.length} catatan</small></div>`; }).join('')}</div>` : '';
-  el.innerHTML = `<p class="tt-note">🔒 Hanya terlihat di admin. Catat pengeluaran ${esc(M.label)} di sini${byName ? ' (tanpa tanggal, tinggal pilih nama)' : ''}; totalnya otomatis masuk ke sub-tab Ringkasan. <b>Disimpan di browser ini saja</b>, jadi ikut Backup lengkap (JSON).${offairMoved && M.k === 'offair' ? ` ${offairMoved} catatan off-air dipindah otomatis dari Away.` : ''}</p>
+  const dateF = byName ? '' : `<label>Tanggal<input type="date" id="mi-date" value="${esc(ed.date)}"></label>`;
+  const sel = M.groups ? `<label>Nama<select id="mi-name">${M.groups.map(g => `<optgroup label="${esc(g[0])}">${g[1].map(n => `<option${n === ed.name ? ' selected' : ''}>${esc(n)}</option>`).join('')}</optgroup>`).join('')}${names.filter(n => !miscNames(M).includes(n)).map(n => `<option${n === ed.name ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select></label>`
+    : M.member ? `<label>Member yang di-gift<input id="mi-name" list="mi-members" placeholder="Nama member" value="${esc(ed.name)}" autocomplete="off"><datalist id="mi-members">${[...new Set([...records.flatMap(r => [r.member, r.ckMember]), ...tickets.map(t => t.member), ...solo.map(w => w.member), ...names].filter(Boolean))].sort().map(m => `<option value="${esc(m)}">`).join('')}</datalist></label>`
+    : `${dateF}<label>Nama<input id="mi-name" placeholder="${esc(M.ph || '')}" value="${esc(ed.name)}" autocomplete="off"></label>`;
+  const perName = (M.groups || M.member) ? `<div class="tt-cards">${names.map((n, i) => { const a = list.filter(w => w.name === n); return `<div class="tt-c" style="--c:${M.color};--i:${i}"><b class="ex-n">${rupiah(a.reduce((s, w) => s + w.amount, 0))}</b><span class="tl">${esc(n)}</span><small>${a.length} catatan</small></div>`; }).join('')}</div>` : '';
+  el.innerHTML = `<p class="tt-note">🔒 Hanya terlihat di admin. Catat pengeluaran ${esc(M.label)} di sini${byName ? ' (tanpa tanggal)' : ''}; totalnya otomatis masuk ke sub-tab Ringkasan. <b>Disimpan di browser ini saja</b>, jadi ikut Backup lengkap (JSON).${offairMoved && M.k === 'offair' ? ` ${offairMoved} catatan off-air dipindah otomatis dari Away.` : ''}</p>
     <div class="aw-form">
       ${sel}
-      <label>Jumlah (Rp)<input type="number" id="mi-amt" min="0" step="1000" inputmode="numeric" placeholder="150000" value="${ed.amount}"></label>
+      <label>${M.member ? 'Harga (Rp)' : 'Jumlah (Rp)'}<input type="number" id="mi-amt" min="0" step="1000" inputmode="numeric" placeholder="150000" value="${ed.amount}"></label>
       <label class="aw-wide">Catatan (opsional)<input id="mi-note" value="${esc(ed.note)}" autocomplete="off"></label>
       <div class="aw-act">${miscEdit ? '<button type="button" class="btn-s" data-micancel="1">Batal</button>' : ''}<button type="button" class="btn" data-misave="1">${miscEdit ? 'Simpan perubahan' : '＋ Tambah'}</button></div></div>
     ${byName ? '' : `<div class="tt-years">${['', ...years].map(y => `<button type="button" class="tt-y${y === exYear ? ' on' : ''}" data-ey="${y}">${y || 'Semua tahun'}</button>`).join('')}</div>`}
@@ -1213,8 +1216,9 @@ $('misc').addEventListener('click', async e => {
   const q = s => e.target.closest(s), M = MISC.find(x => x.k === miscKind);
   if (q('[data-ey]')) { exYear = q('[data-ey]').dataset.ey; renderMisc(); renderExpense(); }
   else if (q('[data-misave]')) {
-    const byName = !!M.groups, date = byName ? '' : $('mi-date').value, amount = Math.round(Number($('mi-amt').value) || 0);
+    const byName = miscByName(M.k), date = byName ? '' : $('mi-date').value, amount = Math.round(Number($('mi-amt').value) || 0);
     if (!byName && !date) return alert('Isi tanggalnya dulu.');
+    if (M.member && !$('mi-name').value.trim()) return alert('Isi nama member yang di-gift.');
     if (amount <= 0) return alert('Isi jumlah pengeluarannya (lebih dari 0).');
     const rec = cleanMisc({id: miscEdit || Date.now(), date, kind: miscKind, name: $('mi-name').value, amount, note: $('mi-note').value}), i = misc.findIndex(w => w.id === rec.id);
     if (i >= 0) misc[i] = rec; else misc.push(rec);
