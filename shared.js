@@ -456,18 +456,18 @@ function renderGallery() {
   if (!g) return;
   const soloItems = solo.filter(w => w.photo).map(w => { const K = KINDS.find(k => k.k === w.kind); return {label: K.short[w.type], icon: K.icon, member: w.member, photo: w.photo, k: w.kind, solo: true, r: {id: w.id, date: w.date, sesi: '', setlist: w.setlist || 'Di luar show'}}; });
   // foto 2-Shot event: tanggal, member, dan nama event diambil dari data tiket yang sudah ada
-  const evItems = tickets.filter(t => t.photo).map((t, i) => ({label: '2-Shot Event', icon: '📸', member: t.member, photo: t.photo, k: 'ts', ev: true, r: {id: i, date: t.date, sesi: '', setlist: tname(t)}}));
+  const evItems = tickets.filter(t => t.photo).map((t, i) => ({label: '2-Shot Event', icon: '📸', member: t.member, photo: t.photo, k: 'ev', ev: true, r: {id: i, date: t.date, sesi: '', setlist: tname(t)}}));
   const items = [...records.flatMap(r => extras(r).filter(x => x.photo).map(x => ({...x, r}))), ...soloItems, ...evItems].sort((a, b) => cmp(a.r, b.r));
   const sel = $('g-member'), cur = sel.value;
-  const inK = x => !galKind || x.k === galKind; // sub-tab Galeri: Semua / 2-Shot / Chekicha
+  const inK = x => !galKind || x.k === galKind; // sub-tab Galeri: Semua / 2-Shot / 2-Shot Event / Chekicha
   const mem = [...new Set(items.filter(inK).map(x => x.member).filter(Boolean))].sort();
   sel.innerHTML = '<option value="">Semua member</option>' + mem.map(m => `<option${m === cur ? ' selected' : ''}>${esc(m)}</option>`).join('');
   const list = items.filter(x => inK(x) && (!cur || !mem.includes(cur) || x.member === cur));
-  if ($('g-kinds')) $('g-kinds').innerHTML = [['', 'Semua'], ['ts', '📸 2-Shot'], ['ck', '🎴 Chekicha']].map(([k, l]) => `<button type="button" class="gk${k === galKind ? ' on' : ''}" data-gk="${k}">${l} <b>${items.filter(x => !k || x.k === k).length}</b></button>`).join('');
+  if ($('g-kinds')) $('g-kinds').innerHTML = [['', 'Semua'], ['ts', '📸 2-Shot'], ['ev', '🎪 2-Shot Event'], ['ck', '🎴 Chekicha']].map(([k, l]) => `<button type="button" class="gk${k === galKind ? ' on' : ''}" data-gk="${k}">${l} <b>${items.filter(x => !k || x.k === k).length}</b></button>`).join('');
   $('g-info').textContent = `${list.length} foto`;
   if ($('g-tab') && dataLoaded) $('g-tab').textContent = `Galeri (${items.length})`;
   g.innerHTML = list.length ? list.map((x, i) => `<figure class="gi" style="--i:${Math.min(i, 14)}"><img src="${esc(thumbOf(x.photo))}" data-full="${esc(x.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="${esc(x.label)} dengan ${esc(x.member)}" loading="lazy">
-    <figcaption><b>${esc(x.member) || '-'}</b><span>${x.icon} ${esc(x.label)}</span><span>${esc(x.r.setlist)} · ${esc(fmtDate(x.r.date))}</span>${x.solo ? '<span class="gi-x">di luar show (tanpa menonton)</span>' : ''}${x.ev ? '<span class="gi-x">event 2-Shot</span>' : ''}</figcaption></figure>`).join('')
+    <figcaption><b>${esc(x.member) || '-'}</b><span>${x.icon} ${esc(x.label)}</span><span>${esc(x.r.setlist)} · ${esc(fmtDate(x.r.date))}</span>${x.solo ? '<span class="gi-x">di luar show (tanpa menonton)</span>' : ''}</figcaption></figure>`).join('')
     : '<div class="empty">Belum ada foto</div>';
 }
 $('g-member')?.addEventListener('change', renderGallery);
@@ -1261,7 +1261,7 @@ document.addEventListener('click', e => {
   addEventListener('scroll', () => { if (t) return; t = requestAnimationFrame(() => { t = 0; bar.classList.toggle('stuck', scrollY > 30); }); }, {passive: true});
 })();
 
-// sub-tab Galeri: Semua / 2-Shot / Chekicha
+// sub-tab Galeri: Semua / 2-Shot / 2-Shot Event / Chekicha
 let galKind = '';
 if ($('gallery-bar')) {
   $('gallery-bar').insertAdjacentHTML('beforebegin', '<div id="g-kinds" class="gk-bar"></div>');
