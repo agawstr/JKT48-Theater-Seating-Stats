@@ -175,6 +175,16 @@ button.tt-c{font:inherit;color:inherit;text-align:left;cursor:pointer}
 .so-ph{cursor:default}
 .so-row small{display:block;color:#a1a1aa;font-size:11px}
 .so-p{color:#ff8c00;white-space:nowrap}
+.tsev-h{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:0 0 6px}
+.tsev-h select{width:auto}
+.tsev-row{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;padding:8px 6px;border-bottom:1px solid #24151d;font-size:13px}
+.tsev-row small{display:block;color:#a1a1aa;font-size:11px}
+.tsev-row img,.tsev-row .so-ph{width:48px;height:48px;border-radius:8px;object-fit:cover;background:#1e050c;display:flex;align-items:center;justify-content:center}
+.tsev-row img{cursor:zoom-in}
+.tsev-up{position:relative;overflow:hidden;cursor:pointer;display:inline-block}
+.tsev-up input{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
+#tsev{margin-bottom:26px}
+@media(max-width:600px){.tsev-row{grid-template-columns:56px 1fr}.tsev-row .aw-b{grid-column:1/-1;justify-content:flex-end}}
 .so-prev{display:flex;gap:10px;align-items:center;margin-top:6px}
 .so-prev img{width:72px;height:72px;object-fit:cover;border-radius:10px}
 #solo{display:flex;flex-direction:column;gap:18px}
@@ -210,7 +220,7 @@ button.tt-c{font:inherit;color:inherit;text-align:left;cursor:pointer}
   </div>
 
   <div id="view-tiket" class="view"><div id="tt"></div></div>
-  <div id="view-solo" class="view"><div id="solo"></div></div>
+  <div id="view-solo" class="view"><div id="tsev"></div><div id="solo"></div></div>
 
   <div id="view-biaya" class="view">
     <div class="tt-years ex-sub"><button type="button" class="tt-y ex-t on" data-ext="sum">Ringkasan</button><button type="button" class="tt-y ex-t" data-ext="away">✈️ Away</button></div>
@@ -503,7 +513,7 @@ function renderLists() {
   dl('dl-setlist', records.map(r => r.setlist));
   dl('dl-member', records.flatMap(r => extras(r).map(x => x.member)));
 }
-const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTodo(); renderTotals(); renderExpense(); renderAway(); renderSolo(); };
+const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTodo(); renderTotals(); renderExpense(); renderAway(); renderSolo(); renderTsEv(); };
 
 // ---------- Tab ----------
 function switchTab(name) {
@@ -512,7 +522,7 @@ function switchTab(name) {
   if (name === 'peta') requestAnimationFrame(centerChart);
   if (name === 'tiket') renderTotals();
   if (name === 'biaya') { renderExpense(); renderAway(); }
-  if (name === 'solo') renderSolo();
+  if (name === 'solo') { renderSolo(); renderTsEv(); }
 }
 document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
 
@@ -754,7 +764,20 @@ $('btn-zip').addEventListener('click', async () => {
     }
     soloPub.push(o);
   }
-  files.unshift({name: 'data.json', data: new TextEncoder().encode(JSON.stringify({records: pub, solo: soloPub, tickets: opt.tickets ? tickets.map(t => ({...t, tx: undefined, ...(opt.mask ? {member: mask(t.member)} : {}), ...(opt.blur && BLUR_CATS.includes(tcat(t)) ? {bought: 1} : {})})) : [], updated: new Date().toISOString().slice(0, 10)}, null, 1))});
+  const tkPub = [];
+  if (opt.tickets) for (const t of tickets) { // foto 2-Shot event jadi file + thumbnail
+    const o = {...t};
+    const m = opt.photos ? String(o.photo || '').match(/^data:image\/(\w+);base64,(.*)$/s) : null;
+    if (!opt.photos) o.photo = '';
+    else if (m) {
+      const base = `tk-${String(t.k || t.tx || tkPub.length).replace(/[^\w-]/g, '_')}.${m[1] === 'jpeg' ? 'jpg' : m[1]}`;
+      files.push({name: 'photos/' + base, data: Uint8Array.from(atob(m[2]), c => c.charCodeAt(0))});
+      try { files.push({name: 'photos/t/' + base, data: await thumbBytes(o.photo)}); } catch (e) { /* tanpa thumbnail */ }
+      o.photo = 'photos/' + base;
+    }
+    tkPub.push(o);
+  }
+  files.unshift({name: 'data.json', data: new TextEncoder().encode(JSON.stringify({records: pub, solo: soloPub, tickets: opt.tickets ? tkPub.map(t => ({...t, tx: undefined, ...(opt.mask ? {member: mask(t.member)} : {}), ...(opt.blur && BLUR_CATS.includes(tcat(t)) ? {bought: 1} : {})})) : [], updated: new Date().toISOString().slice(0, 10)}, null, 1))});
   dl(makeZip(files), 'data-publish.zip');
   markExported();
   } finally { btn.disabled = false; btn.textContent = label; }
@@ -866,6 +889,7 @@ function mergeTickets(list) { // kunci sama = diperbarui, sisanya ditambah; tike
     }
     if (o && o.cat && !t.cat) t.cat = o.cat;
     if (o && o.status && !t.status) t.status = o.status;
+    if (o && o.photo && !t.photo) t.photo = o.photo; // impor ulang dari jkt48.com tidak menghapus foto yang sudah diunggah
     if (!o && !t.cat) { const sib = tickets.find(x => x.cat && tname(x) === tname(t)); if (sib) t.cat = sib.cat; } // seri yang sama: pakai kategori yang sudah kamu atur
     delete t._kl;
     m.set(tkey(t), t);
@@ -1209,6 +1233,42 @@ solo = (() => { try { const s = JSON.parse(localStorage.getItem(SOLO_KEY)); if (
 const saveSolo = () => { try { localStorage.setItem(SOLO_KEY, JSON.stringify(solo)); } catch (e) { alert('Gagal menyimpan (penyimpanan penuh?). Unduh Backup lengkap dulu, lalu kurangi foto lama.'); } bumpDirty(); };
 const soloKey = w => (w.kind === 'ck' ? 'ck_' : 'ts_') + (w.type === 'birthday' ? 'bday' : 'roulette');
 const soloLabel = w => KINDS.find(k => k.k === w.kind).short[w.type];
+// ---------- Foto 2-Shot event: pilih event dari data tiket, cukup unggah fotonya ----------
+const tsEvList = () => tickets.filter(t => t.type !== 'SHOW' && ['2S & MnG Event', '2S & MnG Theater Sementara'].includes(tcat(t)) && /2[- ]?shot/i.test(t.name) && raffleOf(t.raffle) !== 'lose')
+  .sort((a, b) => b.date.localeCompare(a.date) || (b.start || '').localeCompare(a.start || '') || (a.member || '').localeCompare(b.member || ''));
+let tsevFilter = 'all';
+function saveTickets() {
+  try { localStorage.setItem(KEY + '_tickets', JSON.stringify(tickets)); } catch (e) { alert('Gagal menyimpan foto (penyimpanan penuh?). Unduh Backup lengkap dulu, lalu kurangi foto lama.'); }
+  bumpDirty();
+}
+function renderTsEv() {
+  const el = $('tsev');
+  if (!el) return;
+  const all = tsEvList(), done = all.filter(t => t.photo).length;
+  const list = tsevFilter === 'todo' ? all.filter(t => !t.photo) : all;
+  el.innerHTML = `<div class="tsev-h"><h3 class="tt-h" style="margin:0">📸 Foto 2-Shot Event · ${done}/${all.length} sudah ada foto</h3>
+    <select id="tsev-f" aria-label="Filter"><option value="all"${tsevFilter === 'all' ? ' selected' : ''}>Semua event</option><option value="todo"${tsevFilter === 'todo' ? ' selected' : ''}>Belum ada foto</option></select></div>
+    <p class="tt-note" style="margin:0 0 8px">Tanggal, member, dan nama event diambil dari data tiket. Tinggal unggah fotonya; foto langsung muncul di tab Galeri setelah dipublikasikan.</p>
+    ${list.map(t => `<div class="tsev-row">${t.photo ? `<img src="${esc(t.photo)}" alt="Foto" data-photo>` : '<span class="so-ph">📸</span>'}
+      <span><b>${esc(t.member) || '-'}</b><small>${esc(fmtDate(t.date))}${t.start ? ' · ' + esc(t.start) : ''}${t.session ? ' · ' + esc(t.session) : ''}</small><small>${esc(tname(t))}</small></span>
+      <span class="aw-b"><label class="btn-s tsev-up">${t.photo ? 'Ganti foto' : '⬆ Unggah foto'}<input type="file" accept="image/*" data-tkfile="${esc(tkey(t))}" aria-label="Unggah foto"></label>${t.photo ? `<button type="button" class="btn-s" data-tkrm="${esc(tkey(t))}">Hapus foto</button>` : ''}</span></div>`).join('') || `<div class="empty">${all.length ? 'Semua event sudah punya foto 🎉' : 'Belum ada tiket 2-Shot. Impor tiket dulu di tab Total Tiket.'}</div>`}`;
+}
+$('tsev').addEventListener('change', async e => {
+  if (e.target.id === 'tsev-f') { tsevFilter = e.target.value; return renderTsEv(); }
+  const key = e.target.dataset.tkfile, file = e.target.files && e.target.files[0];
+  if (!key || !file) return;
+  const t = tickets.find(x => tkey(x) === key);
+  if (!t) return;
+  try { t.photo = await compress(file); } catch (err) { return alert(err.message); }
+  saveTickets(); renderTsEv();
+});
+$('tsev').addEventListener('click', async e => {
+  const b = e.target.closest('[data-tkrm]');
+  if (!b) return;
+  const t = tickets.find(x => tkey(x) === b.dataset.tkrm);
+  if (t && await ask(`Hapus foto 2-Shot ${t.member || ''} ${fmtDate(t.date)}?`, 'Hapus')) { t.photo = ''; saveTickets(); renderTsEv(); }
+});
+
 let soloEdit = 0, soloPhoto = '', soloDraft = null;
 const soloForm = () => ({date: $('so-date').value, kind: $('so-kind').value, type: $('so-type').value, member: $('so-member').value.trim(), setlist: $('so-setlist').value.trim(), note: $('so-note').value.trim()});
 function renderSolo() {
