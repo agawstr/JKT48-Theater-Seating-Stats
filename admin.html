@@ -154,8 +154,8 @@ button.tt-c{font:inherit;color:inherit;text-align:left;cursor:pointer}
 .ex-ov{display:grid;grid-template-columns:140px 1fr 120px 36px;gap:8px;align-items:center;margin:6px 0}
 .ex-prices small{color:#a1a1aa}
 .ex-sub{margin-bottom:14px}
-#ex:not([hidden]),#away:not([hidden]){animation:tabin .3s var(--ease)}
-#away{display:flex;flex-direction:column;gap:18px}
+#ex:not([hidden]),#away:not([hidden]),#misc:not([hidden]){animation:tabin .3s var(--ease)}
+#away,#misc{display:flex;flex-direction:column;gap:18px}
 .aw-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;background:#181115;border:1px solid #2d1820;border-radius:14px;padding:14px}
 .aw-form label{display:grid;gap:4px;font-size:12px;color:#a1a1aa}
 .aw-wide{grid-column:1/-1}
@@ -223,9 +223,10 @@ button.tt-c{font:inherit;color:inherit;text-align:left;cursor:pointer}
   <div id="view-solo" class="view"><div id="tsev"></div><div id="solo"></div></div>
 
   <div id="view-biaya" class="view">
-    <div class="tt-years ex-sub"><button type="button" class="tt-y ex-t on" data-ext="sum">Ringkasan</button><button type="button" class="tt-y ex-t" data-ext="away">✈️ Away</button></div>
+    <div class="tt-years ex-sub"><button type="button" class="tt-y ex-t on" data-ext="sum">Ringkasan</button><button type="button" class="tt-y ex-t" data-ext="away">✈️ Away</button><button type="button" class="tt-y ex-t" data-ext="live">📺 Livestream</button><button type="button" class="tt-y ex-t" data-ext="merch">🛍️ Merch</button><button type="button" class="tt-y ex-t" data-ext="konser">🎤 Konser</button><button type="button" class="tt-y ex-t" data-ext="offair">🎪 Off-Air</button></div>
     <div id="ex"></div>
     <div id="away" hidden></div>
+    <div id="misc" hidden></div>
   </div>
 
   <div id="view-crud" class="view">
@@ -688,7 +689,7 @@ const dl = (blob, name) => {
 };
 // Backup lengkap: foto tetap di dalam JSON (dipakai untuk Restore)
 $('btn-export').addEventListener('click', () => {
-  dl(new Blob([JSON.stringify({records, tickets, prices, away, solo}, null, 2)], {type: 'application/json'}), 'backup-lengkap.json');
+  dl(new Blob([JSON.stringify({records, tickets, prices, away, solo, misc}, null, 2)], {type: 'application/json'}), 'backup-lengkap.json');
   markExported();
 });
 
@@ -793,7 +794,9 @@ $('file-import').addEventListener('change', async e => {
     if (!Array.isArray(arr)) throw new Error('Format bukan array');
     if (!Array.isArray(json) && Array.isArray(json.tickets)) mergeTickets(json.tickets);
     if (!Array.isArray(json) && json.prices && json.prices.base) { prices = {base: {...DEF_PRICES.base, ...json.prices.base}, over: Array.isArray(json.prices.over) ? json.prices.over : []}; savePrices(); renderExpense(); }
-    if (!Array.isArray(json) && Array.isArray(json.away)) { const ids = new Set(away.map(w => w.id)); json.away.map(cleanAway).filter(w => w.date && !ids.has(w.id)).forEach(w => away.push(w)); saveAway(); renderAway(); renderExpense(); }
+    if (!Array.isArray(json) && Array.isArray(json.misc)) { const ids = new Set(misc.map(w => w.id)); json.misc.map(cleanMisc).filter(w => w.date && !ids.has(w.id)).forEach(w => misc.push(w)); }
+    if (!Array.isArray(json) && Array.isArray(json.away)) { const ids = new Set(away.map(w => w.id)); json.away.map(cleanAway).filter(w => w.date && !ids.has(w.id)).forEach(w => away.push(w)); saveAway(); }
+    if (!Array.isArray(json) && (Array.isArray(json.away) || Array.isArray(json.misc))) { moveOffair(); renderAway(); renderMisc(); renderExpense(); }
     if (!Array.isArray(json) && Array.isArray(json.solo)) { const ids = new Set(solo.map(w => w.id)); json.solo.map(sanitizeSolo).filter(w => w.date && !ids.has(w.id)).forEach(w => solo.push(w)); saveSolo(); renderSolo(); renderExpense(); }
     const ids = new Set(records.map(r => r.id));
     // id kembar di dalam file yang sama juga dilewati (ids.add mengembalikan Set = truthy)
@@ -1057,6 +1060,13 @@ $('tt').addEventListener('click', e => {
 });
 
 // ---------- Pengeluaran: dihitung dari data yang sudah diinput + daftar harga ----------
+// pengeluaran lain yang dicatat manual: Livestream, Merch, Konser, Off-Air
+const MISC = [
+  {k: 'live', label: 'Livestream', icon: '📺', color: '#f472b6', ph: 'mis. tiket livestream konser, SHOWROOM'},
+  {k: 'merch', label: 'Merch', icon: '🛍️', color: '#fb923c', ph: 'mis. photopack, lightstick, kaos'},
+  {k: 'konser', label: 'Konser', icon: '🎤', color: '#facc15', ph: 'mis. tiket konser, tiket festival'},
+  {k: 'offair', label: 'Off-Air', icon: '🎪', color: '#2dd4bf', ph: 'mis. nama event off-air'}
+];
 const EX_ITEMS = [
   {k: 'theater', label: 'Tiket theater', g: 'theater', base: 200000, unit: 'show'},
   {k: 'ts_roulette', label: '2-Shot Roulette', g: 'ts', base: 100000, unit: 'sesi'},
@@ -1069,10 +1079,11 @@ const EX_ITEMS = [
 ];
 const EX_GROUPS = [
   {g: 'theater', label: 'Tiket theater', color: '#ff8c00'}, {g: 'ts', label: '2-Shot', color: '#ff2a5f'}, {g: 'ck', label: 'Chekicha', color: '#34d399'},
-  {g: 'mng', label: 'MNG', color: '#ffd23f'}, {g: 'vc', label: 'Video Call', color: '#a78bfa'}, {g: 'away', label: 'Away', color: '#22d3ee'}
+  {g: 'mng', label: 'MNG', color: '#ffd23f'}, {g: 'vc', label: 'Video Call', color: '#a78bfa'}, {g: 'away', label: 'Away', color: '#22d3ee'},
+  ...MISC.map(M => ({g: 'm_' + M.k, label: M.label, color: M.color}))
 ];
 const EX_ITEM = Object.fromEntries(EX_ITEMS.map(i => [i.k, i]));
-const exItem = k => EX_ITEM[k] || {label: 'Away · ' + k.slice(5), g: 'away', unit: 'entri'}; // k = "away:Kategori"
+const exItem = k => EX_ITEM[k] || (k.startsWith('misc:') ? {label: MISC.find(M => M.k === k.slice(5)).label, g: 'm_' + k.slice(5), unit: 'catatan'} : null) || {label: 'Away · ' + k.slice(5), g: 'away', unit: 'entri'}; // k = "away:Kategori"
 const PRK = 'jkt48_prices_v1';
 const DEF_PRICES = {base: Object.fromEntries(EX_ITEMS.map(i => [i.k, i.base])), over: [{m: '2026-10', k: 'ts_event', p: 200000}, {m: '2026-10', k: 'mng', p: 60000}]}; // Okt 2026 harganya berbeda
 let prices = (() => {
@@ -1091,6 +1102,7 @@ function expenseLines() {
   });
   ttRows().forEach(t => add(t.date, {vc: 'vc', ts: 'ts_event', mg: 'mng'}[ticketKind(t)], t.bought));
   solo.forEach(w => add(w.date, soloKey(w), 1)); // sesi lepas: harga mengikuti daftar harga (dan penyesuaian per bulan)
+  misc.forEach(w => { if (w.date && w.amount) L.push({m: w.date.slice(0, 7), k: 'misc:' + w.kind, q: 1, p: w.amount, amt: w.amount, trip: ''}); });
   away.forEach(w => { if (w.date && w.amount) L.push({m: w.date.slice(0, 7), k: 'away:' + w.cat, q: 1, p: w.amount, amt: w.amount, trip: w.trip}); }); // catatan Away
   return L;
 }
@@ -1112,12 +1124,13 @@ function renderExpense() {
   }).join('');
   const awL = L.filter(l => l.k.startsWith('away:'));
   const awayCard = awL.length ? `<div class="tt-c" style="--c:#22d3ee;--i:9"><b class="ex-n">${rupiah(amt(awL))}</b><span class="tl">Away (fansfar)</span><small>${awL.length} catatan · ${new Set(awL.map(l => l.trip || '—')).size} perjalanan<br>${pct(amt(awL))}% dari total</small></div>` : '';
+  const miscCards = MISC.map(M => [M, L.filter(l => l.k === 'misc:' + M.k)]).filter(x => x[1].length).map(([M, a], i) => `<div class="tt-c" style="--c:${M.color};--i:${10 + i}"><b class="ex-n">${rupiah(amt(a))}</b><span class="tl">${M.icon} ${M.label}</span><small>${a.length} catatan<br>${pct(amt(a))}% dari total</small></div>`).join('');
   const byM = {};
   L.forEach(l => (byM[l.m] = byM[l.m] || []).push(l));
   const mKeys = Object.keys(byM).sort().reverse(), mMax = Math.max(1, ...mKeys.map(k => amt(byM[k])));
   const moHtml = mKeys.map(k => {
     const a = byM[k], rows = new Map();
-    a.forEach(l => { const aw = l.k.startsWith('away:'), key = aw ? l.k : l.k + '|' + l.p, r = rows.get(key) || {k: l.k, p: l.p, q: 0, amt: 0, aw}; r.q += l.q; r.amt += l.amt; rows.set(key, r); });
+    a.forEach(l => { const aw = l.k.includes(':'), key = aw ? l.k : l.k + '|' + l.p, r = rows.get(key) || {k: l.k, p: l.p, q: 0, amt: 0, aw}; r.q += l.q; r.amt += l.amt; rows.set(key, r); });
     const lines2 = [...rows.values()].sort((x, y) => y.amt - x.amt).map(r => `<div class="ex-l"><span>${exItem(r.k).label}</span><span>${r.aw ? r.q + ' catatan' : r.q + ' ' + exItem(r.k).unit + ' × ' + rupiah(r.p)}</span><b>${rupiah(r.amt)}</b></div>`).join('');
     return `<details class="tt-m ex-m"><summary><span class="nm">${esc(MON_ID[+k.slice(5, 7) - 1] + ' ' + k.slice(0, 4))}<small>${rows.size} jenis</small></span>${stackBar(gParts(a), mMax)}<span class="tot">${rupiah(amt(a))}</span></summary><div class="tt-ml">${lines2}</div></details>`;
   }).join('');
@@ -1126,12 +1139,12 @@ function renderExpense() {
     <h4 class="tt-h">Penyesuaian harga per bulan</h4>
     ${prices.over.map((o, i) => `<div class="ex-ov"><input type="month" data-oi="${i}" data-of="m" value="${esc(o.m)}"><select data-oi="${i}" data-of="k">${EX_ITEMS.map(I => `<option value="${I.k}"${I.k === o.k ? ' selected' : ''}>${I.label}</option>`).join('')}</select><input type="number" min="0" step="1000" data-oi="${i}" data-of="p" value="${o.p}"><button type="button" class="btn-s" data-odel="${i}" aria-label="Hapus penyesuaian">✕</button></div>`).join('') || '<p class="tt-note">Belum ada penyesuaian.</p>'}
     <button type="button" class="btn-s" data-oadd="1">＋ Tambah penyesuaian</button></details>`;
-  el.innerHTML = `<p class="tt-note">🔒 Hanya terlihat di admin. Theater = jumlah show di riwayat (termasuk JKT48 School). 2-Shot dan Chekicha = sesi yang dicatat di riwayat dan di tab Sesi Lepas. 2-Shot Event, MNG, dan Video Call = jumlah tiket per sesi (tanpa undian yang kalah). Bulan mengikuti tanggal acara. Away = catatan di sub-tab Away.</p>
+  el.innerHTML = `<p class="tt-note">🔒 Hanya terlihat di admin. Theater = jumlah show di riwayat (termasuk JKT48 School). 2-Shot dan Chekicha = sesi yang dicatat di riwayat dan di tab Sesi Lepas. 2-Shot Event, MNG, dan Video Call = jumlah tiket per sesi (tanpa undian yang kalah). Bulan mengikuti tanggal acara. Away, Livestream, Merch, Konser, dan Off-Air = catatan di sub-tab masing-masing.</p>
     <div class="tt-years">${['', ...years].map(y => `<button type="button" class="tt-y${y === exYear ? ' on' : ''}" data-ey="${y}">${y || 'Semua tahun'}</button>`).join('')}</div>
     <div class="tt-hero"><div class="tt-big"><b class="ex-big">${rupiah(total)}</b><span>total pengeluaran${exYear ? ' ' + exYear : ''}</span><small>rata-rata ${rupiah(total / nm)} per bulan (${nm} bulan)</small></div>
       <div style="margin-top:14px">${stackBar(gParts(L), total)}</div>
       <div class="tt-legend">${gParts(L).filter(p => p[1]).map(p => `<span><i style="background:${p[0]}"></i>${p[2]} ${p[3]} (${pct(p[1])}%)</span>`).join('')}</div></div>
-    <div class="tt-cards">${cards}${awayCard}</div>
+    <div class="tt-cards">${cards}${awayCard}${miscCards}</div>
     <div><h3 class="tt-h">Per bulan · klik untuk rincian</h3>${moHtml}</div>
     ${editor}`;
 }
@@ -1152,6 +1165,64 @@ $('ex').addEventListener('change', e => {
 });
 $('ex').addEventListener('toggle', e => { if (e.target.classList && e.target.classList.contains('ex-prices')) exOpen = e.target.open; }, true);
 
+// ---------- Livestream / Merch / Konser / Off-Air: catatan pengeluaran manual ----------
+const MISK = 'jkt48_misc_v1';
+const cleanMisc = w => ({id: Number(w.id) || Date.now() + Math.floor(Math.random() * 1000), date: String(w.date || '').slice(0, 10), kind: MISC.some(M => M.k === w.kind) ? w.kind : 'merch',
+  name: String(w.name || '').trim().slice(0, 100), amount: Math.max(0, Math.round(Number(w.amount) || 0)), note: String(w.note || '').trim().slice(0, 200)});
+let misc = (() => { try { const s = JSON.parse(localStorage.getItem(MISK)); if (Array.isArray(s)) return s.map(cleanMisc).filter(w => w.date); } catch (e) {} return []; })();
+const saveMisc = () => { try { localStorage.setItem(MISK, JSON.stringify(misc)); } catch (e) { alert('Gagal menyimpan catatan (penyimpanan penuh?)'); } bumpDirty(); };
+let miscKind = 'live', miscEdit = 0, miscLast = '';
+// catatan Away yang bertanda "off-air" dipindah ke Off-Air supaya tidak terhitung dua kali
+function moveOffair() {
+  const hit = away.filter(w => /off[\s-]?air/i.test(w.note + ' ' + w.trip));
+  if (!hit.length) return 0;
+  const ids = new Set(misc.map(w => w.id));
+  hit.forEach(w => { if (!ids.has(w.id)) misc.push(cleanMisc({id: w.id, date: w.date, kind: 'offair', name: w.note.replace(/\s*\(?\s*off[\s-]?air\s*\)?\s*/ig, ' ').trim() || w.note, amount: w.amount, note: w.trip ? 'Dipindah dari Away · ' + w.trip : 'Dipindah dari Away'})); });
+  away = away.filter(w => !hit.includes(w));
+  saveMisc(); saveAway();
+  return hit.length;
+}
+let offairMoved = 0; // diisi setelah data Away dimuat (lihat di bawah)
+function renderMisc() {
+  const el = $('misc');
+  if (!el) return;
+  const M = MISC.find(x => x.k === miscKind), today = new Date().toISOString().slice(0, 10);
+  const all = misc.filter(w => w.kind === M.k), years = [...new Set(all.map(w => w.date.slice(0, 4)))].sort().reverse();
+  const list = (exYear ? all.filter(w => w.date.startsWith(exYear)) : all).slice().sort((x, y) => y.date.localeCompare(x.date) || y.id - x.id), total = list.reduce((s, w) => s + w.amount, 0);
+  const ed = misc.find(w => w.id === miscEdit) || {date: miscLast || today, name: '', amount: '', note: ''};
+  const byM = {};
+  list.forEach(w => byM[w.date.slice(0, 7)] = (byM[w.date.slice(0, 7)] || 0) + w.amount);
+  el.innerHTML = `<p class="tt-note">🔒 Hanya terlihat di admin. Catat pengeluaran ${esc(M.label)} di sini; totalnya otomatis masuk ke sub-tab Ringkasan. <b>Disimpan di browser ini saja</b>, jadi ikut Backup lengkap (JSON).${offairMoved && M.k === 'offair' ? ` ${offairMoved} catatan off-air dipindah otomatis dari Away.` : ''}</p>
+    <div class="aw-form">
+      <label>Tanggal<input type="date" id="mi-date" value="${esc(ed.date)}"></label>
+      <label>Nama<input id="mi-name" placeholder="${esc(M.ph)}" value="${esc(ed.name)}" autocomplete="off"></label>
+      <label>Jumlah (Rp)<input type="number" id="mi-amt" min="0" step="1000" inputmode="numeric" placeholder="150000" value="${ed.amount}"></label>
+      <label class="aw-wide">Catatan (opsional)<input id="mi-note" value="${esc(ed.note)}" autocomplete="off"></label>
+      <div class="aw-act">${miscEdit ? '<button type="button" class="btn-s" data-micancel="1">Batal</button>' : ''}<button type="button" class="btn" data-misave="1">${miscEdit ? 'Simpan perubahan' : '＋ Tambah ' + esc(M.label)}</button></div></div>
+    <div class="tt-years">${['', ...years].map(y => `<button type="button" class="tt-y${y === exYear ? ' on' : ''}" data-ey="${y}">${y || 'Semua tahun'}</button>`).join('')}</div>
+    <div class="tt-hero"><div class="tt-big"><b class="ex-big">${rupiah(total)}</b><span>total ${esc(M.label)}${exYear ? ' ' + exYear : ''}</span><small>${list.length} catatan · ${Object.keys(byM).length} bulan</small></div></div>
+    <div><h3 class="tt-h">Semua catatan ${esc(M.label)}</h3>${list.map(w => `<div class="aw-row"><span>${esc(fmtDate(w.date))}</span><span class="aw-m"><i style="background:${M.color}"></i>${esc(w.name) || '-'}${w.note ? `<small>${esc(w.note)}</small>` : ''}</span><b>${rupiah(w.amount)}</b><span class="aw-b"><button type="button" class="btn-s" data-miedit="${w.id}" aria-label="Ubah">✎</button><button type="button" class="btn-s" data-midel="${w.id}" aria-label="Hapus">✕</button></span></div>`).join('') || '<div class="empty">Belum ada catatan.</div>'}</div>`;
+}
+$('misc').addEventListener('click', async e => {
+  const q = s => e.target.closest(s), M = MISC.find(x => x.k === miscKind);
+  if (q('[data-ey]')) { exYear = q('[data-ey]').dataset.ey; renderMisc(); renderExpense(); }
+  else if (q('[data-misave]')) {
+    const date = $('mi-date').value, amount = Math.round(Number($('mi-amt').value) || 0);
+    if (!date) return alert('Isi tanggalnya dulu.');
+    if (amount <= 0) return alert('Isi jumlah pengeluarannya (lebih dari 0).');
+    const rec = cleanMisc({id: miscEdit || Date.now(), date, kind: miscKind, name: $('mi-name').value, amount, note: $('mi-note').value}), i = misc.findIndex(w => w.id === rec.id);
+    if (i >= 0) misc[i] = rec; else misc.push(rec);
+    miscLast = rec.date; miscEdit = 0;
+    saveMisc(); renderMisc(); renderExpense(); $('mi-name').focus();
+  } else if (q('[data-micancel]')) { miscEdit = 0; renderMisc(); }
+  else if (q('[data-miedit]')) { miscEdit = Number(q('[data-miedit]').dataset.miedit); renderMisc(); $('mi-date').scrollIntoView({behavior: 'smooth', block: 'center'}); }
+  else if (q('[data-midel]')) {
+    const id = Number(q('[data-midel]').dataset.midel), w = misc.find(x => x.id === id);
+    if (w && await ask(`Hapus ${M.label} ${fmtDate(w.date)} ${w.name} ${rupiah(w.amount)}?`, 'Hapus')) { misc = misc.filter(x => x.id !== id); if (miscEdit === id) miscEdit = 0; saveMisc(); renderMisc(); renderExpense(); }
+  }
+});
+$('misc').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.closest('.aw-form input')) { e.preventDefault(); $('misc').querySelector('[data-misave]').click(); } });
+
 // ---------- Away: pengeluaran saat fansfar (transportasi, penginapan, dll) ----------
 const AWAY_CATS = [
   {c: 'Transportasi', color: '#60a5fa'}, {c: 'Penginapan', color: '#a78bfa'}, {c: 'Makan & minum', color: '#34d399'},
@@ -1163,6 +1234,7 @@ const cleanAway = w => ({id: Number(w.id) || Date.now() + Math.floor(Math.random
 let away = (() => { try { const s = JSON.parse(localStorage.getItem(AWK)); if (Array.isArray(s)) return s.map(cleanAway).filter(w => w.date); } catch (e) {} return []; })();
 const saveAway = () => { try { localStorage.setItem(AWK, JSON.stringify(away)); } catch (e) { alert('Gagal menyimpan catatan Away (penyimpanan penuh?)'); } bumpDirty(); };
 let awayEdit = 0, awayLast = {date: '', trip: ''}; // awayLast: tanggal & perjalanan terakhir, supaya input beruntun lebih cepat
+offairMoved = moveOffair(); // pindahkan catatan off-air dari Away ke Off-Air (sekali jalan, aman diulang)
 
 function renderAway() {
   const el = $('away');
@@ -1223,8 +1295,9 @@ $('away').addEventListener('keydown', e => { // Enter di kolom isian = simpan
 });
 document.querySelectorAll('.ex-t').forEach(b => b.addEventListener('click', () => {
   document.querySelectorAll('.ex-t').forEach(x => x.classList.toggle('on', x === b));
-  $('ex').hidden = b.dataset.ext !== 'sum'; $('away').hidden = b.dataset.ext !== 'away';
-  if (b.dataset.ext === 'away') renderAway(); else renderExpense();
+  const x = b.dataset.ext, isM = MISC.some(M => M.k === x);
+  $('ex').hidden = x !== 'sum'; $('away').hidden = x !== 'away'; $('misc').hidden = !isM;
+  if (isM) { miscKind = x; miscEdit = 0; renderMisc(); } else if (x === 'away') renderAway(); else renderExpense();
 }));
 
 // ---------- Sesi lepas: Chekicha / 2-Shot di luar menonton theater ----------
@@ -1234,7 +1307,9 @@ const saveSolo = () => { try { localStorage.setItem(SOLO_KEY, JSON.stringify(sol
 const soloKey = w => (w.kind === 'ck' ? 'ck_' : 'ts_') + (w.type === 'birthday' ? 'bday' : 'roulette');
 const soloLabel = w => KINDS.find(k => k.k === w.kind).short[w.type];
 // ---------- Foto 2-Shot event: pilih event dari data tiket, cukup unggah fotonya ----------
-const tsEvList = () => tickets.filter(t => t.type !== 'SHOW' && ['2S & MnG Event', '2S & MnG Theater Sementara'].includes(tcat(t)) && /2[- ]?shot/i.test(t.name) && raffleOf(t.raffle) !== 'lose')
+// semua tiket kategori 2S & MnG (festival M&G biasanya sudah termasuk 2-Shot walau namanya tidak menyebut), yang kalah undian disembunyikan
+const tsEvTag = t => PKG.test(t.name) ? 'Paket M&G + 2-Shot' : /2[- ]?shot/i.test(t.name) ? '2-Shot' : /photocard/i.test(t.name) ? 'Photocard' : 'Meet & Greet';
+const tsEvList = () => tickets.filter(t => t.type !== 'SHOW' && ['2S & MnG Event', '2S & MnG Theater Sementara'].includes(tcat(t)) && raffleOf(t.raffle) !== 'lose')
   .sort((a, b) => b.date.localeCompare(a.date) || (b.start || '').localeCompare(a.start || '') || (a.member || '').localeCompare(b.member || ''));
 let tsevFilter = 'all';
 function saveTickets() {
@@ -1245,12 +1320,12 @@ function renderTsEv() {
   const el = $('tsev');
   if (!el) return;
   const all = tsEvList(), done = all.filter(t => t.photo).length;
-  const list = tsevFilter === 'todo' ? all.filter(t => !t.photo) : all;
+  const list = tsevFilter === 'todo' ? all.filter(t => !t.photo) : tsevFilter === 'ts' ? all.filter(t => /2[- ]?shot/i.test(t.name)) : all;
   el.innerHTML = `<div class="tsev-h"><h3 class="tt-h" style="margin:0">📸 Foto 2-Shot Event · ${done}/${all.length} sudah ada foto</h3>
-    <select id="tsev-f" aria-label="Filter"><option value="all"${tsevFilter === 'all' ? ' selected' : ''}>Semua event</option><option value="todo"${tsevFilter === 'todo' ? ' selected' : ''}>Belum ada foto</option></select></div>
-    <p class="tt-note" style="margin:0 0 8px">Tanggal, member, dan nama event diambil dari data tiket. Tinggal unggah fotonya; foto langsung muncul di tab Galeri setelah dipublikasikan.</p>
+    <select id="tsev-f" aria-label="Filter"><option value="all"${tsevFilter === 'all' ? ' selected' : ''}>Semua event</option><option value="todo"${tsevFilter === 'todo' ? ' selected' : ''}>Belum ada foto</option><option value="ts"${tsevFilter === 'ts' ? ' selected' : ''}>Yang bernama 2-Shot saja</option></select></div>
+    <p class="tt-note" style="margin:0 0 8px">Semua tiket kategori 2-Shot &amp; Meet &amp; Greet ditampilkan (festival M&amp;G biasanya sudah termasuk 2-Shot). Tanggal, member, dan nama event diambil dari data tiket. Tinggal unggah fotonya; foto langsung muncul di tab Galeri setelah dipublikasikan.</p>
     ${list.map(t => `<div class="tsev-row">${t.photo ? `<img src="${esc(t.photo)}" alt="Foto" data-photo>` : '<span class="so-ph">📸</span>'}
-      <span><b>${esc(t.member) || '-'}</b><small>${esc(fmtDate(t.date))}${t.start ? ' · ' + esc(t.start) : ''}${t.session ? ' · ' + esc(t.session) : ''}</small><small>${esc(tname(t))}</small></span>
+      <span><b>${esc(t.member) || '-'}</b><small>${esc(fmtDate(t.date))}${t.start ? ' · ' + esc(t.start) : ''}${t.session ? ' · ' + esc(t.session) : ''}</small><small>${esc(tname(t))} · <i>${tsEvTag(t)}</i></small></span>
       <span class="aw-b"><label class="btn-s tsev-up">${t.photo ? 'Ganti foto' : '⬆ Unggah foto'}<input type="file" accept="image/*" data-tkfile="${esc(tkey(t))}" aria-label="Unggah foto"></label>${t.photo ? `<button type="button" class="btn-s" data-tkrm="${esc(tkey(t))}">Hapus foto</button>` : ''}</span></div>`).join('') || `<div class="empty">${all.length ? 'Semua event sudah punya foto 🎉' : 'Belum ada tiket 2-Shot. Impor tiket dulu di tab Total Tiket.'}</div>`}`;
 }
 $('tsev').addEventListener('change', async e => {
