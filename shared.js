@@ -455,7 +455,9 @@ function renderGallery() {
   const g = $('gallery');
   if (!g) return;
   const soloItems = solo.filter(w => w.photo).map(w => { const K = KINDS.find(k => k.k === w.kind); return {label: K.short[w.type], icon: K.icon, member: w.member, photo: w.photo, k: w.kind, solo: true, r: {id: w.id, date: w.date, sesi: '', setlist: w.setlist || 'Di luar show'}}; });
-  const items = [...records.flatMap(r => extras(r).filter(x => x.photo).map(x => ({...x, r}))), ...soloItems].sort((a, b) => cmp(a.r, b.r));
+  // foto 2-Shot event: tanggal, member, dan nama event diambil dari data tiket yang sudah ada
+  const evItems = tickets.filter(t => t.photo).map((t, i) => ({label: '2-Shot Event', icon: '📸', member: t.member, photo: t.photo, k: 'ts', ev: true, r: {id: i, date: t.date, sesi: '', setlist: tname(t)}}));
+  const items = [...records.flatMap(r => extras(r).filter(x => x.photo).map(x => ({...x, r}))), ...soloItems, ...evItems].sort((a, b) => cmp(a.r, b.r));
   const sel = $('g-member'), cur = sel.value;
   const inK = x => !galKind || x.k === galKind; // sub-tab Galeri: Semua / 2-Shot / Chekicha
   const mem = [...new Set(items.filter(inK).map(x => x.member).filter(Boolean))].sort();
@@ -465,7 +467,7 @@ function renderGallery() {
   $('g-info').textContent = `${list.length} foto`;
   if ($('g-tab') && dataLoaded) $('g-tab').textContent = `Galeri (${items.length})`;
   g.innerHTML = list.length ? list.map((x, i) => `<figure class="gi" style="--i:${Math.min(i, 14)}"><img src="${esc(thumbOf(x.photo))}" data-full="${esc(x.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="${esc(x.label)} dengan ${esc(x.member)}" loading="lazy">
-    <figcaption><b>${esc(x.member) || '-'}</b><span>${x.icon} ${esc(x.label)}</span><span>${esc(x.r.setlist)} · ${esc(fmtDate(x.r.date))}</span>${x.solo ? '<span class="gi-x">di luar show (tanpa menonton)</span>' : ''}</figcaption></figure>`).join('')
+    <figcaption><b>${esc(x.member) || '-'}</b><span>${x.icon} ${esc(x.label)}</span><span>${esc(x.r.setlist)} · ${esc(fmtDate(x.r.date))}</span>${x.solo ? '<span class="gi-x">di luar show (tanpa menonton)</span>' : ''}${x.ev ? '<span class="gi-x">event 2-Shot</span>' : ''}</figcaption></figure>`).join('')
     : '<div class="empty">Belum ada foto</div>';
 }
 $('g-member')?.addEventListener('change', renderGallery);
@@ -716,7 +718,8 @@ const sanitizeTicket = t => {
     k: up(t.k), type: ['SHOW', 'EXCLUSIVE', 'EVENT'].includes(t.type) ? t.type : 'EVENT',
     date: /^\d{4}-\d{2}-\d{2}$/.test(t.date) ? t.date : '', name: up(t.name), start: up(t.start).slice(0, 5),
     used: Math.max(0, Number(t.used) || 0), raffle: up(t.raffle).toUpperCase(),
-    member: up(t.member), lane: up(t.lane), session: up(t.session), bought: Math.max(1, Number(t.bought) || 1), cat: fixCat(up(t.cat)), status: up(t.status), tx: up(t.tx).slice(0, 12)
+    member: up(t.member), lane: up(t.lane), session: up(t.session), bought: Math.max(1, Number(t.bought) || 1), cat: fixCat(up(t.cat)), status: up(t.status), tx: up(t.tx).slice(0, 12),
+    photo: okPhoto(t.photo) ? t.photo : '' // foto 2-Shot event (opsional), diunggah dari admin tanpa input tanggal lagi
   };
 };
 const raffleOf = s => !s ? '' : /WIN|WON|MENANG/.test(s) ? 'win' : /LOSE|LOST|KALAH/.test(s) ? 'lose' : 'other';
