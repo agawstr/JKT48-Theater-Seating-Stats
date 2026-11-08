@@ -4407,7 +4407,1016 @@
       }
     ]
   },
-  "away": [],
+  "away": [
+    {
+      "id": 1794051738087,
+      "date": "2025-08-27",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 270000,
+      "note": "kereta otw jkt"
+    },
+    {
+      "id": 1794051788551,
+      "date": "2025-08-29",
+      "trip": "Jakarta",
+      "cat": "Lainnya",
+      "amount": 43000,
+      "note": "warnet"
+    },
+    {
+      "id": 1794051806427,
+      "date": "2025-08-29",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 21000,
+      "note": "makan"
+    },
+    {
+      "id": 1794051914576,
+      "date": "2025-08-30",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 294500,
+      "note": "kereta otw malang"
+    },
+    {
+      "id": 1794051934818,
+      "date": "2025-08-30",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 95000,
+      "note": "toribar"
+    },
+    {
+      "id": 1794051943386,
+      "date": "2025-08-30",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 20000,
+      "note": "gocar"
+    },
+    {
+      "id": 1794051958689,
+      "date": "2025-08-30",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 12000,
+      "note": "warteg"
+    },
+    {
+      "id": 1794051971351,
+      "date": "2025-08-30",
+      "trip": "Jakarta",
+      "cat": "Lainnya",
+      "amount": 19060,
+      "note": "billiard"
+    },
+    {
+      "id": 1794051984159,
+      "date": "2025-08-31",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 54000,
+      "note": "gocar"
+    },
+    {
+      "id": 1794051994522,
+      "date": "2025-08-31",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 20000,
+      "note": "warteg"
+    },
+    {
+      "id": 1794052029834,
+      "date": "2025-09-01",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 15000,
+      "note": "grab bike"
+    },
+    {
+      "id": 1794052159607,
+      "date": "2025-09-24",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 274500,
+      "note": "kereta otw jakarta"
+    },
+    {
+      "id": 1794052192253,
+      "date": "2025-09-25",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 27000,
+      "note": "makan"
+    },
+    {
+      "id": 1794052268463,
+      "date": "2025-09-26",
+      "trip": "Jakarta",
+      "cat": "Lainnya",
+      "amount": 51100,
+      "note": "Jak Japan Matsuri 2025 (Offair)"
+    },
+    {
+      "id": 1794052314319,
+      "date": "2025-09-26",
+      "trip": "Jakarta",
+      "cat": "Lainnya",
+      "amount": 348502,
+      "note": "LaguLaguan Fest 2025 (Offair)"
+    },
+    {
+      "id": 1794052372810,
+      "date": "2025-09-27",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 21500,
+      "note": "grab bike"
+    },
+    {
+      "id": 1794052384585,
+      "date": "2025-09-27",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 20500,
+      "note": "makan"
+    },
+    {
+      "id": 1794052397831,
+      "date": "2025-09-27",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 70000,
+      "note": "yoshinoya"
+    },
+    {
+      "id": 1794052410457,
+      "date": "2025-09-27",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 34000,
+      "note": "matcha kopken"
+    },
+    {
+      "id": 1794052421069,
+      "date": "2025-09-27",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 26500,
+      "note": "e-money"
+    },
+    {
+      "id": 1794052430714,
+      "date": "2025-09-27",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 38000,
+      "note": "gocar"
+    },
+    {
+      "id": 1794052438652,
+      "date": "2025-09-27",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 44000,
+      "note": "qq"
+    },
+    {
+      "id": 1794052467597,
+      "date": "2025-09-27",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 20000,
+      "note": "makan"
+    },
+    {
+      "id": 1794052513416,
+      "date": "2025-09-28",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 284500,
+      "note": "kereta otw malang"
+    },
+    {
+      "id": 1794052528072,
+      "date": "2025-09-28",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 21500,
+      "note": "grab bike"
+    },
+    {
+      "id": 1794052533567,
+      "date": "2025-09-28",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 23500,
+      "note": "grab bike"
+    },
+    {
+      "id": 1794052545118,
+      "date": "2025-09-28",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 15000,
+      "note": ""
+    },
+    {
+      "id": 1794052552163,
+      "date": "2025-09-28",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 15000,
+      "note": ""
+    },
+    {
+      "id": 1794052563570,
+      "date": "2025-09-28",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 24500,
+      "note": "gojek"
+    },
+    {
+      "id": 1794052569105,
+      "date": "2025-09-28",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 30000,
+      "note": "gojek"
+    },
+    {
+      "id": 1794052594476,
+      "date": "2025-09-29",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 20500,
+      "note": "gojek"
+    },
+    {
+      "id": 1794052602313,
+      "date": "2025-09-29",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 24500,
+      "note": ""
+    },
+    {
+      "id": 1794052609151,
+      "date": "2025-09-29",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 10000,
+      "note": ""
+    },
+    {
+      "id": 1794052627655,
+      "date": "2025-09-29",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 11000,
+      "note": ""
+    },
+    {
+      "id": 1794052658038,
+      "date": "2025-09-29",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 16000,
+      "note": "gojek"
+    },
+    {
+      "id": 1794052761294,
+      "date": "2025-10-10",
+      "trip": "Semarang",
+      "cat": "Transportasi",
+      "amount": 49000,
+      "note": "kereta otw semarang"
+    },
+    {
+      "id": 1794052780746,
+      "date": "2025-10-10",
+      "trip": "Semarang",
+      "cat": "Transportasi",
+      "amount": 49000,
+      "note": "kereta otw malang"
+    },
+    {
+      "id": 1794052824442,
+      "date": "2025-10-10",
+      "trip": "Semarang",
+      "cat": "Lainnya",
+      "amount": 142296,
+      "note": "The 6th Manoover (Offair)"
+    },
+    {
+      "id": 1794052915334,
+      "date": "2025-10-18",
+      "trip": "Semarang",
+      "cat": "Makan & minum",
+      "amount": 15000,
+      "note": ""
+    },
+    {
+      "id": 1794052933217,
+      "date": "2025-10-18",
+      "trip": "Semarang",
+      "cat": "Makan & minum",
+      "amount": 24000,
+      "note": "matcha kopken"
+    },
+    {
+      "id": 1794052983620,
+      "date": "2025-10-18",
+      "trip": "Semarang",
+      "cat": "Makan & minum",
+      "amount": 20000,
+      "note": ""
+    },
+    {
+      "id": 1794053005975,
+      "date": "2025-10-19",
+      "trip": "Semarang",
+      "cat": "Makan & minum",
+      "amount": 25000,
+      "note": "burjo"
+    },
+    {
+      "id": 1794053021766,
+      "date": "2025-10-19",
+      "trip": "Semarang",
+      "cat": "Makan & minum",
+      "amount": 42000,
+      "note": "a&w"
+    },
+    {
+      "id": 1794053033181,
+      "date": "2025-10-19",
+      "trip": "Semarang",
+      "cat": "Makan & minum",
+      "amount": 12000,
+      "note": "indomaret"
+    },
+    {
+      "id": 1794053043337,
+      "date": "2025-10-19",
+      "trip": "Semarang",
+      "cat": "Transportasi",
+      "amount": 46500,
+      "note": "gojek"
+    },
+    {
+      "id": 1794053050926,
+      "date": "2025-10-19",
+      "trip": "Semarang",
+      "cat": "Transportasi",
+      "amount": 10000,
+      "note": "e-money"
+    },
+    {
+      "id": 1794053065738,
+      "date": "2025-10-19",
+      "trip": "Semarang",
+      "cat": "Makan & minum",
+      "amount": 13500,
+      "note": "roti'o"
+    },
+    {
+      "id": 1794053081468,
+      "date": "2025-10-19",
+      "trip": "Semarang",
+      "cat": "Makan & minum",
+      "amount": 30000,
+      "note": ""
+    },
+    {
+      "id": 1794053088435,
+      "date": "2025-10-19",
+      "trip": "Semarang",
+      "cat": "Transportasi",
+      "amount": 91000,
+      "note": "grab car"
+    },
+    {
+      "id": 1794053114675,
+      "date": "2025-10-20",
+      "trip": "Semarang",
+      "cat": "Transportasi",
+      "amount": 36500,
+      "note": "gojek"
+    },
+    {
+      "id": 1794053125102,
+      "date": "2025-10-20",
+      "trip": "Semarang",
+      "cat": "Makan & minum",
+      "amount": 13500,
+      "note": "roti'o"
+    },
+    {
+      "id": 1794053139419,
+      "date": "2025-10-20",
+      "trip": "Semarang",
+      "cat": "Makan & minum",
+      "amount": 39000,
+      "note": "cfc"
+    },
+    {
+      "id": 1794053149067,
+      "date": "2025-10-20",
+      "trip": "Semarang",
+      "cat": "Transportasi",
+      "amount": 34000,
+      "note": "gojek"
+    },
+    {
+      "id": 1794053187974,
+      "date": "2025-10-20",
+      "trip": "Semarang",
+      "cat": "Makan & minum",
+      "amount": 14600,
+      "note": "roti'o"
+    },
+    {
+      "id": 1794053193986,
+      "date": "2025-10-20",
+      "trip": "Semarang",
+      "cat": "Transportasi",
+      "amount": 18500,
+      "note": "gojek"
+    },
+    {
+      "id": 1794053547963,
+      "date": "2026-02-20",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 702000,
+      "note": "kereta pp ml-sby-jkt-ml"
+    },
+    {
+      "id": 1794053598894,
+      "date": "2026-02-21",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 14900,
+      "note": "indomaret"
+    },
+    {
+      "id": 1794053609219,
+      "date": "2026-02-21",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 13000,
+      "note": "grab bike"
+    },
+    {
+      "id": 1794053617917,
+      "date": "2026-02-21",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 16000,
+      "note": "grab bike"
+    },
+    {
+      "id": 1794053625457,
+      "date": "2026-02-21",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 6500,
+      "note": "grab bike"
+    },
+    {
+      "id": 1794053671650,
+      "date": "2026-02-22",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 11000,
+      "note": ""
+    },
+    {
+      "id": 1794053678454,
+      "date": "2026-02-22",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 9000,
+      "note": ""
+    },
+    {
+      "id": 1794053695639,
+      "date": "2026-02-22",
+      "trip": "Jakarta",
+      "cat": "Penginapan",
+      "amount": 55000,
+      "note": "public shower"
+    },
+    {
+      "id": 1794053707501,
+      "date": "2026-02-22",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 45000,
+      "note": "solaria"
+    },
+    {
+      "id": 1794053718873,
+      "date": "2026-02-22",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 9000,
+      "note": ""
+    },
+    {
+      "id": 1794053726204,
+      "date": "2026-02-22",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 40000,
+      "note": "gocar"
+    },
+    {
+      "id": 1794053746707,
+      "date": "2026-02-23",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 19000,
+      "note": "grab bike"
+    },
+    {
+      "id": 1794053754299,
+      "date": "2026-02-23",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 8500,
+      "note": "grab bike"
+    },
+    {
+      "id": 1794053787905,
+      "date": "2026-02-24",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 14000,
+      "note": "grab bike"
+    },
+    {
+      "id": 1794054027093,
+      "date": "2026-05-19",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 410000,
+      "note": "bus otw jkt"
+    },
+    {
+      "id": 1794054046788,
+      "date": "2026-05-22",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 32000,
+      "note": ""
+    },
+    {
+      "id": 1794054053595,
+      "date": "2026-05-22",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 10900,
+      "note": ""
+    },
+    {
+      "id": 1794054159931,
+      "date": "2026-05-23",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 224000,
+      "note": "grab car pgb ke bsd"
+    },
+    {
+      "id": 1794054178725,
+      "date": "2026-05-23",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 30000,
+      "note": ""
+    },
+    {
+      "id": 1794054185534,
+      "date": "2026-05-23",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 51000,
+      "note": "e-money"
+    },
+    {
+      "id": 1794054199550,
+      "date": "2026-05-24",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 25000,
+      "note": "k-circle"
+    },
+    {
+      "id": 1794054237014,
+      "date": "2026-05-24",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 20000,
+      "note": "warteg"
+    },
+    {
+      "id": 1794054272268,
+      "date": "2026-05-24",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 13000,
+      "note": "grab car"
+    },
+    {
+      "id": 1794054282822,
+      "date": "2026-05-24",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 6000,
+      "note": ""
+    },
+    {
+      "id": 1794054293196,
+      "date": "2026-05-24",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 21000,
+      "note": "e-money"
+    },
+    {
+      "id": 1794054301556,
+      "date": "2026-05-24",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 55999,
+      "note": "wingstop"
+    },
+    {
+      "id": 1794054312118,
+      "date": "2026-05-24",
+      "trip": "Jakarta",
+      "cat": "Penginapan",
+      "amount": 199700,
+      "note": "bobobox"
+    },
+    {
+      "id": 1794054323392,
+      "date": "2026-05-24",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 410000,
+      "note": "bus otw malang"
+    },
+    {
+      "id": 1794054375831,
+      "date": "2026-05-25",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 7000,
+      "note": "grab bike"
+    },
+    {
+      "id": 1794054398336,
+      "date": "2026-05-25",
+      "trip": "Jakarta",
+      "cat": "Lainnya",
+      "amount": 10000,
+      "note": "pijet"
+    },
+    {
+      "id": 1794054460618,
+      "date": "2026-05-26",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 11500,
+      "note": "gojek"
+    },
+    {
+      "id": 1794054482185,
+      "date": "2026-05-26",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 44000,
+      "note": "warkop agam"
+    },
+    {
+      "id": 1794054603314,
+      "date": "2026-06-25",
+      "trip": "Surabaya",
+      "cat": "Transportasi",
+      "amount": 300000,
+      "note": "bensin"
+    },
+    {
+      "id": 1794054683836,
+      "date": "2026-06-25",
+      "trip": "Surabaya",
+      "cat": "Transportasi",
+      "amount": 64500,
+      "note": "e-money"
+    },
+    {
+      "id": 1794054705345,
+      "date": "2026-06-25",
+      "trip": "Surabaya",
+      "cat": "Makan & minum",
+      "amount": 39000,
+      "note": "golden lamian"
+    },
+    {
+      "id": 1794054716583,
+      "date": "2026-06-25",
+      "trip": "Surabaya",
+      "cat": "Makan & minum",
+      "amount": 53000,
+      "note": "k3mart"
+    },
+    {
+      "id": 1794054741801,
+      "date": "2026-06-26",
+      "trip": "Yogyakarta",
+      "cat": "Transportasi",
+      "amount": 14000,
+      "note": "grab bike"
+    },
+    {
+      "id": 1794054809641,
+      "date": "2026-06-26",
+      "trip": "Yogyakarta",
+      "cat": "Makan & minum",
+      "amount": 62998,
+      "note": "wingstop"
+    },
+    {
+      "id": 1794054820386,
+      "date": "2026-06-27",
+      "trip": "Yogyakarta",
+      "cat": "Makan & minum",
+      "amount": 35000,
+      "note": ""
+    },
+    {
+      "id": 1794054829746,
+      "date": "2026-06-27",
+      "trip": "Yogyakarta",
+      "cat": "Makan & minum",
+      "amount": 68000,
+      "note": "solaria"
+    },
+    {
+      "id": 1794054839893,
+      "date": "2026-06-27",
+      "trip": "Yogyakarta",
+      "cat": "Makan & minum",
+      "amount": 28500,
+      "note": "c28"
+    },
+    {
+      "id": 1794054847724,
+      "date": "2026-06-27",
+      "trip": "Yogyakarta",
+      "cat": "Transportasi",
+      "amount": 3000,
+      "note": "parkir"
+    },
+    {
+      "id": 1794054865362,
+      "date": "2026-06-27",
+      "trip": "Yogyakarta",
+      "cat": "Transportasi",
+      "amount": 13500,
+      "note": "gojek"
+    },
+    {
+      "id": 1794055032584,
+      "date": "2026-09-24",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 697000,
+      "note": "kereta mlg-sby-jkt-mlg"
+    },
+    {
+      "id": 1794055125745,
+      "date": "2026-09-25",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 29000,
+      "note": "wingstop"
+    },
+    {
+      "id": 1794055133617,
+      "date": "2026-09-25",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 11000,
+      "note": ""
+    },
+    {
+      "id": 1794055144336,
+      "date": "2026-09-25",
+      "trip": "Jakarta",
+      "cat": "Penginapan",
+      "amount": 5000,
+      "note": "public shower"
+    },
+    {
+      "id": 1794055154391,
+      "date": "2026-09-25",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 29000,
+      "note": "wingstop"
+    },
+    {
+      "id": 1794055171799,
+      "date": "2026-09-26",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 62998,
+      "note": "wingstop"
+    },
+    {
+      "id": 1794055194755,
+      "date": "2026-09-27",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 13000,
+      "note": "gojek"
+    },
+    {
+      "id": 1794055286547,
+      "date": "2026-10-14",
+      "trip": "Jakarta",
+      "cat": "Belanja / merch",
+      "amount": 154100,
+      "note": "leather jacket"
+    },
+    {
+      "id": 1794055360610,
+      "date": "2026-10-12",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 375000,
+      "note": "kereta otw jkt"
+    },
+    {
+      "id": 1794055398931,
+      "date": "2026-10-22",
+      "trip": "Jakarta",
+      "cat": "Belanja / merch",
+      "amount": 179000,
+      "note": "leather jacket"
+    },
+    {
+      "id": 1794055442867,
+      "date": "2026-10-22",
+      "trip": "Jakarta",
+      "cat": "Belanja / merch",
+      "amount": 96000,
+      "note": "powder + clay"
+    },
+    {
+      "id": 1794055480162,
+      "date": "2026-10-23",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 81000,
+      "note": ""
+    },
+    {
+      "id": 1794055492305,
+      "date": "2026-10-23",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 17800,
+      "note": "indomaret"
+    },
+    {
+      "id": 1794055513584,
+      "date": "2026-10-23",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 15300,
+      "note": "gojek"
+    },
+    {
+      "id": 1794055526694,
+      "date": "2026-10-24",
+      "trip": "Jakarta",
+      "cat": "Penginapan",
+      "amount": 60000,
+      "note": "public shower"
+    },
+    {
+      "id": 1794055545943,
+      "date": "2026-10-24",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 164900,
+      "note": "gocar otw bsd"
+    },
+    {
+      "id": 1794055553689,
+      "date": "2026-10-24",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 50000,
+      "note": "e-money"
+    },
+    {
+      "id": 1794055563840,
+      "date": "2026-10-24",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 40000,
+      "note": "yoshinoya"
+    },
+    {
+      "id": 1794055575752,
+      "date": "2026-10-24",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 480000,
+      "note": "kereta otw malang"
+    },
+    {
+      "id": 1794055590646,
+      "date": "2026-10-24",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 10000,
+      "note": ""
+    },
+    {
+      "id": 1794055607398,
+      "date": "2026-10-24",
+      "trip": "Jakarta",
+      "cat": "Penginapan",
+      "amount": 117000,
+      "note": "skyhouse sobat"
+    },
+    {
+      "id": 1794055652866,
+      "date": "2026-10-24",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 20000,
+      "note": "ayam geprek lamian crazy"
+    },
+    {
+      "id": 1794055670250,
+      "date": "2026-10-25",
+      "trip": "Jakarta",
+      "cat": "Lainnya",
+      "amount": 20830,
+      "note": "capcut"
+    },
+    {
+      "id": 1794055697688,
+      "date": "2026-10-25",
+      "trip": "Jakarta",
+      "cat": "Makan & minum",
+      "amount": 40000,
+      "note": "fore"
+    },
+    {
+      "id": 1794055705601,
+      "date": "2026-10-25",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 70000,
+      "note": "marugame udon"
+    },
+    {
+      "id": 1794055716028,
+      "date": "2026-10-25",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 70000,
+      "note": "solaria"
+    },
+    {
+      "id": 1794055728199,
+      "date": "2026-10-26",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 14600,
+      "note": ""
+    },
+    {
+      "id": 1794055885651,
+      "date": "2025-04-21",
+      "trip": "Jakarta",
+      "cat": "Transportasi",
+      "amount": 322223,
+      "note": "skyhouse ahnap babal"
+    }
+  ],
   "solo": [
     {
       "id": 1793958565408,
