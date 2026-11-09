@@ -13,7 +13,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
 <style>
 #status{color:#f87171;font-size:14px;margin:12px 0;text-align:center;min-height:18px}
@@ -46,7 +46,7 @@
     <div id="gallery"></div>
   </div>
   <div id="view-tl" hidden>
-    <div id="tl-bar"><input type="search" id="tl-q" placeholder="Cari setlist, member, kursi, tanggal, atau catatan..." aria-label="Cari riwayat" autocomplete="off"><span id="tl-info"></span></div>
+    <div id="tl-bar"><input type="search" id="tl-q" placeholder="Cari setlist, member, kursi, catatan…" aria-label="Cari riwayat" autocomplete="off"><span id="tl-info"></span></div>
     <div id="timeline"></div>
   </div>
   <div id="view-ev" hidden>
@@ -116,22 +116,27 @@ async function init() {
   }
 }
 let tabTimer = 0;
+const VIEWS = ['main', 'gal', 'tl', 'ev'];
 document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => {
-  const tl = [...document.querySelectorAll('.tab')], from = tl.findIndex(t => t.classList.contains('on')), dir = tl.indexOf(b) >= from ? 1 : -1;
-  if (tl.indexOf(b) === from) return;
-  const prev = ['main', 'gal', 'tl', 'ev'].map(k => $('view-' + k)).find(v => !v.hidden), next = $('view-' + b.dataset.tab);
-  tl.forEach(t => t.classList.toggle('on', t === b));
+  const tl = [...document.querySelectorAll('.tab')], from = tl.findIndex(t => t.classList.contains('on')), to = tl.indexOf(b);
+  if (to === from) return;
+  const dir = to > from ? 1 : -1, still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const prev = VIEWS.map(k => $('view-' + k)).find(v => !v.hidden), next = $('view-' + b.dataset.tab);
+  tl.forEach(t => { t.classList.toggle('on', t === b); t.setAttribute('aria-selected', t === b); });
   const show = () => {
-    ['main', 'gal', 'tl', 'ev'].forEach(k => $('view-' + k).hidden = b.dataset.tab !== k);
+    VIEWS.forEach(k => $('view-' + k).hidden = b.dataset.tab !== k);
+    flushLazy('view-' + b.dataset.tab); // gambar ulang isi tab yang usang sebelum ditampilkan
+    const bar = document.querySelector('.tabbar'), top = bar.getBoundingClientRect().bottom + scrollY;
+    if (scrollY > top - 8) scrollTo({top: Math.max(0, top - bar.offsetHeight - 24), behavior: 'instant'}); // isi baru mulai dari atas, bukan di tengah halaman
     centerChart();
-    next.style.setProperty('--tabx', dir * 28 + 'px'); // isi tab masuk dari arah tab
+    next.style.setProperty('--tabx', dir * 18 + 'px');
     playEnter(next);
   };
   clearTimeout(tabTimer);
-  if (prev && prev !== next && !matchMedia('(prefers-reduced-motion: reduce)').matches) { // isi tab lama keluar dulu, baru yang baru masuk
-    prev.style.setProperty('--tabx', dir * 28 + 'px');
+  if (prev && prev !== next && !still) {
+    prev.style.setProperty('--tabx', dir * 18 + 'px');
     prev.classList.add('leave');
-    tabTimer = setTimeout(() => { prev.classList.remove('leave'); show(); }, 120);
+    tabTimer = setTimeout(() => { prev.classList.remove('leave'); show(); }, 90);
   } else show();
 }));
 // geser kiri/kanan untuk pindah tab (layar sentuh)

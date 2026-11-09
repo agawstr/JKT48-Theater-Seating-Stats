@@ -2,7 +2,7 @@
 
 Web untuk mencatat kursi teater JKT48 yang pernah kamu tempati, lengkap dengan statistik, riwayat, dan galeri foto 2-Shot/Chekicha.
 
-Tanpa backend dan tanpa proses build: cukup file statis yang bisa di-hosting di GitHub Pages.
+Tanpa backend dan tanpa proses build: cukup file statis yang bisa di-hosting di GitHub Pages. Satu-satunya sumber luar adalah Google Fonts (Inter dan Caveat); kalau gagal dimuat, tampilan otomatis memakai font sistem.
 
 ## Fitur
 
@@ -22,15 +22,28 @@ Tanpa backend dan tanpa proses build: cukup file statis yang bisa di-hosting di 
 - **Kartu terakhir nonton** di bagian atas.
 
 **Tab lain**
-- **Riwayat**: timeline bergaris waktu per tahun dan bulan dengan milestone (show ke-1, 10, dan kelipatan 25), plus kolom pencarian.
-- **Galeri**: foto 2-Shot/Chekicha bergaya polaroid, bisa difilter per member dan dibuka di lightbox.
+- **Riwayat**: timeline per tahun dan bulan. Header bulan menempel di bawah tab bar (lengkap dengan jumlah show), tiap kartu menampilkan tanggal, sesi, setlist, chip 2-Shot/Chekicha/lotre/harga, dan catatan. Milestone (show ke-1, 10, dan kelipatan 25) diberi bintang emas. **Seluruh kartu bisa diketuk** untuk membuka detail kursi. Ada kolom pencarian.
+- **Galeri**: foto bergaya polaroid/instax. Nama member memakai tulisan tangan (Caveat) berukuran besar, jenis foto berupa label kecil, lalu setlist dan tanggal dengan ukuran lebih kecil. Warna bingkai dan selotip berbeda untuk 2-Shot (krem), Chekicha (merah muda), dan 2-Shot Event (ungu). Bisa difilter per jenis dan member, lalu dibuka di lightbox.
+- **Tiket & Event**: statistik lotre, meet & greet, special show, dan event.
 
 **Halaman admin**
 - Tambah, edit, hapus, dan cari riwayat (tabel dengan halaman), dengan cek duplikat dan kompres foto otomatis.
 - Field harga dan jenis tiket (opsional), serta saran otomatis untuk setlist dan member yang pernah diinput.
 - Pengingat backup: jumlah perubahan yang belum diunduh dan kapan terakhir diunduh.
 
-Responsif untuk HP dan desktop, kontras warna sudah dicek, dan animasi otomatis dimatikan jika perangkat memakai pengaturan "kurangi gerakan".
+## Performa & animasi
+
+Tampilan dirancang supaya tetap lancar di HP kelas menengah:
+
+- **Blur kaca (`backdrop-filter`) hanya dipakai di elemen yang jumlahnya sedikit** (tab bar, modal, pil filter), dan dimatikan di layar sentuh. Kartu, daftar, dan kursi memakai warna semi-solid yang tampilannya mirip tetapi jauh lebih ringan.
+- **Render malas**: tab Riwayat, Galeri, dan Tiket & Event hanya digambar ulang saat dibuka setelah data/filter berubah, jadi mengubah filter di peta tidak membangun ulang ratusan elemen yang tidak terlihat.
+- **Animasi hanya memakai `transform` dan `opacity`**. Pindah tab = satu gerakan geser-pudar singkat, lalu isinya muncul bertahap (maksimal beberapa item pertama), dan halaman otomatis kembali ke atas supaya isi baru tidak muncul di tengah.
+- Daftar tiket memakai `content-visibility: auto`; foto galeri `loading="lazy"` + `decoding="async"` dan memudar masuk setelah dimuat.
+- Efek hover (naik, miring, sorot cahaya) dimatikan di perangkat tanpa mouse.
+- Dropdown memakai latar solid dan panah khusus, jadi pilihannya terbaca jelas di semua browser (dark maupun light).
+- Animasi otomatis dimatikan jika perangkat memakai pengaturan "kurangi gerakan" atau "kurangi transparansi".
+
+Responsif untuk HP dan desktop, dan kontras warna sudah dicek.
 
 ## Struktur file
 
@@ -39,9 +52,9 @@ Responsif untuk HP dan desktop, kontras warna sudah dicek, dan animasi otomatis 
 | `index.html` | Halaman publik (read-only). Membaca `data.json`. |
 | `admin.html` | Halaman untuk mengelola data. Data disimpan di `localStorage` browser. |
 | `data.json` | Data yang ditampilkan di halaman publik, dibuat dari tombol **Unduh paket (ZIP)** di admin. |
-| `photos/` | Foto 2-Shot/Chekicha sebagai file terpisah (ikut di dalam paket ZIP). Versi kecil untuk galeri ada di `photos/t/`; kalau belum ada, galeri memakai foto penuh. |
+| `photos/` | Foto 2-Shot/Chekicha sebagai file terpisah (ikut di dalam paket ZIP). Versi kecil untuk galeri ada di `photos/t/` (dibuat dengan `scripts/make_thumbs.py`); kalau belum ada, galeri memakai foto penuh. |
 | `shared.js` | Kode bersama: layout kursi, validasi data, peta, statistik, modal, popover, kartu PNG. |
-| `shared.css` | Gaya bersama untuk kedua halaman. |
+| `shared.css` | Gaya bersama untuk kedua halaman. Bagian paling bawah (`v4`) berisi perbaikan performa, dropdown, riwayat, dan polaroid. |
 
 > `index.html`, `admin.html`, `shared.js`, dan `shared.css` harus berada di folder yang sama.
 

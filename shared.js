@@ -87,6 +87,17 @@ function sanitize(r, i) {
 
 let records = []; // diisi oleh halaman (index: dari data.json, admin: dari localStorage)
 
+// ---------- Render malas: tab yang sedang tersembunyi baru digambar saat dibuka ----------
+// (render pertama tetap jalan supaya angka di label tab terisi; setelah itu hanya ditandai usang)
+const lazyDone = {}, lazyStale = {};
+function lazyView(viewId, fn) {
+  const v = $(viewId);
+  if (v && v.hidden && lazyDone[viewId]) { lazyStale[viewId] = fn; return; }
+  lazyDone[viewId] = true; delete lazyStale[viewId];
+  fn();
+}
+function flushLazy(viewId) { const fn = lazyStale[viewId]; if (fn) { delete lazyStale[viewId]; fn(); } }
+
 // ---------- Render peta ----------
 function renderChartRaw() {
   hidePop();
@@ -117,7 +128,7 @@ function renderChartRaw() {
   if (first) playEnter($('view-main'));
   renderFilters(); renderStats(); if (first) countUp($('stats'));
   tweenNums('st', $('stats'));
-  renderSetlists(); renderRows(); renderCal(); renderGallery(); renderTimeline(); renderCover(); renderLast(); renderStory(); renderTickets(); syncUrl();
+  renderSetlists(); renderRows(); renderCal(); lazyView('view-gal', renderGallery); lazyView('view-tl', renderTimeline); renderCover(); renderLast(); renderStory(); lazyView('view-ev', renderTickets); syncUrl();
   requestAnimationFrame(centerChart);
 }
 
@@ -481,11 +492,12 @@ function renderGallery() {
   if ($('g-kinds')) $('g-kinds').innerHTML = [['', 'Semua'], ['ts', '2-Shot'], ['ev', '2-Shot Event'], ['ck', 'Chekicha']].map(([k, l]) => `<button type="button" class="gk${k === galKind ? ' on' : ''}" data-gk="${k}">${l} <b>${items.filter(x => !k || x.k === k).length}</b></button>`).join('');
   $('g-info').textContent = `${list.length} foto`;
   if ($('g-tab') && dataLoaded) $('g-tab').textContent = `Galeri (${items.length})`;
-  g.innerHTML = list.length ? list.map((x, i) => `<figure class="gi" style="--i:${i % 12}"><img src="${esc(thumbOf(x.photo))}" data-full="${esc(x.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="${esc(x.label)} dengan ${esc(x.member)}" loading="lazy">
-    <figcaption><b>${esc(x.member) || '-'}</b><span>${esc(x.label)}</span><span>${esc(x.r.setlist)} · ${esc(fmtDate(x.r.date))}</span>${x.solo ? '<span class="gi-x">di luar show (tanpa menonton)</span>' : ''}</figcaption></figure>`).join('')
+  g.innerHTML = list.length ? list.map((x, i) => `<figure class="gi" data-k="${esc(x.k)}" style="--i:${Math.min(i, 9)};--t:${(i * 37 % 9) - 4}deg"><div class="gi-ph"><img src="${esc(thumbOf(x.photo))}" data-full="${esc(x.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="${esc(x.label)} dengan ${esc(x.member)}" loading="lazy" decoding="async"></div>
+    <figcaption><b class="gi-n">${esc(x.member) || '-'}</b><span class="gi-tag">${x.icon} ${esc(x.label)}</span><span class="gi-m">${esc(x.r.setlist)}</span><time class="gi-d">${esc(fmtDate(x.r.date))}</time>${x.solo ? '<span class="gi-x">di luar show</span>' : ''}</figcaption></figure>`).join('')
     : '<div class="empty">Belum ada foto</div>';
 }
 $('g-member')?.addEventListener('change', renderGallery);
+$('gallery')?.addEventListener('load', e => { if (e.target.tagName === 'IMG') e.target.classList.add('ld'); }, true); // foto memudar masuk setelah selesai dimuat
 
 // peta mini di canvas: counts = kode->jumlah (warna heatmap), hl = kursi yang disorot (opsional)
 function drawMiniMap(c, cx, y0, cw, g, counts, hl) {
@@ -584,24 +596,27 @@ function renderTimeline() {
   if ($('tl-info')) $('tl-info').textContent = q ? `${list.length} dari ${all.length} show` : '';
   const mon = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
   const numOf = new Map(all.slice().reverse().map((r, i) => [r.id, i + 1])); // nomor urut show sepanjang masa
+  const perMon = {}; list.forEach(r => { const k = r.date.slice(0, 7); perMon[k] = (perMon[k] || 0) + 1; });
   let cur = '', curY = '', html = '', cnt = 0;
   for (const r of list) {
     const ym = r.date.slice(0, 7), n = numOf.get(r.id), ms = n === 1 || n === 10 || n % 25 === 0; // milestone
     if (r.date.slice(0, 4) !== curY) { curY = r.date.slice(0, 4); html += `<div class="tl-yh">${esc(curY) || '–'}</div>`; }
     if (ym !== cur) {
       cur = ym;
-      html += `<h3 class="tl-mh">${/^\d{4}-\d{2}$/.test(ym) ? mon[+ym.slice(5) - 1] + ' ' + ym.slice(0, 4) : 'Tanpa tanggal'}</h3>`;
+      html += `<h3 class="tl-mh"><span>${/^\d{4}-\d{2}$/.test(ym) ? mon[+ym.slice(5) - 1] + ' ' + ym.slice(0, 4) : 'Tanpa tanggal'}</span><small>${perMon[ym]} show</small></h3>`;
     }
-    html += `<div class="tl-i${ms ? ' ms' : ''}" data-id="${r.id}" style="--i:${Math.min(cnt++, 14)}"><div class="tl-d"><b>${esc(r.date.slice(8)) || '–'}</b><span>${esc(r.sesi)}</span></div>
-      <div class="tl-b"><b>${esc(r.setlist) || '(tanpa setlist)'}</b>${ms ? `<div class="tl-star">Show ke-${n}</div>` : ''}${lotHtml(r)}${r.harga ? `<div class="hn">${esc(rupiah(r.harga))}${r.tiket ? ' · ' + esc(r.tiket) : ''}</div>` : ''}
-        ${extras(r).map(x => `<div class="ht">${esc(x.label)} dengan ${esc(x.member)}</div>`).join('')}
-        ${r.note ? `<div class="hn">"${esc(r.note)}"</div>` : ''}</div>
+    const ex = extras(r), lt = lotInfo(r);
+    html += `<div class="tl-i${ms ? ' ms' : ''}" data-id="${r.id}" data-seat="${esc(r.seat)}" style="--i:${Math.min(cnt++, 8)}">
+      <div class="tl-d"><b>${esc(r.date.slice(8)) || '–'}</b><span>${esc(r.sesi)}</span></div>
+      <div class="tl-b"><div class="tl-t">${esc(r.setlist) || '(tanpa setlist)'}</div>
+        ${ms || ex.length || lt || r.harga ? `<div class="tl-chips">${ms ? `<span class="tc star">★ Show ke-${n}</span>` : ''}${ex.map(x => `<span class="tc ${x.k}">${x.icon} ${esc(x.label)}${x.member ? ' · ' + esc(x.member) : ''}</span>`).join('')}${lt ? `<span class="tc lot">${esc(lt)}</span>` : ''}${r.harga ? `<span class="tc">${esc(rupiah(r.harga))}${r.tiket ? ' · ' + esc(r.tiket) : ''}</span>` : ''}</div>` : ''}
+        ${r.note ? `<div class="tl-n">“${esc(r.note)}”</div>` : ''}</div>
       <button type="button" class="seat-badge tl-s" data-seat="${esc(r.seat)}" aria-label="Lihat kursi ${esc(r.seat)}">${esc(r.seat)}</button></div>`;
   }
   flipRender(el, '.tl-i', it => it.dataset.id, () => { el.innerHTML = html || `<div class="empty">${q ? 'Tidak ada show yang cocok' : 'Belum ada riwayat'}</div>`; });
 }
 $('timeline')?.addEventListener('click', e => {
-  const b = e.target.closest('[data-seat]');
+  const b = e.target.closest('[data-seat]'); // seluruh kartu bisa diketuk
   if (b) openSeat(b.dataset.seat);
 });
 
@@ -1096,7 +1111,7 @@ function watchReveal(root) { // animasi bar/kalender/cincin baru jalan saat bagi
 
 // daftar bergeser ke posisi baru (FLIP), item baru memudar masuk
 function flipRender(box, itemSel, keyOf, doRender) {
-  if (calm() || !box.offsetParent || box.closest('.enter')) { doRender(); return; }
+  if (calm() || !box.offsetParent || box.closest('.enter') || box.querySelectorAll(itemSel).length > 40) { doRender(); return; }
   const first = new Map();
   box.querySelectorAll(itemSel).forEach(el => first.set(keyOf(el), el.getBoundingClientRect()));
   doRender();
@@ -1109,7 +1124,12 @@ function flipRender(box, itemSel, keyOf, doRender) {
 }
 
 // penanda tab aktif yang meluncur
+function setStick() { // tinggi tab bar -> posisi header bulan yang menempel
+  const bar = document.querySelector('.tabbar');
+  if (bar) document.documentElement.style.setProperty('--stick', Math.round(bar.getBoundingClientRect().height + 16) + 'px');
+}
 function moveInd(instant) {
+  setStick();
   const bar = document.querySelector('.tabbar'), on = bar && bar.querySelector('.tab.on');
   if (!on) return;
   let ind = bar.querySelector('.tab-ind');
