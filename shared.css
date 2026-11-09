@@ -542,3 +542,30 @@ body::before{content:'';position:fixed;inset:-10%;z-index:-1;pointer-events:none
 .modal,#pop{background:linear-gradient(135deg,rgba(255,60,110,.2),rgba(136,19,55,.08)),rgba(28,8,16,.66)}
 .hi{background:rgba(255,60,110,.1)}
 #story{background:linear-gradient(90deg,rgba(255,42,95,.22),rgba(136,19,55,.08))}
+
+/* ===== PERBAIKAN v3: stage + dermaga menyatu, animasi lebih halus ===== */
+/* stage & dermaga: warna ujungnya sama persis, tanpa blur sendiri-sendiri, jadi terlihat satu bingkai */
+.stage,.catwalk{-webkit-backdrop-filter:none;backdrop-filter:none;border-color:rgba(255,110,150,.32)}
+.stage{background:linear-gradient(180deg,rgba(255,42,95,.45),rgba(150,22,60,.40));box-shadow:0 -6px 24px rgba(255,42,95,.28),inset 0 1px 0 rgba(255,170,190,.4)}
+.catwalk{background:linear-gradient(180deg,rgba(150,22,60,.40),rgba(70,10,28,.38));box-shadow:0 8px 20px rgba(255,42,95,.15),inset 1px 0 0 rgba(255,150,170,.15),inset -1px 0 0 rgba(255,150,170,.15),inset 0 -1px 0 rgba(255,150,170,.15)}
+
+/* animasi lebih halus: easing & durasi lebih lembut, pegas ala iOS */
+:root{--ease:cubic-bezier(.22,1,.36,1);--spring:cubic-bezier(.34,1.45,.64,1)}
+@keyframes rise{from{opacity:0;transform:translateY(16px) scale(.985)}}
+@keyframes tabin{from{opacity:0;transform:translate(var(--tabx,0),12px) scale(.99)}}
+@keyframes pop-in{from{opacity:0;transform:translateY(22px) scale(.93)}}
+.enter .tl-i,.enter .gi,.enter .ev-g,.enter .ev-c,.shown .sl-row,.shown .rk,.enter #story,.enter .last-c,.enter #cover,.enter #filters,.enter #stats .stat{animation-duration:.7s;animation-timing-function:var(--ease)}
+.intro .seat-row{animation-duration:.75s;animation-timing-function:var(--ease)}
+#view-main,#view-gal,#view-tl,#view-ev{animation-duration:.5s;animation-timing-function:var(--ease)}
+.overlay.open{animation-duration:.3s}
+.overlay.open>.modal,#lightbox.open>img{animation-duration:.45s;animation-timing-function:var(--spring)}
+.tab-ind{transition:transform .6s var(--spring),width .6s var(--spring)}
+#fbar{transition:transform .5s var(--spring),opacity .3s}
+
+/* hover/klik: hanya properti yang perlu, dengan pegas */
+.seat{transition:transform .35s var(--spring),box-shadow .3s,background .3s,border-color .3s,color .3s}
+.stat:not(.sk),.tt-c,.ev-c,.last-c,.hi{transition:transform .4s var(--spring),border-color .3s,box-shadow .3s,background .3s}
+.tl-i,.ev-g{transition:transform .4s var(--ease),border-color .3s,background .3s}
+.btn-s,.gk,.tab,.info-btn{transition:transform .3s var(--spring),background .3s,border-color .3s,color .3s,box-shadow .3s}
+.sl-bar i,.cov-bar i,.mc-b i{transition-duration:.8s;transition-timing-function:var(--ease)}
+.shown .sl-bar i,.shown .mc-b i{animation-duration:1s;animation-timing-function:var(--ease)}
