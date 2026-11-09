@@ -1,10 +1,16 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="app">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>agaxx's Theater Stats</title>
 <meta name="theme-color" content="#0d090d">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Theater Stats">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23ff2a5f%27/%3E%3Cpath d=%27M14 38h36M14 28h36M14 48h36%27 stroke=%27%23fff%27 stroke-width=%275%27 stroke-linecap=%27round%27 opacity=%27.9%27/%3E%3Cpath d=%27M12 20q20-12 40 0%27 stroke=%27%23ffd23f%27 stroke-width=%275%27 fill=%27none%27 stroke-linecap=%27round%27/%3E%3C/svg%3E">
 <meta property="og:type" content="website">
 <meta property="og:title" content="agaxx's Theater Seating Stats">
@@ -15,20 +21,21 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
+<link rel="stylesheet" href="app.css">
 <style>
 #status{color:#f87171;font-size:14px;margin:0 0 12px;text-align:center}
 #status:empty{display:none}
 #status.warn{color:#fbbf24}
 </style>
 </head>
-<body>
+<body class="app">
 <div class="wrap">
   <div class="head">
     <h1>agaxx's Theater Seating Stats</h1>
     <p class="sub">Riwayat kursi teater yang pernah ditempati (arahkan kursor atau klik kursi)</p>
     <div class="badge">Total Riwayat Show: <span id="total">0</span></div>
   </div>
-  <div class="tabbar"><button type="button" class="tab on" data-tab="main">Peta &amp; Statistik</button><button type="button" class="tab" data-tab="tl" id="t-tab">Riwayat</button><button type="button" class="tab" data-tab="gal" id="g-tab">Galeri</button><button type="button" class="tab" data-tab="ev" id="ev-tab">Tiket &amp; Event</button></div>
+  <div class="tabbar"><button type="button" class="tab on" data-tab="main" data-short="Peta">Peta &amp; Statistik</button><button type="button" class="tab" data-tab="tl" id="t-tab" data-short="Riwayat">Riwayat</button><button type="button" class="tab" data-tab="gal" id="g-tab" data-short="Galeri">Galeri</button><button type="button" class="tab" data-tab="ev" id="ev-tab" data-short="Tiket">Tiket &amp; Event</button></div>
   <div id="status" role="status">Memuat data...</div>
   <div id="view-main">
   <div id="seating-wrapper">
@@ -78,6 +85,7 @@
 <div class="overlay" id="lightbox"><img id="lb-img" alt="Foto 2-shot"></div>
 
 <script src="shared.js"></script>
+<script src="app.js"></script>
 <script>
 /* DATA_URL: file data.json hasil "Unduh data.json" dari admin.html (array, atau {records:[...]}).
    Kalau dibuka langsung dari file:// browser memblokir fetch -> pakai hosting / server lokal. */
@@ -115,6 +123,16 @@ async function init() {
       : 'Gagal memuat data (' + err.message + '). Cek DATA_URL / pastikan dibuka lewat server, bukan file://.';
     if (!old) renderChart();
   }
+}
+// dipakai app.js (tarik ke bawah untuk memuat ulang): selalu ambil data terbaru dan gambar ulang
+async function refreshData() {
+  const res = await fetch(DATA_URL + (DATA_URL.includes('?') ? '&' : '?') + 't=' + Date.now(), {cache: 'no-store'});
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const text = await res.text();
+  applyData(JSON.parse(text));
+  $('status').textContent = ''; $('status').classList.remove('warn');
+  renderChart();
+  try { localStorage.setItem(CK, text); } catch (e) { /* penyimpanan penuh: abaikan */ }
 }
 let tabTimer = 0;
 const VIEWS = ['main', 'gal', 'tl', 'ev'];

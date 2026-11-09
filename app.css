@@ -1,0 +1,159 @@
+/* app.css — tampilan "seperti app" untuk index.html (admin.html tidak memuat file ini).
+   Semua aturan dibatasi ke body.app dan dimuat SETELAH shared.css.
+   HP  : max-width 768px  (tab bar bawah, header mengecil, tarik-untuk-muat-ulang)
+   Laptop: min-width 1100px (sidebar kiri, dua kolom, panel kursi di kanan) */
+
+/* ---------- elemen baru (tersembunyi sampai dipakai) ---------- */
+#appbar,#ptr,.sb-brand,.sb-keys{display:none}
+#toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:60;transform:translate(-50%,12px);opacity:0;pointer-events:none;
+  padding:10px 16px;border-radius:99px;background:rgba(36,20,27,.96);border:1px solid rgba(255,255,255,.16);color:#fff;font-size:13px;font-weight:600;
+  max-width:calc(100vw - 32px);text-align:center;transition:transform .35s cubic-bezier(.22,1,.36,1),opacity .25s}
+#toast.on{transform:translate(-50%,0);opacity:1}
+
+/* ---------- ikon tab (mask SVG, ikut warna teks) ---------- */
+body.app .tab{--ic:none}
+body.app .tab[data-tab=main]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z'/%3E%3Cpath d='M9 4v14M15 6v14'/%3E%3C/svg%3E")}
+body.app .tab[data-tab=tl]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l3 2'/%3E%3C/svg%3E")}
+body.app .tab[data-tab=gal]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='3'/%3E%3Ccircle cx='9' cy='9' r='1.5'/%3E%3Cpath d='M21 15l-5-5L5 21'/%3E%3C/svg%3E")}
+body.app .tab[data-tab=ev]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 7h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4z'/%3E%3Cpath d='M14 7v10' stroke-dasharray='2 2'/%3E%3C/svg%3E")}
+body.app .tab::before{content:'';flex:none;width:22px;height:22px;background:currentColor;
+  -webkit-mask:var(--ic) center/contain no-repeat;mask:var(--ic) center/contain no-repeat}
+
+/* ---------- menu "Aksi" (semua ukuran layar) ---------- */
+.actions{position:relative;display:inline-block}
+.actions-t{display:inline-flex;align-items:center;gap:6px}
+.actions-t::after{content:'';width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .2s}
+.actions-t[aria-expanded=true]::after{transform:translateY(1px) rotate(-135deg)}
+.actions-m{position:absolute;right:0;top:calc(100% + 8px);z-index:20;min-width:210px;padding:6px;border-radius:18px;
+  background:#1d1318;border:1px solid rgba(255,255,255,.14);box-shadow:0 18px 40px rgba(0,0,0,.55);
+  display:none;flex-direction:column;gap:2px}
+.actions.open .actions-m{display:flex;animation:fade .15s ease-out}
+.actions-m .btn-s{display:block;width:100%;text-align:left;border:none;background:transparent;border-radius:12px;padding:12px 14px;font-size:14px;min-height:0;box-shadow:none}
+.actions-m .btn-s:hover,.actions-m .btn-s:focus-visible{background:rgba(255,255,255,.09)}
+body.app #legend{justify-content:center}
+
+/* =====================================================================
+   HP
+   ===================================================================== */
+@media(max-width:768px){
+  html.app{overscroll-behavior-y:contain}
+  body.app .wrap{padding:calc(env(safe-area-inset-top,0px) + 18px) 12px calc(108px + env(safe-area-inset-bottom,0px))}
+  :root{--stick:calc(env(safe-area-inset-top,0px) + 50px)!important}
+
+  /* judul besar: hanya di paling atas */
+  body.app .head{align-items:flex-start;text-align:left;margin-bottom:14px}
+  body.app .head h1{font-size:34px;line-height:1.08;letter-spacing:-.02em;margin:0 0 6px}
+  body.app .head .sub{font-size:13px;margin:0 0 12px}
+
+  /* header kecil: muncul pelan-pelan saat judul besar sudah lewat (--p 0..1 dari app.js) */
+  #appbar{display:flex;position:fixed;top:0;left:0;right:0;z-index:35;align-items:flex-end;justify-content:space-between;gap:10px;
+    padding:calc(env(safe-area-inset-top,0px) + 8px) 16px 10px;box-sizing:border-box;
+    background:rgba(13,9,13,.94);border-bottom:1px solid rgba(255,255,255,.08);
+    opacity:var(--p,0);transform:translateY(calc((1 - var(--p,0)) * -10px));pointer-events:none;will-change:opacity,transform}
+  #appbar b{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #appbar span{flex:none;font-size:12px;font-weight:600;color:#a1a1aa}
+  #appbar em{font-style:normal;color:#ff2a5f;font-weight:800}
+
+  /* tab bar melayang di bawah */
+  body.app .tabbar{position:fixed;top:auto;bottom:calc(10px + env(safe-area-inset-bottom,0px));left:12px;right:12px;width:auto;margin:0;
+    display:grid;grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:0;padding:6px;border-radius:28px;z-index:40;box-sizing:border-box;
+    box-shadow:0 14px 34px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,170,190,.22)}
+  body.app .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 2px 7px;
+    font-size:0!important;line-height:0;text-align:center;min-width:0}
+  body.app .tab::after{content:attr(data-short);font-size:10.5px;font-weight:600;line-height:1.1;letter-spacing:.01em}
+  body.app .tab-ind{border-radius:22px}
+
+  body.app #fbar{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
+  body.app .tl-mh{top:var(--stick)}
+
+  /* tarik untuk memuat ulang */
+  #ptr{display:grid;place-items:center;position:fixed;top:calc(env(safe-area-inset-top,0px) + 6px);left:50%;width:40px;height:40px;margin-left:-20px;z-index:50;
+    border-radius:50%;background:#24141b;border:1px solid rgba(255,255,255,.16);box-shadow:0 8px 22px rgba(0,0,0,.5);
+    opacity:var(--ptr-o,0);transform:translateY(calc(var(--ptr,0px) - 58px)) scale(calc(.6 + var(--ptr-o,0) * .4));pointer-events:none}
+  #ptr svg{width:20px;height:20px;transform:rotate(var(--ptr-r,0deg))}
+  #ptr.spin{opacity:1;--ptr-o:1;transform:translateY(14px) scale(1);transition:transform .3s cubic-bezier(.22,1,.36,1)}
+  #ptr.spin svg{animation:ptr-spin .8s linear infinite}
+  #ptr.back{transition:transform .3s cubic-bezier(.22,1,.36,1),opacity .25s}
+  @keyframes ptr-spin{to{transform:rotate(360deg)}}
+
+  /* transisi bersama kartu Riwayat -> detail kursi */
+  ::view-transition-group(seat-card){animation-duration:.45s;animation-timing-function:cubic-bezier(.2,.9,.25,1);overflow:clip;border-radius:20px}
+  ::view-transition-old(seat-card),::view-transition-new(seat-card){height:100%;width:100%;object-fit:cover;object-position:top center}
+  #seat-modal.vt,#seat-modal.vt .modal{animation:none!important;transition:none!important}
+  html.vt-run::view-transition-old(root),html.vt-run::view-transition-new(root){animation-duration:.25s}
+}
+
+/* =====================================================================
+   Laptop
+   ===================================================================== */
+@media(min-width:1100px){
+  body.app .wrap{max-width:none;align-items:stretch;padding:28px 32px 56px 252px}
+
+  /* sidebar kiri */
+  body.app .tabbar{position:fixed;left:16px;top:16px;bottom:16px;width:208px;margin:0;display:flex;flex-direction:column;flex-wrap:nowrap;
+    align-items:stretch;justify-content:flex-start;gap:4px;padding:16px 10px;border-radius:26px;z-index:40;box-sizing:border-box;
+    box-shadow:0 18px 46px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,170,190,.2)}
+  body.app .sb-brand{display:flex;align-items:center;gap:10px;padding:2px 8px 16px;margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,.1);position:relative;z-index:1}
+  body.app .sb-brand img{width:34px;height:34px;border-radius:9px}
+  body.app .sb-brand b{font-size:14px;line-height:1.2;font-weight:700}
+  body.app .tab{display:flex;align-items:center;justify-content:flex-start;gap:12px;padding:12px 14px;border-radius:16px;font-size:14px;text-align:left;white-space:nowrap}
+  body.app .tab-ind{border-radius:16px}
+  body.app .sb-keys{display:block;margin-top:auto;padding:12px 8px 2px;border-top:1px solid rgba(255,255,255,.1);font-size:11.5px;line-height:1.9;color:#a1a1aa;position:relative;z-index:1}
+  body.app .sb-keys kbd{display:inline-block;min-width:20px;padding:0 6px;margin-right:4px;border-radius:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);
+    font:600 11px/18px Inter,system-ui,sans-serif;text-align:center;color:#e4e4e7}
+  body.app #fbar{left:calc(50% + 120px)}
+
+  body.app .head{align-items:flex-start;text-align:left;margin-bottom:22px}
+  body.app .head h1{font-size:30px;margin:0 0 6px}
+  body.app .head .sub{margin:0 0 14px}
+  body.app .tl-mh{top:16px}
+
+  /* dua kolom: peta kiri, statistik / detail kursi kanan */
+  #split{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:24px;width:100%;align-items:start}
+  .col-map{position:sticky;top:16px;min-width:0;max-height:calc(100vh - 32px);overflow-y:auto;overflow-x:hidden;scrollbar-width:none;
+    display:flex;flex-direction:column;align-items:center}
+  .col-map::-webkit-scrollbar{display:none}
+  .col-side{min-width:0;display:flex;flex-direction:column;align-items:stretch}
+  body.app .col-map #filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+  body.app .col-map #filters #flt-reset{grid-column:1/-1;min-height:40px}
+  body.app .col-map #legend{margin-bottom:8px}
+  body.app .col-side .sec:first-of-type{margin-top:8px}
+
+  /* panel detail kursi (menggantikan modal di tab Peta) */
+  #seat-modal.docked{display:block;position:static;inset:auto;z-index:auto;padding:0;margin:0 0 18px;width:100%;background:none;
+    -webkit-backdrop-filter:none;backdrop-filter:none;animation:none!important;box-sizing:border-box}
+  #seat-modal.docked .modal{display:none}
+  #seat-modal.docked.open .modal{display:block;position:relative;width:100%;max-width:none;box-sizing:border-box;animation:none!important;transform:none!important;transition:none}
+  #seat-modal.docked .sheet-grip{display:none}
+  #seat-modal.docked .hist{max-height:min(48vh,440px)}
+  #seat-modal.docked:not(.open)::before{content:'Klik kursi di peta untuk melihat riwayat dan fotonya di sini.';display:block;padding:20px 22px;border-radius:20px;
+    border:1px dashed rgba(255,255,255,.2);color:#a1a1aa;font-size:13.5px;line-height:1.5;text-align:center}
+
+  /* galeri: 4 kolom, "meja foto" yang lebih longgar */
+  body.app #gallery{grid-template-columns:repeat(4,minmax(0,1fr));gap:56px 38px;padding:52px 44px 64px;border-radius:30px;margin-top:6px;
+    background:radial-gradient(120% 80% at 50% 0%,rgba(255,205,160,.11),transparent 62%),
+      repeating-linear-gradient(92deg,rgba(255,255,255,.02) 0 2px,transparent 2px 9px),
+      linear-gradient(180deg,#2b1d20,#1a1115);
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.06),inset 0 -30px 60px rgba(0,0,0,.35),0 20px 50px rgba(0,0,0,.4)}
+  body.app #gallery .gi{box-shadow:0 14px 30px rgba(0,0,0,.6),0 2px 4px rgba(0,0,0,.5)}
+  body.app #gallery .gi:nth-child(5n+2){--rot:2.4deg}
+  body.app #gallery .gi:nth-child(5n+4){--rot:-1.4deg}
+  body.app #gallery .gi:nth-child(7n+3){--rot:.9deg}
+  body.app #view-gal #gallery-bar,body.app #view-gal .gk-bar{max-width:1100px}
+}
+@media(min-width:1500px){
+  #split{grid-template-columns:minmax(0,1fr) 420px;gap:32px}
+  body.app #gallery{grid-template-columns:repeat(5,minmax(0,1fr));gap:60px 40px}
+  body.app .wrap{padding-right:48px}
+}
+
+/* tablet & layar di antara: tab bar bawaan tetap, tapi menu Aksi + ikon tetap rapi */
+@media(min-width:769px) and (max-width:1099px){
+  body.app .tab{display:inline-flex;align-items:center;gap:8px}
+  body.app .tab::before{width:18px;height:18px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  #toast,#ptr,#appbar{transition:none}
+  #ptr.spin svg{animation-duration:1.6s}
+}
