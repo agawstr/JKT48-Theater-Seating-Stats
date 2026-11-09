@@ -147,10 +147,10 @@ function openSeat(code) {
       <b>${esc(r.setlist)}</b>
       <div class="hd">${esc(fmtDate(r.date))}${r.sesi ? ' · ' + r.sesi : ''}</div>
       ${r.note ? `<div class="hn">"${esc(r.note)}"</div>` : ''}
-      ${extras(r).map(x => `<div class="ht">${x.icon} ${esc(x.label)} dengan ${esc(x.member)}</div>${x.photo ? `<img src="${esc(thumbOf(x.photo))}" data-full="${esc(x.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="Foto" loading="lazy">` : ''}`).join('')}
-      ${r.harga ? `<div class="hn">🎟️ ${esc(rupiah(r.harga))}${r.tiket ? ' · ' + esc(r.tiket) : ''}</div>` : ''}
+      ${extras(r).map(x => `<div class="ht">${esc(x.label)} dengan ${esc(x.member)}</div>${x.photo ? `<img src="${esc(thumbOf(x.photo))}" data-full="${esc(x.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="Foto" loading="lazy">` : ''}`).join('')}
+      ${r.harga ? `<div class="hn">${esc(rupiah(r.harga))}${r.tiket ? ' · ' + esc(r.tiket) : ''}</div>` : ''}
       ${lotHtml(r)}
-      <button type="button" class="btn-s share" data-share="${r.id}">📤 Bagikan kartu</button>
+      <button type="button" class="btn-s share" data-share="${r.id}">Bagikan kartu</button>
     </div>`).join('') : `<div class="empty">Belum ada riwayat di kursi ${esc(code)}</div>`;
   openEl('seat-modal');
   $('seat-close').focus();
@@ -174,7 +174,7 @@ function showPop(btn) {
       list.slice(0, 3).map(r => `
         <div class="pop-i"><b>${esc(r.setlist)}</b>
           <div class="hd">${esc(fmtDate(r.date))}${r.sesi ? ' · ' + r.sesi : ''}</div>
-          ${extras(r).map(x => `<div class="ht">${x.icon} ${esc(x.label)} dengan ${esc(x.member)}</div>`).join('')}
+          ${extras(r).map(x => `<div class="ht">${esc(x.label)} dengan ${esc(x.member)}</div>`).join('')}
         </div>`).join('') +
       `<div class="pop-m">${list.length > 3 ? `+${list.length - 3} lainnya · ` : ''}klik untuk detail & foto</div>`;
   }
@@ -288,7 +288,7 @@ $('flt-to').value = filter.to;
 const heatLegend = () => HEAT.map((h, i) =>
   `<span class="lg"><i style="background:${h.bg};border-color:${h.bd}"></i>${heatLabel(h, i)}</span>`).join('');
 $('legend').innerHTML = 'Jumlah kunjungan: <span id="lg-scale">' + heatLegend() + '</span>' +
-  '<button type="button" class="btn-s" id="png-btn">📷 Simpan peta (PNG)</button><button type="button" class="btn-s" id="rp-btn">▶ Putar ulang</button><button type="button" class="btn-s" id="wrap-btn">✨ Wrapped</button>';
+  '<button type="button" class="btn-s" id="png-btn">Simpan peta (PNG)</button><button type="button" class="btn-s" id="rp-btn">Putar ulang</button><button type="button" class="btn-s" id="wrap-btn">Wrapped</button>';
 
 function renderFilters() {
   const opts = (id, vals, ph) => {
@@ -435,7 +435,7 @@ function renderCal() {
   if (!calYears.length) { $('cal-nav').innerHTML = ''; $('mchart').innerHTML = ''; $('cal').innerHTML = '<div class="empty">Belum ada data</div>'; return; }
   if (!calYears.includes(String(calYear))) calYear = +calYears[calYears.length - 1];
   const i = calYears.indexOf(String(calYear));
-  $('wrap-btn').textContent = `✨ Wrapped ${calYear}`;
+  $('wrap-btn').textContent = `Wrapped ${calYear}`;
   $('cal-nav').innerHTML = `<button type="button" class="btn-s" data-cy="-1" ${i <= 0 ? 'disabled' : ''}>‹</button><b>${calYear}</b><button type="button" class="btn-s" data-cy="1" ${i >= calYears.length - 1 ? 'disabled' : ''}>›</button>`;
   const cnt = {};
   viewEx(['date']).forEach(r => cnt[r.date] = (cnt[r.date] || 0) + 1);
@@ -478,11 +478,11 @@ function renderGallery() {
   const mem = [...new Set(items.filter(inK).map(x => x.member).filter(Boolean))].sort();
   sel.innerHTML = '<option value="">Semua member</option>' + mem.map(m => `<option${m === cur ? ' selected' : ''}>${esc(m)}</option>`).join('');
   const list = items.filter(x => inK(x) && (!cur || !mem.includes(cur) || x.member === cur));
-  if ($('g-kinds')) $('g-kinds').innerHTML = [['', 'Semua'], ['ts', '📸 2-Shot'], ['ev', '🎪 2-Shot Event'], ['ck', '🎴 Chekicha']].map(([k, l]) => `<button type="button" class="gk${k === galKind ? ' on' : ''}" data-gk="${k}">${l} <b>${items.filter(x => !k || x.k === k).length}</b></button>`).join('');
+  if ($('g-kinds')) $('g-kinds').innerHTML = [['', 'Semua'], ['ts', '2-Shot'], ['ev', '2-Shot Event'], ['ck', 'Chekicha']].map(([k, l]) => `<button type="button" class="gk${k === galKind ? ' on' : ''}" data-gk="${k}">${l} <b>${items.filter(x => !k || x.k === k).length}</b></button>`).join('');
   $('g-info').textContent = `${list.length} foto`;
   if ($('g-tab') && dataLoaded) $('g-tab').textContent = `Galeri (${items.length})`;
-  g.innerHTML = list.length ? list.map((x, i) => `<figure class="gi" style="--i:${Math.min(i, 14)}"><img src="${esc(thumbOf(x.photo))}" data-full="${esc(x.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="${esc(x.label)} dengan ${esc(x.member)}" loading="lazy">
-    <figcaption><b>${esc(x.member) || '-'}</b><span>${x.icon} ${esc(x.label)}</span><span>${esc(x.r.setlist)} · ${esc(fmtDate(x.r.date))}</span>${x.solo ? '<span class="gi-x">di luar show (tanpa menonton)</span>' : ''}</figcaption></figure>`).join('')
+  g.innerHTML = list.length ? list.map((x, i) => `<figure class="gi" style="--i:${i % 12}"><img src="${esc(thumbOf(x.photo))}" data-full="${esc(x.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="${esc(x.label)} dengan ${esc(x.member)}" loading="lazy">
+    <figcaption><b>${esc(x.member) || '-'}</b><span>${esc(x.label)}</span><span>${esc(x.r.setlist)} · ${esc(fmtDate(x.r.date))}</span>${x.solo ? '<span class="gi-x">di luar show (tanpa menonton)</span>' : ''}</figcaption></figure>`).join('')
     : '<div class="empty">Belum ada foto</div>';
 }
 $('g-member')?.addEventListener('change', renderGallery);
@@ -553,7 +553,7 @@ function wrapped() {
   });
   const paid = rs.reduce((a, r) => a + (r.harga || 0), 0);
   c.textAlign = 'center'; c.fillStyle = '#e4e4e7'; c.font = '700 32px sans-serif';
-  c.fillText(`📸 ${rs.filter(r => r.twoshot === 'Ya').length} 2-Shot  ·  🎴 ${rs.filter(r => r.chekicha === 'Ya').length} Chekicha${paid ? '  ·  🎟️ ' + rupiah(paid) : ''}`, W / 2, 1230);
+  c.fillText(`${rs.filter(r => r.twoshot === 'Ya').length} 2-Shot  ·  ${rs.filter(r => r.chekicha === 'Ya').length} Chekicha${paid ? '  ·  ' + rupiah(paid) : ''}`, W / 2, 1230);
   c.fillStyle = '#9a9aa4'; c.font = '600 26px sans-serif'; c.fillText(document.querySelector('h1').textContent, W / 2, 1300);
   const a = document.createElement('a');
   a.download = `wrapped-${y}.png`; a.href = cv.toDataURL('image/png'); a.click();
@@ -567,7 +567,7 @@ function renderCover() {
   $('cover').innerHTML = `<div class="cov-t"><b>Kursi terisi ${got} dari ${tot}</b><span>${pct}%</span></div>
     <div class="cov-bar"><i style="width:${pct}%"></i></div>
     <div class="cov-s"><span>${tot - got} kursi belum pernah ditempati</span>
-    <button type="button" class="btn-s" id="cov-btn" aria-pressed="${showUnv}">${showUnv ? 'Tampilkan semua' : '🎯 Sorot yang belum'}</button></div>`;
+    <button type="button" class="btn-s" id="cov-btn" aria-pressed="${showUnv}">${showUnv ? 'Tampilkan semua' : 'Sorot yang belum'}</button></div>`;
 }
 $('cover').addEventListener('click', e => {
   if (e.target.closest('#cov-btn')) { showUnv = !showUnv; renderChart(); }
@@ -593,8 +593,8 @@ function renderTimeline() {
       html += `<h3 class="tl-mh">${/^\d{4}-\d{2}$/.test(ym) ? mon[+ym.slice(5) - 1] + ' ' + ym.slice(0, 4) : 'Tanpa tanggal'}</h3>`;
     }
     html += `<div class="tl-i${ms ? ' ms' : ''}" data-id="${r.id}" style="--i:${Math.min(cnt++, 14)}"><div class="tl-d"><b>${esc(r.date.slice(8)) || '–'}</b><span>${esc(r.sesi)}</span></div>
-      <div class="tl-b"><b>${esc(r.setlist) || '(tanpa setlist)'}</b>${ms ? `<div class="tl-star">⭐ Show ke-${n}</div>` : ''}${lotHtml(r)}${r.harga ? `<div class="hn">🎟️ ${esc(rupiah(r.harga))}${r.tiket ? ' · ' + esc(r.tiket) : ''}</div>` : ''}
-        ${extras(r).map(x => `<div class="ht">${x.icon} ${esc(x.label)} dengan ${esc(x.member)}</div>`).join('')}
+      <div class="tl-b"><b>${esc(r.setlist) || '(tanpa setlist)'}</b>${ms ? `<div class="tl-star">Show ke-${n}</div>` : ''}${lotHtml(r)}${r.harga ? `<div class="hn">${esc(rupiah(r.harga))}${r.tiket ? ' · ' + esc(r.tiket) : ''}</div>` : ''}
+        ${extras(r).map(x => `<div class="ht">${esc(x.label)} dengan ${esc(x.member)}</div>`).join('')}
         ${r.note ? `<div class="hn">"${esc(r.note)}"</div>` : ''}</div>
       <button type="button" class="seat-badge tl-s" data-seat="${esc(r.seat)}" aria-label="Lihat kursi ${esc(r.seat)}">${esc(r.seat)}</button></div>`;
   }
@@ -613,7 +613,7 @@ const rupiah = n => 'Rp ' + Math.round(n).toLocaleString('id-ID');
 let replayN = null, replayT = 0;
 function stopReplay() {
   clearInterval(replayT); replayN = null;
-  $('rp-btn').textContent = '▶ Putar ulang';
+  $('rp-btn').textContent = 'Putar ulang';
   renderChart();
 }
 function replay() { // peta terisi satu per satu sesuai urutan tanggal
@@ -624,8 +624,8 @@ function replay() { // peta terisi satu per satu sesuai urutan tanggal
   replayT = setInterval(() => {
     if (++replayN > list.length) return stopReplay();
     renderChart();
-    $('rp-btn').textContent = `⏹ ${replayN}/${list.length} · ${fmtDate(list[replayN - 1].date)}`;
-    if (replayN === 10 || replayN % 25 === 0) { $('rp-btn').textContent = '⭐ ' + $('rp-btn').textContent; burst($('chart').querySelector(`[data-seat="${list[replayN - 1].seat}"]`)); }
+    $('rp-btn').textContent = `Stop ${replayN}/${list.length} · ${fmtDate(list[replayN - 1].date)}`;
+    if (replayN === 10 || replayN % 25 === 0) { $('rp-btn').textContent = '' + $('rp-btn').textContent; burst($('chart').querySelector(`[data-seat="${list[replayN - 1].seat}"]`)); }
   }, Math.min(400, Math.max(60, 4000 / list.length)));
 }
 $('rp-btn').addEventListener('click', replay);
@@ -673,7 +673,7 @@ function shareCard(id) {
     c.fillStyle = '#ff8c00'; c.font = '900 56px sans-serif'; c.fillText('Kursi ' + r.seat, W / 2, 1020);
     let yy = 1085;
     c.fillStyle = '#34d399'; c.font = '700 34px sans-serif';
-    extras(r).forEach(e => { c.fillText(`${e.icon} ${e.label} dengan ${e.member}`, W / 2, yy); yy += 50; });
+    extras(r).forEach(e => { c.fillText(`${e.label} dengan ${e.member}`, W / 2, yy); yy += 50; });
     if (r.note && yy < 1200) { c.fillStyle = '#a1a1aa'; fitFont(c, `"${r.note}"`, w, 30, 'italic 400'); c.fillText(`"${r.note}"`, W / 2, yy + 5); }
     c.fillStyle = '#9a9aa4'; c.font = '600 26px sans-serif'; c.fillText(document.querySelector('h1').textContent, W / 2, 1310);
     try {
@@ -786,9 +786,9 @@ function lotInfo(r) {
   const ts = tickets.filter(t => (t.type === 'SHOW' || tcat(t) === 'Theater Event') && t.date === r.date && (!r.sesi || (parseInt(t.start) < 17 ? 'Siang' : 'Malam') === r.sesi));
   if (!ts.length) return '';
   const lose = ts.filter(t => raffleOf(t.raffle) === 'lose').length, win = ts.length - lose;
-  if (!ts.some(t => t.type === 'SHOW')) return `🎟️ Lotre: ${win} menang${lose ? ` · ${lose} kalah` : ''}`; // event teater (mis. JKT48 School)
+  if (!ts.some(t => t.type === 'SHOW')) return `Lotre: ${win} menang${lose ? ` · ${lose} kalah` : ''}`; // event teater (mis. JKT48 School)
   // aturan: menang OFC = tidak boleh daftar General; kalah OFC lalu daftar General = ada 2 entri; hanya 1 entri kalah = cuma daftar OFC
-  return '🎟️ ' + (win && !lose ? 'Menang di OFC' : win ? 'Kalah di OFC → menang di General' : lose >= 2 ? 'Kalah di OFC & General' : 'Kalah di OFC (tidak daftar General)');
+  return '' + (win && !lose ? 'Menang di OFC' : win ? 'Kalah di OFC → menang di General' : lose >= 2 ? 'Kalah di OFC & General' : 'Kalah di OFC (tidak daftar General)');
 }
 
 // statistik alur lotre show teater per slot (tanggal + jam + setlist): OFC dulu, lalu General bagi yang kalah
@@ -1140,7 +1140,7 @@ function syncFbar() {
   if (filter.member) parts.push(filter.member);
   if (filter.from || filter.to) parts.push(filter.from === filter.to ? fmtDate(filter.from) : `${filter.from ? fmtDate(filter.from) : '…'} – ${filter.to ? fmtDate(filter.to) : '…'}`);
   const show = isFiltered() && !$('view-main').hidden;
-  if (show) fbar.innerHTML = `<span>🔎 ${esc(parts.join(' · '))} · <b>${view().length}</b> show</span><button type="button">Reset</button>`;
+  if (show) fbar.innerHTML = `<span>${esc(parts.join(' · '))} · <b>${view().length}</b> show</span><button type="button">Reset</button>`;
   fbar.classList.toggle('on', show);
 }
 
