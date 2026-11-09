@@ -15,7 +15,7 @@ body.app{--ios:cubic-bezier(.32,.72,0,1);--spring:cubic-bezier(.32,.72,0,1);-web
 body.app .wrap{overflow-x:clip} /* geser tab tidak memunculkan scrollbar samping (clip tidak mematikan sticky) */
 body.app button,body.app .tl-i,body.app .gi,body.app .stat,body.app .last-c,body.app .seat{touch-action:manipulation}
 /* ganti tab: isi tab baru meluncur dari arah tab yang dituju (--tabx diisi app.js) */
-@keyframes tabin{from{opacity:0;transform:translate3d(var(--tabx,0px),0,0)}}
+@keyframes tabin{from{opacity:0;transform:translate3d(var(--tabx,0px),var(--taby,0px),0)}}
 body.app #view-main,body.app #view-gal,body.app #view-tl,body.app #view-ev{animation-duration:.42s;animation-timing-function:var(--ios)}
 /* animasi item: jarak kecil, tanpa putar/skala, jeda antar item singkat */
 @keyframes rise{from{opacity:0;transform:translate3d(0,10px,0)}}
