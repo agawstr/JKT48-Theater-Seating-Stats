@@ -14,7 +14,7 @@ const closeEl = id => {
   const el = $(id);
   if (!el.classList.contains('open') || el.classList.contains('closing')) return;
   el.classList.add('closing'); // animasi tutup dulu, baru disembunyikan
-  timers[id] = setTimeout(() => { el.classList.remove('open', 'closing'); lastFocus[id]?.focus?.(); }, 160);
+  timers[id] = setTimeout(() => { el.classList.remove('open', 'closing'); lastFocus[id]?.focus?.(); }, 300);
 };
 
 // ---------- Layout kursi: jumlah kursi per blok (b1..b4) di tiap baris ----------
@@ -92,9 +92,15 @@ let records = []; // diisi oleh halaman (index: dari data.json, admin: dari loca
 const lazyDone = {}, lazyStale = {};
 function lazyView(viewId, fn) {
   const v = $(viewId);
-  if (v && v.hidden && lazyDone[viewId]) { lazyStale[viewId] = fn; return; }
+  if (v && v.hidden && lazyDone[viewId]) { lazyStale[viewId] = fn; scheduleFlush(); return; }
   lazyDone[viewId] = dataLoaded; delete lazyStale[viewId]; // baru dianggap "sudah digambar" kalau data sungguhan sudah ada
   fn();
+}
+let flushT = 0;
+function scheduleFlush() { // gambar ulang tab yang usang saat browser sedang menganggur
+  if (flushT) return;
+  const run = () => { flushT = 0; Object.keys(lazyStale).forEach(flushLazy); };
+  flushT = 'requestIdleCallback' in window ? requestIdleCallback(run, {timeout: 2000}) : setTimeout(run, 700);
 }
 function flushLazy(viewId) { const fn = lazyStale[viewId]; if (fn) { delete lazyStale[viewId]; fn(); } }
 
@@ -156,19 +162,24 @@ function openSeat(code) {
   hidePop();
   $('modal-seat').textContent = code;
   const list = records.filter(r => r.seat === code).sort(cmp);
-  $('modal-hist').innerHTML = list.length ? list.map(r => `
-    <div class="hi">
+  $('modal-hist').innerHTML = list.length ? list.map((r, ri) => `
+    <div class="hi" style="--i:${Math.min(ri, 5)}">
       <b>${esc(r.setlist)}</b>
       <div class="hd">${esc(fmtDate(r.date))}${r.sesi ? ' · ' + r.sesi : ''}</div>
       ${r.note ? `<div class="hn">"${esc(r.note)}"</div>` : ''}
-      ${extras(r).map(x => `<div class="ht">${esc(x.label)} dengan ${esc(x.member)}</div>${x.photo ? `<img src="${esc(thumbOf(x.photo))}" data-full="${esc(x.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="Foto" loading="lazy">` : ''}`).join('')}
+      ${extras(r).map(x => `<div class="ht">${esc(x.label)} dengan ${esc(x.member)}</div>${x.photo ? `<div class="hi-ph"><img src="${esc(thumbOf(x.photo))}" data-full="${esc(x.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="Foto ${esc(x.label)}" decoding="async"></div>` : ''}`).join('')}
       ${r.harga ? `<div class="hn">${esc(rupiah(r.harga))}${r.tiket ? ' · ' + esc(r.tiket) : ''}</div>` : ''}
       ${lotHtml(r)}
       <button type="button" class="btn-s share" data-share="${r.id}">Bagikan kartu</button>
     </div>`).join('') : `<div class="empty">Belum ada riwayat di kursi ${esc(code)}</div>`;
+  $('modal-hist').scrollTop = 0;
   openEl('seat-modal');
-  $('seat-close').focus();
+  $('seat-close').focus({preventScroll: true});
 }
+$('modal-hist').addEventListener('load', e => { // foto memudar masuk setelah selesai dimuat (tempatnya sudah dipesan, jadi tidak ada lompatan)
+  if (e.target.tagName !== 'IMG') return;
+  e.target.classList.add('ld'); e.target.parentElement.classList.add('ld');
+}, true);
 
 // ---------- Popover hover (satu elemen dipakai bergantian) ----------
 const pop = document.createElement('div');
@@ -220,11 +231,40 @@ $('chart').addEventListener('click', e => {
   if (b) openSeat(b.dataset.seat);
 });
 $('seat-close').addEventListener('click', () => closeEl('seat-modal'));
+(() => { // lembar bawah ala iOS: tarik gagang / judul ke bawah untuk menutup
+  const m = document.querySelector('#seat-modal .modal');
+  m.insertAdjacentHTML('afterbegin', '<div class="sheet-grip" aria-hidden="true"></div>');
+  let y0 = 0, dy = 0, on = false;
+  m.addEventListener('touchstart', e => { on = innerWidth <= 600 && !!e.target.closest('.sheet-grip,#modal-title') && e.touches.length === 1; y0 = e.touches[0].clientY; dy = 0; if (on) m.style.transition = 'none'; }, {passive: true});
+  m.addEventListener('touchmove', e => { if (!on) return; dy = Math.max(0, e.touches[0].clientY - y0); m.style.transform = `translate3d(0,${dy}px,0)`; }, {passive: true});
+  m.addEventListener('touchend', () => {
+    if (!on) return; on = false;
+    m.style.transition = '';
+    if (dy > 90) { closeEl('seat-modal'); setTimeout(() => { m.style.transform = ''; }, 320); } // lanjut meluncur turun (kelas .closing)
+    else m.style.transform = '';
+  });
+})();
 $('seat-modal').addEventListener('click', e => { if (e.target.id === 'seat-modal') closeEl('seat-modal'); });
 document.addEventListener('click', e => {
   const im = e.target.closest('img[data-photo]');
-  if (im) { $('lb-img').src = im.dataset.full || im.src; openEl('lightbox'); } // lightbox selalu foto penuh
+  if (im) openLightbox(im);
 });
+let lbTok = 0;
+function openLightbox(im) { // foto kecil langsung tampil & membesar dari posisinya, foto penuh dimuat di belakang lalu ditukar tanpa kedip
+  const lb = $('lb-img'), full = im.dataset.full || im.src, from = im.getBoundingClientRect(), tok = ++lbTok;
+  lb.src = im.currentSrc || im.src;
+  openEl('lightbox');
+  if (!calm() && from.width) requestAnimationFrame(() => {
+    const to = lb.getBoundingClientRect();
+    if (!to.width || tok !== lbTok) return;
+    const s = from.width / to.width, dx = from.left + from.width / 2 - (to.left + to.width / 2), dy = from.top + from.height / 2 - (to.top + to.height / 2);
+    lb.animate([{transform: `translate(${dx}px,${dy}px) scale(${s})`, opacity: .6}, {transform: 'none', opacity: 1}], {duration: 520, easing: 'cubic-bezier(.32,.72,0,1)'});
+  });
+  if (full !== lb.src) {
+    const pre = new Image(); pre.src = full;
+    (pre.decode ? pre.decode() : Promise.resolve()).catch(() => {}).then(() => { if (tok === lbTok && $('lightbox').classList.contains('open')) lb.src = full; });
+  }
+}
 $('lightbox').addEventListener('click', () => closeEl('lightbox'));
 
 // Escape: lightbox dulu, lalu hook halaman (mis. dialog konfirmasi admin), terakhir modal kursi
@@ -498,7 +538,7 @@ function renderGallery() {
   if ($('g-kinds')) $('g-kinds').innerHTML = [['', 'Semua'], ['ts', '2-Shot'], ['ev', '2-Shot Event'], ['ck', 'Chekicha']].map(([k, l]) => `<button type="button" class="gk${k === galKind ? ' on' : ''}" data-gk="${k}">${l} <b>${items.filter(x => !k || x.k === k).length}</b></button>`).join('');
   $('g-info').textContent = `${list.length} foto`;
   if ($('g-tab') && dataLoaded) $('g-tab').textContent = `Galeri (${items.length})`;
-  g.innerHTML = list.length ? list.map((x, i) => `<figure class="gi" data-k="${esc(x.k)}" style="--i:${Math.min(i, 9)};--t:${(i * 37 % 9) - 4}deg"><div class="gi-ph"><img src="${esc(thumbOf(x.photo))}" data-full="${esc(x.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="${esc(x.label)} dengan ${esc(x.member)}" loading="lazy" decoding="async"></div>
+  g.innerHTML = list.length ? list.map((x, i) => `<figure class="gi${i < 8 ? ' a' : ''}" data-k="${esc(x.k)}" style="--i:${Math.min(i, 9)};--t:${(i * 37 % 9) - 4}deg"><div class="gi-ph"><img src="${esc(thumbOf(x.photo))}" data-full="${esc(x.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="${esc(x.label)} dengan ${esc(x.member)}" loading="lazy" decoding="async"></div>
     <figcaption><b class="gi-n">${esc(x.member) || '-'}</b><span class="gi-tag">${esc(x.label)}</span><span class="gi-m">${esc(x.r.setlist)}</span><time class="gi-d">${esc(fmtDate(x.r.date))}</time>${x.solo ? '<span class="gi-x">di luar show</span>' : ''}</figcaption></figure>`).join('')
     : '<div class="empty">Belum ada foto</div>';
 }
@@ -611,8 +651,8 @@ function renderTimeline() {
       cur = ym;
       html += `<h3 class="tl-mh"><span>${/^\d{4}-\d{2}$/.test(ym) ? mon[+ym.slice(5) - 1] + ' ' + ym.slice(0, 4) : 'Tanpa tanggal'}</span><small>${perMon[ym]} show</small></h3>`;
     }
-    const ex = extras(r), lt = lotInfo(r);
-    html += `<div class="tl-i${ms ? ' ms' : ''}" data-id="${r.id}" data-seat="${esc(r.seat)}" style="--i:${Math.min(cnt++, 8)}">
+    const ex = extras(r), lt = lotInfo(r), ci = cnt++;
+    html += `<div class="tl-i${ms ? ' ms' : ''}${ci < 8 ? ' a' : ''}" data-id="${r.id}" data-seat="${esc(r.seat)}" style="--i:${Math.min(ci, 8)}">
       <div class="tl-d"><b>${esc(r.date.slice(8)) || '–'}</b><span>${esc(r.sesi)}</span></div>
       <div class="tl-b"><div class="tl-t">${esc(r.setlist) || '(tanpa setlist)'}</div>
         ${ms || ex.length || lt || r.harga ? `<div class="tl-chips">${ms ? `<span class="tc star">Show ke-${n}</span>` : ''}${ex.map(x => `<span class="tc ${x.k}">${esc(x.label)}${x.member ? ' · ' + esc(x.member) : ''}</span>`).join('')}${lt ? `<span class="tc lot">${esc(lt)}</span>` : ''}${r.harga ? `<span class="tc">${esc(rupiah(r.harga))}${r.tiket ? ' · ' + esc(r.tiket) : ''}</span>` : ''}</div>` : ''}
