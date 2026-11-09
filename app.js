@@ -128,8 +128,12 @@
       const c = e.target.closest('#timeline .tl-i');
       if (c) src = c; else if (e.target.closest('[data-seat]')) src = null;
     }, true);
+    // animasi masuk bawaan (sheet-in / hi-in) dimatikan selama modal terbuka lewat transisi bersama,
+    // kalau tidak, begitu transisi selesai animasinya mulai lagi dan terlihat dobel
+    new MutationObserver(() => { if (!ov.classList.contains('open')) ov.removeAttribute('data-vt'); }).observe(ov, {attributes: true, attributeFilter: ['class']});
     const run = (fn, done) => {
       document.documentElement.classList.add('vt-run');
+      ov.setAttribute('data-vt', '');
       ov.classList.add('vt');
       const t = document.startViewTransition(fn);
       t.finished.finally(() => { document.documentElement.classList.remove('vt-run'); ov.classList.remove('vt'); done && done(); });
@@ -225,6 +229,56 @@
       requestAnimationFrame(() => { q.focus(); q.select(); });
     }
   });
+
+  /* ---------- ganti tab: arah geser isi + pil "cair" ---------- */
+  document.addEventListener('click', e => { // capture: jalan sebelum handler tab di index.html mengganti tab
+    const b = e.target.closest('.tabbar .tab');
+    if (!b) return;
+    const list = tabs(), from = list.findIndex(t => t.classList.contains('on')), to = list.indexOf(b);
+    if (from < 0 || to === from) return;
+    const dir = to > from ? 1 : -1;
+    document.documentElement.style.setProperty('--tabx', mqDesk.matches || calm() ? '0px' : dir * 34 + 'px');
+    const ind = document.querySelector('.tabbar .tab-ind');
+    if (ind && !calm()) { ind.classList.add('moving'); setTimeout(() => ind.classList.remove('moving'), 260); }
+  }, true);
+
+  /* ---------- "Sorot yang belum" / "Tampilkan semua": kursi berubah bergelombang, bukan tiba-tiba ---------- */
+  (() => {
+    if (typeof renderChart !== 'function' || !$('cover') || !$('chart')) return;
+    const read = el => { const cs = getComputedStyle(el); return {o: cs.opacity, bg: cs.backgroundColor, c: cs.color, bd: cs.borderTopColor, sh: cs.boxShadow}; };
+    let pending = null;
+    document.addEventListener('click', e => { // capture: rekam tampilan lama sebelum peta digambar ulang
+      if (calm() || !e.target.closest('#cov-btn')) return;
+      pending = new Map();
+      $('chart').querySelectorAll('.seat').forEach(el => pending.set(el.dataset.seat, read(el)));
+    }, true);
+    const baseRender = renderChart;
+    renderChart = function () {
+      const old = pending; pending = null;
+      if (!old) return baseRender();
+      const ch = $('chart');
+      ch.classList.add('morph'); // matikan transisi CSS kursi supaya nilai akhir bisa dibaca
+      baseRender();
+      const els = [...ch.querySelectorAll('.seat')], anims = [];
+      const now = els.map(read); // baca semua dulu, animasikan sesudahnya
+      els.forEach((el, i) => {
+        const o = old.get(el.dataset.seat), n = now[i];
+        if (!o || (o.o === n.o && o.bg === n.bg && o.c === n.c && o.bd === n.bd && o.sh === n.sh)) return;
+        const row = 'ABCDEFGHIJ'.indexOf(el.dataset.seat[0]), num = parseInt(el.dataset.seat.slice(1)) || 0;
+        const from = {opacity: o.o, backgroundColor: o.bg, color: o.c, borderColor: o.bd, boxShadow: o.sh};
+        const to = {opacity: n.o, backgroundColor: n.bg, color: n.c, borderColor: n.bd, boxShadow: n.sh};
+        const glow = el.classList.contains('want'); // kursi yang disorot membal sedikit
+        const kf = glow ? [{...from, transform: 'scale(.88)'}, {transform: 'scale(1.14)', offset: .45}, {...to, transform: 'scale(1)'}]
+                        : [{...from, transform: 'scale(1)'}, {...to, transform: 'scale(1)'}];
+        anims.push(el.animate(kf, {duration: glow ? 700 : 520, delay: Math.min(520, row * 34 + (num % 9) * 6),
+          easing: glow ? 'cubic-bezier(.34,1.3,.64,1)' : 'cubic-bezier(.32,.72,0,1)', fill: 'backwards'}));
+      });
+      const done = () => ch.classList.remove('morph');
+      if (!anims.length) return done();
+      Promise.allSettled(anims.map(a => a.finished)).then(done);
+      setTimeout(done, 1600); // jaga-jaga kalau animasi dibatalkan
+    };
+  })();
 
   /* ---------- PWA: service worker ---------- */
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
