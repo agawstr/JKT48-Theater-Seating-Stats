@@ -2,10 +2,10 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>agaxx's Theater Stats</title>
 <meta name="theme-color" content="#0d090d">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%8E%AD%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23ff2a5f%27/%3E%3Cpath d=%27M14 38h36M14 28h36M14 48h36%27 stroke=%27%23fff%27 stroke-width=%275%27 stroke-linecap=%27round%27 opacity=%27.9%27/%3E%3Cpath d=%27M12 20q20-12 40 0%27 stroke=%27%23ffd23f%27 stroke-width=%275%27 fill=%27none%27 stroke-linecap=%27round%27/%3E%3C/svg%3E">
 <meta property="og:type" content="website">
 <meta property="og:title" content="agaxx's Theater Seating Stats">
 <meta property="og:description" content="Riwayat kursi teater JKT48 yang pernah ditempati: peta kursi, statistik, dan total kunjungan per setlist.">
@@ -16,7 +16,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
 <style>
-#status{color:#f87171;font-size:14px;margin:12px 0;text-align:center;min-height:18px}
+#status{color:#f87171;font-size:14px;margin:0 0 12px;text-align:center}
+#status:empty{display:none}
 #status.warn{color:#fbbf24}
 </style>
 </head>
@@ -126,8 +127,8 @@ document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () =>
   const show = () => {
     VIEWS.forEach(k => $('view-' + k).hidden = b.dataset.tab !== k);
     flushLazy('view-' + b.dataset.tab); // gambar ulang isi tab yang usang sebelum ditampilkan
-    const bar = document.querySelector('.tabbar'), top = bar.getBoundingClientRect().bottom + scrollY;
-    if (scrollY > top - 8) scrollTo({top: Math.max(0, top - bar.offsetHeight - 24), behavior: 'instant'}); // isi baru mulai dari atas, bukan di tengah halaman
+    const hd = document.querySelector('.head'), top = hd.getBoundingClientRect().bottom + scrollY - 8; // posisi tab bar sebelum menempel
+    if (scrollY > top) scrollTo({top, behavior: 'instant'}); // isi baru mulai dari bawah tab bar, bukan di tengah halaman
     centerChart();
     next.style.setProperty('--tabx', dir * 18 + 'px');
     playEnter(next);
