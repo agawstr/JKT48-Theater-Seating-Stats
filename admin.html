@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JKT48 Theater Seating Stats</title>
 <meta name="theme-color" content="#0d090d">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%8E%AD%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23ff2a5f%27/%3E%3Cpath d=%27M14 38h36M14 28h36M14 48h36%27 stroke=%27%23fff%27 stroke-width=%275%27 stroke-linecap=%27round%27 opacity=%27.9%27/%3E%3Cpath d=%27M12 20q20-12 40 0%27 stroke=%27%23ffd23f%27 stroke-width=%275%27 fill=%27none%27 stroke-linecap=%27round%27/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
@@ -202,9 +202,9 @@ button.tt-c{font:inherit;color:inherit;text-align:left;cursor:pointer}
     <div class="tabs">
       <button class="tab-btn active" data-tab="peta">Peta Kursi</button>
       <button class="tab-btn" data-tab="crud">Tambah &amp; Kelola Data</button>
-      <button class="tab-btn" data-tab="tiket">🔒 Total Tiket</button>
-      <button class="tab-btn" data-tab="solo">📸 Sesi Lepas</button>
-      <button class="tab-btn" data-tab="biaya">💸 Pengeluaran</button>
+      <button class="tab-btn" data-tab="tiket">Total Tiket</button>
+      <button class="tab-btn" data-tab="solo">Sesi Lepas</button>
+      <button class="tab-btn" data-tab="biaya">Pengeluaran</button>
     </div>
     <div class="badge">Total Riwayat Show: <span id="total">0</span></div>
   </div>
@@ -226,7 +226,7 @@ button.tt-c{font:inherit;color:inherit;text-align:left;cursor:pointer}
   <div id="view-solo" class="view"><div id="tsev"></div><div id="solo"></div></div>
 
   <div id="view-biaya" class="view">
-    <div class="tt-years ex-sub"><button type="button" class="tt-y ex-t on" data-ext="sum">Ringkasan</button><button type="button" class="tt-y ex-t" data-ext="away">✈️ Away</button><button type="button" class="tt-y ex-t" data-ext="live">📺 Livestream &amp; App</button><button type="button" class="tt-y ex-t" data-ext="fanbase">🫶 Fanbase</button><button type="button" class="tt-y ex-t" data-ext="project">🧩 Project</button><button type="button" class="tt-y ex-t" data-ext="merch">🛍️ Merch</button><button type="button" class="tt-y ex-t" data-ext="gift">🎁 Gift</button><button type="button" class="tt-y ex-t" data-ext="konser">🎤 Konser</button><button type="button" class="tt-y ex-t" data-ext="offair">🎪 Off-Air</button></div>
+    <div class="tt-years ex-sub"><button type="button" class="tt-y ex-t on" data-ext="sum">Ringkasan</button><button type="button" class="tt-y ex-t" data-ext="away">Away</button><button type="button" class="tt-y ex-t" data-ext="live">Livestream &amp; App</button><button type="button" class="tt-y ex-t" data-ext="fanbase">Fanbase</button><button type="button" class="tt-y ex-t" data-ext="project">Project</button><button type="button" class="tt-y ex-t" data-ext="merch">Merch</button><button type="button" class="tt-y ex-t" data-ext="gift">Gift</button><button type="button" class="tt-y ex-t" data-ext="konser">Konser</button><button type="button" class="tt-y ex-t" data-ext="offair">Off-Air</button></div>
     <div id="ex"></div>
     <div id="away" hidden></div>
     <div id="misc" hidden></div>
@@ -268,17 +268,17 @@ button.tt-c{font:inherit;color:inherit;text-align:left;cursor:pointer}
           <input id="search" placeholder="Cari..." aria-label="Cari riwayat">
         </div>
         <div class="tools">
-          <button class="btn" id="btn-zip">⬇ Unduh paket (ZIP)</button>
-          <button class="btn" id="btn-export">⬇ Backup lengkap (JSON)</button>
+          <button class="btn" id="btn-zip">Unduh paket (ZIP)</button>
+          <button class="btn" id="btn-export">Backup lengkap (JSON)</button>
           <div class="pubopt"><b>Opsi publikasi (untuk paket ZIP)</b>
             <label><input type="checkbox" id="po-tickets" checked> Sertakan data tiket (lotre, meet &amp; greet, event)</label>
             <label><input type="checkbox" id="po-photos" checked> Sertakan foto</label>
             <label><input type="checkbox" id="po-mask"> Samarkan nama member (jadi inisial, mis. A.R.)</label>
             <label><input type="checkbox" id="po-blur" checked> Sembunyikan jumlah tiket VC &amp; MnG di data publik (angka asli tetap di admin)</label>
             <small>Repo publik: isi data.json dan folder photos/ bisa dilihat siapa saja. Backup lengkap tidak terpengaruh opsi ini.</small></div>
-          <button class="btn" id="btn-import">⬆ Restore (JSON)</button>
-          <button class="btn" id="btn-jk">🎫 Impor dari jkt48.com</button>
-          <button class="btn" id="btn-cat">🏷️ Kategori &amp; status tiket</button>
+          <button class="btn" id="btn-import">Restore (JSON)</button>
+          <button class="btn" id="btn-jk">Impor dari jkt48.com</button>
+          <button class="btn" id="btn-cat">Kategori &amp; status tiket</button>
           <input type="file" id="file-import" accept=".json,application/json" hidden>
         </div>
         <div id="todo"></div>
@@ -439,11 +439,11 @@ const stor = (() => {
   let db = null, pending = 0, warned = false, hideT = 0;
   // lencana kecil: "Menyimpan…" selama ada penulisan yang belum selesai, lalu "Tersimpan"
   const badge = (txt, cls) => { let b = document.getElementById('stor-badge'); if (!b) { b = document.createElement('div'); b.id = 'stor-badge'; b.setAttribute('role', 'status'); b.style.cssText = 'position:fixed;right:12px;bottom:12px;z-index:99999;padding:6px 12px;border-radius:999px;font:600 12px system-ui,sans-serif;background:#1b1116;border:1px solid #3a2530;color:#e4e4e7;pointer-events:none'; document.body.appendChild(b); } clearTimeout(hideT); b.textContent = txt; b.style.color = cls === 'err' ? '#fca5a5' : cls === 'ok' ? '#86efac' : '#fde68a'; b.hidden = false; if (cls === 'ok') hideT = setTimeout(() => { b.hidden = true; }, 1800); };
-  const warn = e => { badge('⚠ Gagal menyimpan', 'err'); if (!warned) { warned = true; alert('Gagal menyimpan ke penyimpanan browser (' + (e && e.message || e) + '). Unduh Backup lengkap (JSON) sekarang supaya data aman.'); } };
+  const warn = e => { badge('Gagal menyimpan', 'err'); if (!warned) { warned = true; alert('Gagal menyimpan ke penyimpanan browser (' + (e && e.message || e) + '). Unduh Backup lengkap (JSON) sekarang supaya data aman.'); } };
   // transaksi dibuka saat itu juga (tidak antre), supaya tetap diselesaikan browser walau halaman langsung di-refresh
   const write = fn => {
     let t;
-    pending++; badge('💾 Menyimpan…', 'wait');
+    pending++; badge('Menyimpan…', 'wait');
     try { t = db.transaction('kv', 'readwrite'); fn(t.objectStore('kv')); } catch (e) { pending--; warn(e); return; }
     t.oncomplete = () => { if (--pending === 0) badge('✓ Tersimpan', 'ok'); };
     t.onerror = t.onabort = () => { pending--; warn(t.error); };
@@ -521,7 +521,7 @@ function markExported() { stor.setItem(DK, JSON.stringify({at: Date.now(), dirty
 function renderBackup() {
   const b = bk(), d = b.at ? Math.floor((Date.now() - b.at) / 864e5) : null, el = $('backup-note');
   const parts = [];
-  if (b.dirty) parts.push(`⚠ ${b.dirty} perubahan belum diunduh`);
+  if (b.dirty) parts.push(` ${b.dirty} perubahan belum diunduh`);
   parts.push(b.at ? `terakhir diunduh ${d ? d + ' hari lalu' : 'hari ini'}` : 'belum pernah diunduh ke data.json');
   el.textContent = records.length ? parts.join(' · ') : '';
   el.className = (b.dirty || !b.at || d >= 7) ? 'warn' : '';
@@ -1114,7 +1114,7 @@ function renderTotals() {
   const mList = Object.entries(mem).map(([n, a]) => [n, ttAgg(a)]).sort((a, b) => ttTot(b[1]) - ttTot(a[1])).slice(0, 12), mMax = mList.length ? ttTot(mList[0][1]) : 1;
   const mRows = mList.map(([n, v]) => `<div class="tt-r"><span class="nm">${esc(n)}<small>${ttSmall(v)}</small></span>${ttBar(v, mMax)}<span class="tot">${ttTot(v)}</span></div>`).join('');
 
-  el.innerHTML = `<p class="tt-note">🔒 Halaman ini hanya ada di admin. Di halaman publik, jumlah tiket VC, 2-Shot, dan MNG tampil diblur. Entri undian yang kalah tidak dihitung.</p>
+  el.innerHTML = `<p class="tt-note">Halaman ini hanya ada di admin. Di halaman publik, jumlah tiket VC, 2-Shot, dan MNG tampil diblur. Entri undian yang kalah tidak dihitung.</p>
     <div class="tt-years">${[['', 'Gabungan'], ...TT_KINDS.map(K => [K.k, K.label])].map(([k, l]) => `<button type="button" class="tt-y tt-k${k === ttKind ? ' on' : ''}" data-k="${k}">${l}</button>`).join('')}</div>
     <div class="tt-years">${['', ...years].map(y => `<button type="button" class="tt-y${y === ttYear ? ' on' : ''}" data-y="${y}">${y || 'Semua tahun'}</button>`).join('')}</div>
     <div class="tt-hero"><div class="tt-big"><b>${total}</b><span>total tiket${kLabel}${ttYear ? ' ' + ttYear : ''}</span>${upN ? `<small>termasuk ${upN} mendatang</small>` : ''}</div>
@@ -1136,13 +1136,13 @@ $('tt').addEventListener('click', e => {
 // ---------- Pengeluaran: dihitung dari data yang sudah diinput + daftar harga ----------
 // pengeluaran lain yang dicatat manual: Livestream, Merch, Konser, Off-Air
 const MISC = [ // names: pilihan nama (tanpa tanggal); tanpa names = pakai tanggal dan nama bebas
-  {k: 'live', label: 'Livestream & App', icon: '📺', color: '#f472b6', groups: [['Livestream', ['IDN', 'Showroom', 'Saweria']], ['App', ['X', 'PM']]]},
-  {k: 'fanbase', label: 'Fanbase', icon: '🫶', color: '#38bdf8', groups: [['Fanbase', ['Kas']]]},
-  {k: 'project', label: 'Project', icon: '🧩', color: '#c084fc', groups: [['Project', ['SSK', 'RH', 'STS']]]},
-  {k: 'merch', label: 'Merch', icon: '🛍️', color: '#fb923c', nodate: true, ph: 'mis. photopack, lightstick, kaos'},
-  {k: 'gift', label: 'Gift', icon: '🎁', color: '#f87171', member: true, ph: 'Nama member'},
-  {k: 'konser', label: 'Konser', icon: '🎤', color: '#facc15', ph: 'mis. tiket konser, tiket festival'},
-  {k: 'offair', label: 'Off-Air', icon: '🎪', color: '#2dd4bf', ph: 'mis. nama event off-air'}
+  {k: 'live', label: 'Livestream & App', icon: '', color: '#f472b6', groups: [['Livestream', ['IDN', 'Showroom', 'Saweria']], ['App', ['X', 'PM']]]},
+  {k: 'fanbase', label: 'Fanbase', icon: '', color: '#38bdf8', groups: [['Fanbase', ['Kas']]]},
+  {k: 'project', label: 'Project', icon: '', color: '#c084fc', groups: [['Project', ['SSK', 'RH', 'STS']]]},
+  {k: 'merch', label: 'Merch', icon: '', color: '#fb923c', nodate: true, ph: 'mis. photopack, lightstick, kaos'},
+  {k: 'gift', label: 'Gift', icon: '', color: '#f87171', member: true, ph: 'Nama member'},
+  {k: 'konser', label: 'Konser', icon: '', color: '#facc15', ph: 'mis. tiket konser, tiket festival'},
+  {k: 'offair', label: 'Off-Air', icon: '', color: '#2dd4bf', ph: 'mis. nama event off-air'}
 ];
 const miscNames = M => (M.groups || []).flatMap(g => g[1]);
 const miscByName = k => { const M = MISC.find(x => x.k === k); return !!(M.groups || M.nodate || M.member); }; // true = tanpa tanggal
@@ -1213,12 +1213,12 @@ function renderExpense() {
     const lines2 = [...rows.values()].sort((x, y) => y.amt - x.amt).map(r => `<div class="ex-l"><span>${exItem(r.k).label}</span><span>${r.aw ? r.q + ' catatan' : r.q + ' ' + exItem(r.k).unit + ' × ' + rupiah(r.p)}</span><b>${rupiah(r.amt)}</b></div>`).join('');
     return `<details class="tt-m ex-m"><summary><span class="nm">${esc(MON_ID[+k.slice(5, 7) - 1] + ' ' + k.slice(0, 4))}<small>${rows.size} jenis</small></span>${stackBar(gParts(a), mMax)}<span class="tot">${rupiah(amt(a))}</span></summary><div class="tt-ml">${lines2}</div></details>`;
   }).join('');
-  const editor = `<details class="ex-prices"${exOpen ? ' open' : ''}><summary>⚙️ Daftar harga</summary>
+  const editor = `<details class="ex-prices"${exOpen ? ' open' : ''}><summary>Daftar harga</summary>
     <div class="ex-grid">${EX_ITEMS.map(I => `<label class="ex-pr"><span>${I.label} <small>/ ${I.unit}</small></span><input type="number" min="0" step="1000" data-pk="${I.k}" value="${prices.base[I.k]}"></label>`).join('')}</div>
     <h4 class="tt-h">Penyesuaian harga per bulan</h4>
     ${prices.over.map((o, i) => `<div class="ex-ov"><input type="month" data-oi="${i}" data-of="m" value="${esc(o.m)}"><select data-oi="${i}" data-of="k">${EX_ITEMS.map(I => `<option value="${I.k}"${I.k === o.k ? ' selected' : ''}>${I.label}</option>`).join('')}</select><input type="number" min="0" step="1000" data-oi="${i}" data-of="p" value="${o.p}"><button type="button" class="btn-s" data-odel="${i}" aria-label="Hapus penyesuaian">✕</button></div>`).join('') || '<p class="tt-note">Belum ada penyesuaian.</p>'}
     <button type="button" class="btn-s" data-oadd="1">＋ Tambah penyesuaian</button></details>`;
-  el.innerHTML = `<p class="tt-note">🔒 Hanya terlihat di admin. Theater = jumlah show di riwayat (termasuk JKT48 School). 2-Shot dan Chekicha = sesi yang dicatat di riwayat dan di tab Sesi Lepas. 2-Shot Event, MNG, dan Video Call = jumlah tiket per sesi (tanpa undian yang kalah). Bulan mengikuti tanggal acara. Away, Livestream &amp; App, Fanbase, Project, Merch, Gift, Konser, dan Off-Air = catatan di sub-tab masing-masing (Livestream &amp; App, Fanbase, Project, Merch, dan Gift tanpa tanggal, jadi tidak masuk rincian per bulan).</p>
+  el.innerHTML = `<p class="tt-note">Hanya terlihat di admin. Theater = jumlah show di riwayat (termasuk JKT48 School). 2-Shot dan Chekicha = sesi yang dicatat di riwayat dan di tab Sesi Lepas. 2-Shot Event, MNG, dan Video Call = jumlah tiket per sesi (tanpa undian yang kalah). Bulan mengikuti tanggal acara. Away, Livestream &amp; App, Fanbase, Project, Merch, Gift, Konser, dan Off-Air = catatan di sub-tab masing-masing (Livestream &amp; App, Fanbase, Project, Merch, dan Gift tanpa tanggal, jadi tidak masuk rincian per bulan).</p>
     <div class="tt-years">${['', ...years].map(y => `<button type="button" class="tt-y${y === exYear ? ' on' : ''}" data-ey="${y}">${y || 'Semua tahun'}</button>`).join('')}</div>
     <div class="tt-hero"><div class="tt-big"><b class="ex-big">${rupiah(total)}</b><span>total pengeluaran${exYear ? ' ' + exYear : ''}</span><small>rata-rata ${rupiah(nm ? (total - undated) / nm : 0)} per bulan (${nm} bulan)${undated ? ` · belum termasuk ${rupiah(undated)} tanpa tanggal (Livestream &amp; App, Fanbase, Project, Merch, Gift)` : ''}</small></div>
       <div style="margin-top:14px">${stackBar(gParts(L), total)}</div>
@@ -1275,7 +1275,7 @@ function renderMisc() {
     : M.member ? `<label>Member yang di-gift<input id="mi-name" list="mi-members" placeholder="Nama member" value="${esc(ed.name)}" autocomplete="off"><datalist id="mi-members">${[...new Set([...records.flatMap(r => [r.member, r.ckMember]), ...tickets.map(t => t.member), ...solo.map(w => w.member), ...names].filter(Boolean))].sort().map(m => `<option value="${esc(m)}">`).join('')}</datalist></label>`
     : `${dateF}<label>Nama<input id="mi-name" placeholder="${esc(M.ph || '')}" value="${esc(ed.name)}" autocomplete="off"></label>`;
   const perName = (M.groups || M.member) ? `<div class="tt-cards">${names.map((n, i) => { const a = list.filter(w => w.name === n); return `<div class="tt-c" style="--c:${M.color};--i:${i}"><b class="ex-n">${rupiah(a.reduce((s, w) => s + w.amount, 0))}</b><span class="tl">${esc(n)}</span><small>${a.length} catatan</small></div>`; }).join('')}</div>` : '';
-  el.innerHTML = `<p class="tt-note">🔒 Hanya terlihat di admin. Catat pengeluaran ${esc(M.label)} di sini${byName ? ' (tanpa tanggal)' : ''}; totalnya otomatis masuk ke sub-tab Ringkasan. <b>Disimpan di browser ini saja</b>, jadi ikut Backup lengkap (JSON).${offairMoved && M.k === 'offair' ? ` ${offairMoved} catatan off-air dipindah otomatis dari Away.` : ''}</p>
+  el.innerHTML = `<p class="tt-note">Hanya terlihat di admin. Catat pengeluaran ${esc(M.label)} di sini${byName ? ' (tanpa tanggal)' : ''}; totalnya otomatis masuk ke sub-tab Ringkasan. <b>Disimpan di browser ini saja</b>, jadi ikut Backup lengkap (JSON).${offairMoved && M.k === 'offair' ? ` ${offairMoved} catatan off-air dipindah otomatis dari Away.` : ''}</p>
     <div class="aw-form">
       ${sel}
       <label>${M.member ? 'Harga (Rp)' : 'Jumlah (Rp)'}<input type="number" id="mi-amt" min="0" step="1000" inputmode="numeric" placeholder="150000" value="${ed.amount}"></label>
@@ -1342,7 +1342,7 @@ function renderAway() {
   const tMax = Math.max(1, ...tList.map(x => x.t));
   const tHtml = tList.map(x => `<div class="tt-r aw-t"><span class="nm">${esc(x.n)}<small>${esc(x.d1 === x.d2 ? fmtDate(x.d1) : fmtDate(x.d1) + ' – ' + fmtDate(x.d2))} · ${x.w.length} catatan</small></span>${stackBar(AWAY_CATS.map(c => { const v = sumA(x.w.filter(w => w.cat === c.c)); return [c.color, v, c.c, rupiah(v)]; }), tMax)}<span class="tot">${rupiah(x.t)}</span></div>`).join('');
   const rows = list.map(w => `<div class="aw-row"><span>${esc(fmtDate(w.date))}</span><span class="aw-m"><i style="background:${catColor(w.cat)}"></i>${esc(w.cat)}${w.trip ? ' · ' + esc(w.trip) : ''}${w.note ? `<small>${esc(w.note)}</small>` : ''}</span><b>${rupiah(w.amount)}</b><span class="aw-b"><button type="button" class="btn-s" data-aedit="${w.id}" aria-label="Ubah catatan">✎</button><button type="button" class="btn-s" data-adel="${w.id}" aria-label="Hapus catatan">✕</button></span></div>`).join('');
-  el.innerHTML = `<p class="tt-note">🔒 Hanya terlihat di admin. Catat pengeluaran saat fansfar (transportasi, penginapan, makan, belanja, dll). Tiket show, 2-Shot, Chekicha, MNG, dan Video Call tidak perlu dicatat di sini karena sudah dihitung otomatis. Total Away ikut masuk ke sub-tab Ringkasan. <b>Disimpan di browser ini saja</b>: untuk membukanya di perangkat lain, unduh Backup lengkap (JSON) lalu Restore di sana.</p>
+  el.innerHTML = `<p class="tt-note">Hanya terlihat di admin. Catat pengeluaran saat fansfar (transportasi, penginapan, makan, belanja, dll). Tiket show, 2-Shot, Chekicha, MNG, dan Video Call tidak perlu dicatat di sini karena sudah dihitung otomatis. Total Away ikut masuk ke sub-tab Ringkasan. <b>Disimpan di browser ini saja</b>: untuk membukanya di perangkat lain, unduh Backup lengkap (JSON) lalu Restore di sana.</p>
     ${form}
     <div class="tt-years">${['', ...years].map(y => `<button type="button" class="tt-y${y === exYear ? ' on' : ''}" data-ey="${y}">${y || 'Semua tahun'}</button>`).join('')}</div>
     <div class="tt-hero"><div class="tt-big"><b class="ex-big">${rupiah(total)}</b><span>total Away${exYear ? ' ' + exYear : ''}</span><small>${list.length} catatan · ${tList.filter(x => x.n !== 'Tanpa nama perjalanan').length} perjalanan</small></div>
@@ -1405,12 +1405,12 @@ function renderTsEv() {
   if (!el) return;
   const all = tsEvList(), done = all.filter(t => t.photo).length;
   const list = tsevFilter === 'todo' ? all.filter(t => !t.photo) : tsevFilter === 'ts' ? all.filter(t => /2[- ]?shot/i.test(t.name)) : all;
-  el.innerHTML = `<div class="tsev-h"><h3 class="tt-h" style="margin:0">📸 Foto 2-Shot Event · ${done}/${all.length} sudah ada foto</h3>
+  el.innerHTML = `<div class="tsev-h"><h3 class="tt-h" style="margin:0">Foto 2-Shot Event · ${done}/${all.length} sudah ada foto</h3>
     <select id="tsev-f" aria-label="Filter"><option value="all"${tsevFilter === 'all' ? ' selected' : ''}>Semua event</option><option value="todo"${tsevFilter === 'todo' ? ' selected' : ''}>Belum ada foto</option><option value="ts"${tsevFilter === 'ts' ? ' selected' : ''}>Yang bernama 2-Shot saja</option></select></div>
     <p class="tt-note" style="margin:0 0 8px">Semua tiket kategori 2-Shot &amp; Meet &amp; Greet ditampilkan (festival M&amp;G biasanya sudah termasuk 2-Shot). Tanggal, member, dan nama event diambil dari data tiket. Tinggal unggah fotonya; foto langsung muncul di tab Galeri setelah dipublikasikan.</p>
-    ${list.map(t => `<div class="tsev-row">${t.photo ? `<img src="${esc(t.photo)}" alt="Foto" data-photo>` : '<span class="so-ph">📸</span>'}
+    ${list.map(t => `<div class="tsev-row">${t.photo ? `<img src="${esc(t.photo)}" alt="Foto" data-photo>` : '<span class="so-ph"></span>'}
       <span><b>${esc(t.member) || '-'}</b><small>${esc(fmtDate(t.date))}${t.start ? ' · ' + esc(t.start) : ''}${t.session ? ' · ' + esc(t.session) : ''}</small><small>${esc(tname(t))} · <i>${tsEvTag(t)}</i></small></span>
-      <span class="aw-b"><label class="btn-s tsev-up">${t.photo ? 'Ganti foto' : '⬆ Unggah foto'}<input type="file" accept="image/*" data-tkfile="${esc(tkey(t))}" aria-label="Unggah foto"></label>${t.photo ? `<button type="button" class="btn-s" data-tkrm="${esc(tkey(t))}">Hapus foto</button>` : ''}</span></div>`).join('') || `<div class="empty">${all.length ? 'Semua event sudah punya foto 🎉' : 'Belum ada tiket 2-Shot. Impor tiket dulu di tab Total Tiket.'}</div>`}`;
+      <span class="aw-b"><label class="btn-s tsev-up">${t.photo ? 'Ganti foto' : 'Unggah foto'}<input type="file" accept="image/*" data-tkfile="${esc(tkey(t))}" aria-label="Unggah foto"></label>${t.photo ? `<button type="button" class="btn-s" data-tkrm="${esc(tkey(t))}">Hapus foto</button>` : ''}</span></div>`).join('') || `<div class="empty">${all.length ? 'Semua event sudah punya foto ' : 'Belum ada tiket 2-Shot. Impor tiket dulu di tab Total Tiket.'}</div>`}`;
 }
 $('tsev').addEventListener('change', async e => {
   if (e.target.id === 'tsev-f') { tsevFilter = e.target.value; return renderTsEv(); }
@@ -1449,7 +1449,7 @@ function renderSolo() {
       <label class="aw-wide">Foto (opsional)<input type="file" id="so-file" accept="image/*">${soloPhoto ? `<span class="so-prev"><img src="${soloPhoto}" alt="Pratinjau foto"><button type="button" class="btn-s" data-sorm="1">Hapus foto</button></span>` : ''}</label>
       <label class="aw-wide">Catatan (opsional)<input id="so-note" placeholder="mis. event, momen, hasil foto" value="${esc(ed.note || '')}" autocomplete="off"></label>
       <div class="aw-act"><span class="tt-note" id="so-price" style="margin-right:auto"></span>${soloEdit ? '<button type="button" class="btn-s" data-socancel="1">Batal</button>' : ''}<button type="button" class="btn" data-sosave="1">${soloEdit ? 'Simpan perubahan' : '＋ Tambah'}</button></div></div>
-    <div><h3 class="tt-h">Semua sesi lepas · ${list.length} sesi · ${rupiah(total)}</h3>${list.map(w => `<div class="so-row">${w.photo ? `<img src="${esc(w.photo)}" alt="Foto" data-photo>` : '<span class="so-ph">📸</span>'}<span><b>${esc(soloLabel(w))}</b>${w.member ? ' dengan ' + esc(w.member) : ''}<small>${esc(fmtDate(w.date))}${w.setlist ? ' · ' + esc(w.setlist) : ''}${w.note ? ' · ' + esc(w.note) : ''}</small></span><b class="so-p">${rupiah(price(w))}</b><span class="aw-b"><button type="button" class="btn-s" data-soedit="${w.id}" aria-label="Ubah">✎</button><button type="button" class="btn-s" data-sodel="${w.id}" aria-label="Hapus">✕</button></span></div>`).join('') || '<div class="empty">Belum ada sesi lepas.</div>'}</div>`;
+    <div><h3 class="tt-h">Semua sesi lepas · ${list.length} sesi · ${rupiah(total)}</h3>${list.map(w => `<div class="so-row">${w.photo ? `<img src="${esc(w.photo)}" alt="Foto" data-photo>` : '<span class="so-ph"></span>'}<span><b>${esc(soloLabel(w))}</b>${w.member ? ' dengan ' + esc(w.member) : ''}<small>${esc(fmtDate(w.date))}${w.setlist ? ' · ' + esc(w.setlist) : ''}${w.note ? ' · ' + esc(w.note) : ''}</small></span><b class="so-p">${rupiah(price(w))}</b><span class="aw-b"><button type="button" class="btn-s" data-soedit="${w.id}" aria-label="Ubah">✎</button><button type="button" class="btn-s" data-sodel="${w.id}" aria-label="Hapus">✕</button></span></div>`).join('') || '<div class="empty">Belum ada sesi lepas.</div>'}</div>`;
   soloPrice();
 }
 function soloPrice() { // harga otomatis menurut jenis, tipe, dan bulan
