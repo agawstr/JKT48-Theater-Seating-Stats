@@ -509,3 +509,36 @@ body::before{content:'';position:fixed;inset:-10%;z-index:-1;pointer-events:none
 .hi{background:rgba(255,255,255,.07)}
 #story{background:linear-gradient(90deg,rgba(255,42,95,.16),rgba(255,255,255,.04));
   -webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);border:1px solid var(--g-line);border-radius:20px;box-shadow:var(--g-shadow)}
+
+/* ===== PERBAIKAN v2: lebar, garis stage-dermaga, nuansa merah ===== */
+/* 1) kotak cerita ikut lebar layar */
+#story{max-width:none;align-self:stretch;width:100%}
+
+/* 2) hilangkan garis antara stage & dermaga */
+.arena::before{display:none}
+.stage{box-shadow:0 -6px 24px rgba(255,42,95,.3),inset 0 1px 0 rgba(255,150,170,.35)}
+.catwalk{box-shadow:0 8px 20px rgba(255,42,95,.18),inset 1px 0 0 rgba(255,150,170,.2),inset -1px 0 0 rgba(255,150,170,.2),inset 0 -1px 0 rgba(255,150,170,.2)}
+
+/* 3) kaca bernuansa merah (bukan abu-abu) */
+:root{
+  --g-bg:linear-gradient(135deg,rgba(255,60,110,.20),rgba(136,19,55,.10) 60%,rgba(60,8,22,.25));
+  --g-bg-hi:linear-gradient(135deg,rgba(255,60,110,.30),rgba(136,19,55,.16));
+  --g-line:rgba(255,110,150,.28);
+  --g-blur:blur(20px) saturate(160%);
+  --g-shadow:0 8px 32px rgba(40,0,12,.55),inset 0 1px 0 rgba(255,170,190,.35),inset 0 -1px 0 rgba(255,60,110,.08);
+}
+.stage{background:linear-gradient(180deg,rgba(255,42,95,.42),rgba(136,19,55,.18))}
+.catwalk{background:linear-gradient(180deg,rgba(136,19,55,.4),rgba(60,8,22,.35))}
+.seat{background:linear-gradient(160deg,rgba(255,60,110,.16),rgba(60,8,22,.45));border:1px solid rgba(255,90,130,.22);color:#e8788f;
+  box-shadow:inset 0 1px 0 rgba(255,170,190,.25)}
+.seat.visited{background-blend-mode:normal;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 -6px 10px rgba(0,0,0,.12),0 0 14px rgba(255,140,0,.45)}
+.tab{color:#f0a9b9}
+.tab-ind{background:linear-gradient(135deg,rgba(255,60,110,.65),rgba(136,19,55,.55));border:1px solid rgba(255,130,165,.55);
+  box-shadow:0 4px 16px rgba(255,42,95,.4),inset 0 1px 0 rgba(255,200,215,.5)}
+.sl-bar,.cov-bar,.mc-b,.ls-b{background:rgba(60,8,22,.55)}
+.cd{background:rgba(255,60,110,.12)}
+.mchip{background:rgba(255,60,110,.18)}
+.stat.main,.ev-c.on,.last-c{background:linear-gradient(135deg,rgba(255,42,95,.45),rgba(255,140,0,.12))}
+.modal,#pop{background:linear-gradient(135deg,rgba(255,60,110,.2),rgba(136,19,55,.08)),rgba(28,8,16,.66)}
+.hi{background:rgba(255,60,110,.1)}
+#story{background:linear-gradient(90deg,rgba(255,42,95,.22),rgba(136,19,55,.08))}
