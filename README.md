@@ -36,9 +36,10 @@ Tanpa backend dan tanpa proses build: cukup file statis yang bisa di-hosting di 
 Tampilan dirancang supaya tetap lancar di HP kelas menengah:
 
 - **Blur kaca (`backdrop-filter`) hanya dipakai di elemen yang jumlahnya sedikit** (tab bar, modal, pil filter), dan dimatikan di layar sentuh. Kartu, daftar, dan kursi memakai warna semi-solid yang tampilannya mirip tetapi jauh lebih ringan.
-- **Render malas**: tab Riwayat, Galeri, dan Tiket & Event hanya digambar ulang saat dibuka setelah data/filter berubah, jadi mengubah filter di peta tidak membangun ulang ratusan elemen yang tidak terlihat.
+- **Render malas**: tab Riwayat, Galeri, dan Tiket & Event yang tidak sedang dibuka digambar ulang saat browser menganggur (bukan saat kamu pindah tab), jadi mengubah filter di peta tidak membangun ulang ratusan elemen yang tidak terlihat.
 - **Animasi hanya memakai `transform` dan `opacity`**. Pindah tab = satu gerakan geser-pudar singkat, lalu isinya muncul bertahap (maksimal beberapa item pertama), dan halaman otomatis kembali ke atas supaya isi baru tidak muncul di tengah.
 - Daftar tiket memakai `content-visibility: auto`; foto galeri `loading="lazy"` + `decoding="async"` dan memudar masuk setelah dimuat.
+- **Animasi ala iOS**: kurva pegas yang sama di semua gerakan. Di HP, detail kursi muncul sebagai **lembar bawah** (bottom sheet) yang bisa ditarik ke bawah untuk menutup. Foto di dalamnya punya tempat tetap + skeleton lalu memudar masuk (tidak muncul tiba-tiba), dan saat diketuk foto **membesar dari posisinya** ke layar penuh.
 - Efek hover (naik, miring, sorot cahaya) dimatikan di perangkat tanpa mouse.
 - Peta kursi di HP otomatis muat selebar layar (cubit dua jari atau tombol + untuk memperbesar, **Pas layar** untuk kembali); di laptop peta mengecil otomatis jika jendela sempit. Halaman tidak pernah bergeser ke samping.
 - Filter tanggal punya label "Mulai tanggal" dan "Sampai tanggal" dengan tulisan "Pilih tanggal" saat kosong.
