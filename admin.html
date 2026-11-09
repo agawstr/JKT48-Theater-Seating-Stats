@@ -433,17 +433,37 @@ button.tt-c{font:inherit;color:inherit;text-align:left;cursor:pointer}
 // Data lama di localStorage otomatis dipindah (hanya kunci "jkt48*"), lalu salinan lamanya dihapus.
 const stor = (() => {
   const mem = new Map();
-  let db = null, chain = Promise.resolve(), warned = false;
-  const warn = e => { if (!warned) { warned = true; alert('Gagal menyimpan ke penyimpanan browser (' + (e && e.message || e) + '). Unduh Backup lengkap (JSON) sekarang supaya data aman.'); } };
-  const tx = (mode, fn) => new Promise((res, rej) => { const t = db.transaction('kv', mode); fn(t.objectStore('kv')); t.oncomplete = () => res(); t.onerror = t.onabort = () => rej(t.error || new Error('transaksi gagal')); });
+  let db = null, pending = 0, warned = false, hideT = 0;
+  // lencana kecil: "Menyimpan…" selama ada penulisan yang belum selesai, lalu "Tersimpan"
+  const badge = (txt, cls) => { let b = document.getElementById('stor-badge'); if (!b) { b = document.createElement('div'); b.id = 'stor-badge'; b.setAttribute('role', 'status'); b.style.cssText = 'position:fixed;right:12px;bottom:12px;z-index:99999;padding:6px 12px;border-radius:999px;font:600 12px system-ui,sans-serif;background:#1b1116;border:1px solid #3a2530;color:#e4e4e7;pointer-events:none'; document.body.appendChild(b); } clearTimeout(hideT); b.textContent = txt; b.style.color = cls === 'err' ? '#fca5a5' : cls === 'ok' ? '#86efac' : '#fde68a'; b.hidden = false; if (cls === 'ok') hideT = setTimeout(() => { b.hidden = true; }, 1800); };
+  const warn = e => { badge('⚠ Gagal menyimpan', 'err'); if (!warned) { warned = true; alert('Gagal menyimpan ke penyimpanan browser (' + (e && e.message || e) + '). Unduh Backup lengkap (JSON) sekarang supaya data aman.'); } };
+  // transaksi dibuka saat itu juga (tidak antre), supaya tetap diselesaikan browser walau halaman langsung di-refresh
+  const write = fn => {
+    let t;
+    pending++; badge('💾 Menyimpan…', 'wait');
+    try { t = db.transaction('kv', 'readwrite'); fn(t.objectStore('kv')); } catch (e) { pending--; warn(e); return; }
+    t.oncomplete = () => { if (--pending === 0) badge('✓ Tersimpan', 'ok'); };
+    t.onerror = t.onabort = () => { pending--; warn(t.error); };
+  };
+  window.addEventListener('beforeunload', e => { if (pending > 0) { e.preventDefault(); e.returnValue = ''; } });
+  const chan = 'BroadcastChannel' in window ? new BroadcastChannel('jkt48_admin') : null;
+  const tell = () => { try { chan && chan.postMessage('changed'); } catch (e) { /* abaikan */ } };
+  if (chan) chan.onmessage = () => { // tab lain mengubah data: tab ini sekarang usang, jangan sampai menimpa
+    if (document.getElementById('stale-bar')) return;
+    const b = document.createElement('div'); b.id = 'stale-bar'; b.setAttribute('role', 'alert');
+    b.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:99999;padding:10px 14px;background:#7c2d12;color:#fff;font:600 13px system-ui,sans-serif;text-align:center';
+    b.innerHTML = 'Data diubah di tab lain. <button type="button" style="margin-left:8px;padding:4px 10px;border-radius:8px;border:0;font-weight:700">Muat ulang</button>';
+    b.querySelector('button').onclick = () => location.reload();
+    document.body.appendChild(b);
+  };
   const api = {
     getItem: k => (mem.has(k) ? mem.get(k) : null),
     setItem(k, v) {
       v = String(v); mem.set(k, v);
-      if (db) chain = chain.then(() => tx('readwrite', st => st.put(v, k))).catch(warn);
+      if (db) { write(st => st.put(v, k)); tell(); }
       else window.localStorage.setItem(k, v); // cadangan bila IndexedDB tidak tersedia: perilaku lama (bisa melempar error saat penuh)
     },
-    removeItem(k) { mem.delete(k); if (db) chain = chain.then(() => tx('readwrite', st => st.delete(k))).catch(warn); else window.localStorage.removeItem(k); },
+    removeItem(k) { mem.delete(k); if (db) { write(st => st.delete(k)); tell(); } else window.localStorage.removeItem(k); },
     mode: 'localStorage',
     ready: (async () => {
       try {
@@ -452,7 +472,7 @@ const stor = (() => {
         // migrasi dari localStorage: salin dulu, hapus salinan lama hanya setelah tertulis di IndexedDB
         const old = [];
         for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith('jkt48') && !mem.has(k)) old.push(k); }
-        for (const k of old) { const v = localStorage.getItem(k); mem.set(k, v); await tx('readwrite', st => st.put(v, k)); localStorage.removeItem(k); }
+        for (const k of old) { const v = localStorage.getItem(k); await new Promise((res, rej) => { const t = db.transaction('kv', 'readwrite'); t.objectStore('kv').put(v, k); t.oncomplete = res; t.onerror = t.onabort = () => rej(t.error); }); mem.set(k, v); localStorage.removeItem(k); }
         api.mode = 'indexedDB';
         if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
       } catch (e) {
@@ -511,7 +531,7 @@ async function showStorage() {
     const e = await navigator.storage.estimate(), el = $('backup-note');
     if (!e || !e.quota || !el || !records.length) return;
     const mb = n => (n / 1048576).toFixed(n < 10485760 ? 1 : 0);
-    el.textContent = (el.dataset.base || '') + ` · penyimpanan ${mb(e.usage)} MB dari ±${mb(e.quota)} MB`;
+    el.textContent = (el.dataset.base || '') + ` · ${stor.mode === 'indexedDB' ? 'IndexedDB' : 'localStorage'} · penyimpanan ${mb(e.usage)} MB dari ±${mb(e.quota)} MB`;
   } catch (err) { /* tidak didukung */ }
 }
 
@@ -845,7 +865,7 @@ $('file-import').addEventListener('change', async e => {
     if (!Array.isArray(arr)) throw new Error('Format bukan array');
     if (!Array.isArray(json) && Array.isArray(json.tickets)) mergeTickets(json.tickets);
     if (!Array.isArray(json) && json.prices && json.prices.base) { prices = {base: {...DEF_PRICES.base, ...json.prices.base}, over: Array.isArray(json.prices.over) ? json.prices.over : []}; savePrices(); renderExpense(); }
-    if (!Array.isArray(json) && Array.isArray(json.misc)) { const ids = new Set(misc.map(w => w.id)); json.misc.map(cleanMisc).filter(w => (w.date || miscByName(w.kind)) && !ids.has(w.id)).forEach(w => misc.push(w)); }
+    if (!Array.isArray(json) && Array.isArray(json.misc)) { const ids = new Set(misc.map(w => w.id)); json.misc.map(cleanMisc).filter(w => (w.date || miscByName(w.kind)) && !ids.has(w.id)).forEach(w => misc.push(w)); saveMisc(); }
     if (!Array.isArray(json) && Array.isArray(json.away)) { const ids = new Set(away.map(w => w.id)); json.away.map(cleanAway).filter(w => w.date && !ids.has(w.id)).forEach(w => away.push(w)); saveAway(); }
     if (!Array.isArray(json) && (Array.isArray(json.away) || Array.isArray(json.misc))) { moveOffair(); renderAway(); renderMisc(); renderExpense(); }
     if (!Array.isArray(json) && Array.isArray(json.solo)) { const ids = new Set(solo.map(w => w.id)); json.solo.map(sanitizeSolo).filter(w => w.date && !ids.has(w.id)).forEach(w => solo.push(w)); saveSolo(); renderSolo(); renderExpense(); }
