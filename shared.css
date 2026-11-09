@@ -569,3 +569,7 @@ body::before{content:'';position:fixed;inset:-10%;z-index:-1;pointer-events:none
 .btn-s,.gk,.tab,.info-btn{transition:transform .3s var(--spring),background .3s,border-color .3s,color .3s,box-shadow .3s}
 .sl-bar i,.cov-bar i,.mc-b i{transition-duration:.8s;transition-timing-function:var(--ease)}
 .shown .sl-bar i,.shown .mc-b i{animation-duration:1s;animation-timing-function:var(--ease)}
+
+/* galeri: foto selalu muncul bertahap (juga saat ganti sub-tab / filter member), tab tanpa memantul */
+#gallery .gi{animation:rise .7s var(--ease) backwards;animation-delay:calc(var(--i,0) * 45ms)}
+.tab-ind{transition:transform .5s var(--ease),width .5s var(--ease)}
