@@ -79,32 +79,3 @@ Data di admin tersimpan di browser yang dipakai untuk input. Kalau pindah perang
     "ckPhoto": ""
   }
 ]
-```
-
-- `seat`: kode kursi seperti `A-19`. Kursi yang tidak ada di peta dilewati di halaman publik.
-- `sesi`: `Siang`, `Malam`, atau kosong. `harga` dan `tiket` opsional.
-- `tsType` / `ckType`: `birthday` atau `roulette`.
-- `photo` / `ckPhoto`: path relatif seperti `photos/...`, URL `http(s)`, atau data URL gambar. Opsional.
-
-## Hosting di GitHub Pages
-
-1. Buka **Settings → Pages**.
-2. Pada **Source**, pilih **Deploy from a branch**, branch `main`, folder `/ (root)`.
-3. Simpan. Situs tersedia di `https://<username>.github.io/<nama-repo>/`.
-
-Untuk menjalankan secara lokal, `index.html` memakai `fetch` sehingga tidak bisa dibuka lewat `file://`. Jalankan `python -m http.server`, lalu buka `http://localhost:8000`.
-
-## Kustomisasi
-
-- **Layout kursi:** ubah objek `COUNTS` di `shared.js` (jumlah kursi per blok di tiap baris). Kedua halaman otomatis mengikuti.
-- **Jenis tambahan** selain 2-Shot dan Chekicha: tambah satu objek di array `KINDS` di `shared.js`.
-- **Warna heatmap:** ubah array `HEAT` di `shared.js`.
-- **Judul halaman:** ubah di `index.html` dan `admin.html`.
-
-## Catatan privasi
-
-Repo publik berarti `data.json` dan folder `photos/` (termasuk foto dan nama member) bisa dilihat siapa saja yang tahu URL-nya. Hapus data yang tidak ingin dipublikasikan sebelum meng-upload.
-
-## Catatan
-
-Proyek penggemar, tidak berafiliasi dengan JKT48 maupun manajemennya.
