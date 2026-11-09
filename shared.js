@@ -39,9 +39,9 @@ const okPhoto = p => typeof p === 'string' && (p.startsWith('data:image/') || /^
 // foto penuh: photos/X.jpg, versi kecil (untuk galeri/modal): photos/t/X.jpg; kalau thumbnail belum ada, otomatis memakai foto penuh
 const thumbOf = p => /^photos\/[\w.-]+$/.test(p) ? p.replace('photos/', 'photos/t/') : p;
 const KINDS = [
-  {k:'ts', q:'2-Shot?', name:'2-Shot', icon:'📸', f:'twoshot', t:'tsType', m:'member', p:'photo',
+  {k:'ts', q:'2-Shot?', name:'2-Shot', icon:'', f:'twoshot', t:'tsType', m:'member', p:'photo',
    types:[['birthday','Birthday 2-Shot'],['roulette','2-Shot Roulette']], short:{birthday:'Birthday 2-Shot', roulette:'2-Shot'}},
-  {k:'ck', q:'Chekicha?', name:'Chekicha', icon:'🎴', f:'chekicha', t:'ckType', m:'ckMember', p:'ckPhoto',
+  {k:'ck', q:'Chekicha?', name:'Chekicha', icon:'', f:'chekicha', t:'ckType', m:'ckMember', p:'ckPhoto',
    types:[['birthday','Birthday Chekicha'],['roulette','Roulette Chekicha']], short:{birthday:'Birthday Chekicha', roulette:'Chekicha'}}
 ];
 // daftar 2-Shot / Chekicha yang aktif di satu record (roulette ditampilkan singkat)
@@ -93,7 +93,7 @@ const lazyDone = {}, lazyStale = {};
 function lazyView(viewId, fn) {
   const v = $(viewId);
   if (v && v.hidden && lazyDone[viewId]) { lazyStale[viewId] = fn; return; }
-  lazyDone[viewId] = true; delete lazyStale[viewId];
+  lazyDone[viewId] = dataLoaded; delete lazyStale[viewId]; // baru dianggap "sudah digambar" kalau data sungguhan sudah ada
   fn();
 }
 function flushLazy(viewId) { const fn = lazyStale[viewId]; if (fn) { delete lazyStale[viewId]; fn(); } }
@@ -132,18 +132,21 @@ function renderChartRaw() {
   requestAnimationFrame(centerChart);
 }
 
-let mapScale = 1; // zoom peta di HP (cubit dua jari / tombol)
+let mapScale = 1, mapAuto = true; // zoom peta di HP (cubit dua jari / tombol); mapAuto = otomatis pas lebar layar
 function fitChart() {
   const w = $('seating-wrapper'), c = $('stage-container');
   c.style.zoom = '';
   if (!w.clientWidth) return; // tab tersembunyi
-  if (window.innerWidth > 768 && c.scrollWidth > w.clientWidth) c.style.zoom = (w.clientWidth / c.scrollWidth).toFixed(3);
-  if (window.innerWidth > 768) mapScale = 1; else if (mapScale !== 1) c.style.zoom = mapScale;
+  const fit = Math.min(1, w.clientWidth / c.scrollWidth);
+  if (window.innerWidth > 768) { mapScale = 1; if (fit < 1) c.style.zoom = fit.toFixed(3); return; }
+  if (mapAuto) mapScale = fit; // HP: peta langsung muat selebar layar; cubit / tombol + untuk memperbesar
+  else mapScale = Math.max(fit, mapScale);
+  if (mapScale !== 1) c.style.zoom = mapScale.toFixed(3);
 }
 function centerChart() {
   fitChart();
   const w = $('seating-wrapper'), c = $('stage-container');
-  if (mapScale !== 1 && window.innerWidth <= 768) return; // sedang di-zoom: jangan pindahkan posisi geser
+  if (window.innerWidth <= 768 && !mapAuto) return; // sedang di-zoom manual: jangan pindahkan posisi geser
   w.scrollLeft = (c.scrollWidth - w.clientWidth) / 2;
 }
 window.addEventListener('resize', centerChart);
@@ -286,7 +289,8 @@ wrapEl.insertAdjacentHTML('beforebegin', `<div id="last"></div><div id="stats"><
   <div id="filters">
     <select id="flt-setlist" aria-label="Filter setlist"></select>
     <select id="flt-member" aria-label="Filter member"></select>
-    <input type="date" id="flt-from" aria-label="Dari tanggal"><input type="date" id="flt-to" aria-label="Sampai tanggal">
+    <label class="fld" id="fld-from"><span class="fl">Mulai tanggal</span><span class="fv" aria-hidden="true">Pilih tanggal</span><input type="date" id="flt-from"></label>
+    <label class="fld" id="fld-to"><span class="fl">Sampai tanggal</span><span class="fv" aria-hidden="true">Pilih tanggal</span><input type="date" id="flt-to"></label>
     <button type="button" class="btn-s" id="flt-reset">Reset</button><span id="flt-info"></span>
   </div>`);
 wrapEl.insertAdjacentHTML('afterend', `<div id="legend"></div>
@@ -294,8 +298,10 @@ wrapEl.insertAdjacentHTML('afterend', `<div id="legend"></div>
   <h2 class="sec">Sebaran per baris <button type="button" class="info-btn" aria-label="Keterangan" aria-expanded="false">ⓘ</button><small class="hint" hidden>· klik batang untuk memfilter peta</small></h2><div id="rchart"></div><div id="rsum"></div>
   <h2 class="sec">Kalender kehadiran <button type="button" class="info-btn" aria-label="Keterangan" aria-expanded="false">ⓘ</button><small class="hint" hidden>· klik tanggal yang berwarna untuk memfilter peta</small></h2><div id="cal-nav"></div><div id="cal"></div>
   <h2 class="sec" id="mc-h">Kunjungan per bulan</h2><div id="mchart"></div>`);
-$('flt-from').value = filter.from;
-$('flt-to').value = filter.to;
+function syncDates() { // tandai kolom tanggal yang kosong supaya tampil tulisan "Pilih tanggal"
+  [['from', 'fld-from'], ['to', 'fld-to']].forEach(([k, id]) => { $('flt-' + k).value = filter[k]; $(id).classList.toggle('empty', !filter[k]); });
+}
+syncDates();
 const heatLegend = () => HEAT.map((h, i) =>
   `<span class="lg"><i style="background:${h.bg};border-color:${h.bd}"></i>${heatLabel(h, i)}</span>`).join('');
 $('legend').innerHTML = 'Jumlah kunjungan: <span id="lg-scale">' + heatLegend() + '</span>' +
@@ -312,11 +318,11 @@ function renderFilters() {
 }
 $('filters').addEventListener('change', e => {
   const k = {'flt-setlist': 'setlist', 'flt-member': 'member', 'flt-from': 'from', 'flt-to': 'to'}[e.target.id];
-  if (k) { filter[k] = e.target.value; renderChart(); }
+  if (k) { filter[k] = e.target.value; syncDates(); renderChart(); }
 });
 $('flt-reset').addEventListener('click', () => {
   Object.keys(filter).forEach(k => filter[k] = '');
-  $('flt-from').value = $('flt-to').value = '';
+  $('flt-from').value = $('flt-to').value = ''; $('fld-from').classList.add('empty'); $('fld-to').classList.add('empty');
   renderChart();
 });
 
@@ -482,7 +488,7 @@ function renderGallery() {
   if (!g) return;
   const soloItems = solo.filter(w => w.photo).map(w => { const K = KINDS.find(k => k.k === w.kind); return {label: K.short[w.type], icon: K.icon, member: w.member, photo: w.photo, k: w.kind, solo: true, r: {id: w.id, date: w.date, sesi: '', setlist: w.setlist || 'Di luar show'}}; });
   // foto 2-Shot event: tanggal, member, dan nama event diambil dari data tiket yang sudah ada
-  const evItems = tickets.filter(t => t.photo).map((t, i) => ({label: '2-Shot Event', icon: '📸', member: t.member, photo: t.photo, k: 'ev', ev: true, r: {id: i, date: t.date, sesi: '', setlist: tname(t)}}));
+  const evItems = tickets.filter(t => t.photo).map((t, i) => ({label: '2-Shot Event', icon: '', member: t.member, photo: t.photo, k: 'ev', ev: true, r: {id: i, date: t.date, sesi: '', setlist: tname(t)}}));
   const items = [...records.flatMap(r => extras(r).filter(x => x.photo).map(x => ({...x, r}))), ...soloItems, ...evItems].sort((a, b) => cmp(a.r, b.r));
   const sel = $('g-member'), cur = sel.value;
   const inK = x => !galKind || x.k === galKind; // sub-tab Galeri: Semua / 2-Shot / 2-Shot Event / Chekicha
@@ -493,7 +499,7 @@ function renderGallery() {
   $('g-info').textContent = `${list.length} foto`;
   if ($('g-tab') && dataLoaded) $('g-tab').textContent = `Galeri (${items.length})`;
   g.innerHTML = list.length ? list.map((x, i) => `<figure class="gi" data-k="${esc(x.k)}" style="--i:${Math.min(i, 9)};--t:${(i * 37 % 9) - 4}deg"><div class="gi-ph"><img src="${esc(thumbOf(x.photo))}" data-full="${esc(x.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="${esc(x.label)} dengan ${esc(x.member)}" loading="lazy" decoding="async"></div>
-    <figcaption><b class="gi-n">${esc(x.member) || '-'}</b><span class="gi-tag">${x.icon} ${esc(x.label)}</span><span class="gi-m">${esc(x.r.setlist)}</span><time class="gi-d">${esc(fmtDate(x.r.date))}</time>${x.solo ? '<span class="gi-x">di luar show</span>' : ''}</figcaption></figure>`).join('')
+    <figcaption><b class="gi-n">${esc(x.member) || '-'}</b><span class="gi-tag">${esc(x.label)}</span><span class="gi-m">${esc(x.r.setlist)}</span><time class="gi-d">${esc(fmtDate(x.r.date))}</time>${x.solo ? '<span class="gi-x">di luar show</span>' : ''}</figcaption></figure>`).join('')
     : '<div class="empty">Belum ada foto</div>';
 }
 $('g-member')?.addEventListener('change', renderGallery);
@@ -609,7 +615,7 @@ function renderTimeline() {
     html += `<div class="tl-i${ms ? ' ms' : ''}" data-id="${r.id}" data-seat="${esc(r.seat)}" style="--i:${Math.min(cnt++, 8)}">
       <div class="tl-d"><b>${esc(r.date.slice(8)) || '–'}</b><span>${esc(r.sesi)}</span></div>
       <div class="tl-b"><div class="tl-t">${esc(r.setlist) || '(tanpa setlist)'}</div>
-        ${ms || ex.length || lt || r.harga ? `<div class="tl-chips">${ms ? `<span class="tc star">★ Show ke-${n}</span>` : ''}${ex.map(x => `<span class="tc ${x.k}">${x.icon} ${esc(x.label)}${x.member ? ' · ' + esc(x.member) : ''}</span>`).join('')}${lt ? `<span class="tc lot">${esc(lt)}</span>` : ''}${r.harga ? `<span class="tc">${esc(rupiah(r.harga))}${r.tiket ? ' · ' + esc(r.tiket) : ''}</span>` : ''}</div>` : ''}
+        ${ms || ex.length || lt || r.harga ? `<div class="tl-chips">${ms ? `<span class="tc star">Show ke-${n}</span>` : ''}${ex.map(x => `<span class="tc ${x.k}">${esc(x.label)}${x.member ? ' · ' + esc(x.member) : ''}</span>`).join('')}${lt ? `<span class="tc lot">${esc(lt)}</span>` : ''}${r.harga ? `<span class="tc">${esc(rupiah(r.harga))}${r.tiket ? ' · ' + esc(r.tiket) : ''}</span>` : ''}</div>` : ''}
         ${r.note ? `<div class="tl-n">“${esc(r.note)}”</div>` : ''}</div>
       <button type="button" class="seat-badge tl-s" data-seat="${esc(r.seat)}" aria-label="Lihat kursi ${esc(r.seat)}">${esc(r.seat)}</button></div>`;
   }
@@ -854,7 +860,7 @@ function renderTicketsRaw() {
   const shPct = shDone ? sh.win / shDone * 100 : 0;
   const shCard = shDone ? `<div class="stat main"><div class="ring" style="--p:${shPct.toFixed(1)}"><svg viewBox="0 0 36 36" aria-hidden="true"><circle class="rb" cx="18" cy="18" r="15.9"/><circle class="rf" cx="18" cy="18" r="15.9" pathLength="100"/></svg><span>${shPct.toFixed(1).replace(/\.0$/, '')}%</span></div><div class="sl">Persentase menang (show teater)</div><div class="ss">${sh.win} dari ${shDone} yang sudah diundi${tw && tw.win + tw.lose ? ' · termasuk ' + (tw.win + tw.lose) + ' tiket event teater' : ''}</div></div>` : '';
   box.innerHTML = !ls.total ? '<div class="empty">Belum ada data lotre</div>' :
-    `<div class="lot-cards">${card('Entri lotre', ls.total)}${card(ls.inferred ? 'Menang (perkiraan)' : 'Menang', ls.win, refs.length ? `${refs.length} dibatalkan & di-refund` : '')}${card('Kalah', ls.lose)}${shCard}${card('Persentase menang (semua jenis)', done ? ls.pct.toFixed(1) + '%' : '-', done ? `${ls.win} dari ${done} yang sudah diundi` : '')}</div>` +
+    `<div class="lot-cards">${shCard}${card('Entri lotre', ls.total)}${card(ls.inferred ? 'Menang (perkiraan)' : 'Menang', ls.win, refs.length ? `${refs.length} dibatalkan & di-refund` : '')}${card('Kalah', ls.lose)}${card('Persentase menang (semua jenis)', done ? ls.pct.toFixed(1) + '%' : '-', done ? `${ls.win} dari ${done} yang sudah diundi` : '')}</div>` +
     Object.entries(ls.by).map(([ty, b]) => {
       const d = b.win + b.lose, p = d ? b.win / d * 100 : 0;
       return `<div class="lot-r"><span>${names[ty] || esc(ty)}</span><span class="sl-bar"><i style="width:${p}%"></i></span><span>${b.win ? b.win + ' menang' : '0 menang terdeteksi'} · ${b.lose} kalah${d && b.win ? ` (${p.toFixed(0)}%)` : ''}</span></div>`;
@@ -966,7 +972,7 @@ function applyChartFilter(kind, val) {
     }
     const same = filter.from === from && filter.to === to; // klik lagi = lepas filter
     filter.from = same ? '' : from; filter.to = same ? '' : to;
-    $('flt-from').value = filter.from; $('flt-to').value = filter.to;
+    syncDates();
   }
   renderChart();
   $('filters').scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start'});
@@ -1221,6 +1227,7 @@ function setMapScale(s, px) { // px = titik (relatif ke wadah peta) yang diperta
   c.style.zoom = '';
   const natural = c.scrollWidth, min = Math.min(1, w.clientWidth / natural);
   mapScale = Math.max(min, Math.min(2.4, s));
+  mapAuto = mapScale <= min + .001; // kembali ke ukuran pas = mode otomatis lagi
   c.style.zoom = mapScale === 1 ? '' : mapScale;
   w.scrollLeft = anchor * mapScale - px;
 }
