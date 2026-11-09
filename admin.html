@@ -428,6 +428,46 @@ button.tt-c{font:inherit;color:inherit;text-align:left;cursor:pointer}
 </div>
 <script src="shared.js"></script>
 <script>
+// ---------- Penyimpanan: IndexedDB (kuota besar) dengan antarmuka sama seperti localStorage ----------
+// Data dibaca sekali ke memori, lalu setiap perubahan ditulis ke IndexedDB di belakang layar.
+// Data lama di localStorage otomatis dipindah (hanya kunci "jkt48*"), lalu salinan lamanya dihapus.
+const stor = (() => {
+  const mem = new Map();
+  let db = null, chain = Promise.resolve(), warned = false;
+  const warn = e => { if (!warned) { warned = true; alert('Gagal menyimpan ke penyimpanan browser (' + (e && e.message || e) + '). Unduh Backup lengkap (JSON) sekarang supaya data aman.'); } };
+  const tx = (mode, fn) => new Promise((res, rej) => { const t = db.transaction('kv', mode); fn(t.objectStore('kv')); t.oncomplete = () => res(); t.onerror = t.onabort = () => rej(t.error || new Error('transaksi gagal')); });
+  const api = {
+    getItem: k => (mem.has(k) ? mem.get(k) : null),
+    setItem(k, v) {
+      v = String(v); mem.set(k, v);
+      if (db) chain = chain.then(() => tx('readwrite', st => st.put(v, k))).catch(warn);
+      else window.localStorage.setItem(k, v); // cadangan bila IndexedDB tidak tersedia: perilaku lama (bisa melempar error saat penuh)
+    },
+    removeItem(k) { mem.delete(k); if (db) chain = chain.then(() => tx('readwrite', st => st.delete(k))).catch(warn); else window.localStorage.removeItem(k); },
+    mode: 'localStorage',
+    ready: (async () => {
+      try {
+        db = await new Promise((res, rej) => { const r = indexedDB.open('jkt48_admin', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+        await new Promise((res, rej) => { const c = db.transaction('kv').objectStore('kv').openCursor(); c.onsuccess = () => { const x = c.result; if (x) { mem.set(x.key, x.value); x.continue(); } else res(); }; c.onerror = () => rej(c.error); });
+        // migrasi dari localStorage: salin dulu, hapus salinan lama hanya setelah tertulis di IndexedDB
+        const old = [];
+        for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith('jkt48') && !mem.has(k)) old.push(k); }
+        for (const k of old) { const v = localStorage.getItem(k); mem.set(k, v); await tx('readwrite', st => st.put(v, k)); localStorage.removeItem(k); }
+        api.mode = 'indexedDB';
+        if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+      } catch (e) {
+        console.error('IndexedDB tidak tersedia, memakai localStorage', e);
+        db = null; mem.clear();
+        for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith('jkt48')) mem.set(k, localStorage.getItem(k)); }
+      }
+    })()
+  };
+  return api;
+})();
+// halaman utama dijalankan setelah penyimpanan siap (data sudah ada di memori)
+stor.ready.then(() => { const s = document.createElement('script'); s.textContent = document.getElementById('main-src').textContent; document.body.appendChild(s); });
+</script>
+<script type="text/plain" id="main-src">
 const KEY = 'jkt48_theater_stats_v5';
 const OLD_KEYS = ['jkt48_theater_stats_v4']; // migrasi otomatis dari versi lama
 
@@ -435,12 +475,12 @@ const OLD_KEYS = ['jkt48_theater_stats_v4']; // migrasi otomatis dari versi lama
 function load() {
   for (const k of [KEY, ...OLD_KEYS]) {
     try {
-      const raw = localStorage.getItem(k);
+      const raw = stor.getItem(k);
       if (!raw) continue;
       const arr = JSON.parse(raw);
       if (Array.isArray(arr)) {
         const data = arr.map(sanitize);
-        if (k !== KEY) localStorage.setItem(KEY, JSON.stringify(data));
+        if (k !== KEY) stor.setItem(KEY, JSON.stringify(data));
         return data;
       }
     } catch (e) { console.error(e); }
@@ -448,13 +488,13 @@ function load() {
   return [];
 }
 records = load();
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(records)); bumpDirty(); } catch (e) { alert('Gagal menyimpan (storage penuh?). Backup dulu lewat tombol Backup. ' + e.message); } };
+const save = () => { try { stor.setItem(KEY, JSON.stringify(records)); bumpDirty(); } catch (e) { alert('Gagal menyimpan (storage penuh?). Backup dulu lewat tombol Backup. ' + e.message); } };
 
 // ---------- Pengingat backup: hitung perubahan sejak terakhir diunduh ----------
 const DK = KEY + '_backup';
-const bk = () => { try { return JSON.parse(localStorage.getItem(DK)) || {}; } catch (e) { return {}; } };
-function bumpDirty() { const b = bk(); b.dirty = (b.dirty || 0) + 1; localStorage.setItem(DK, JSON.stringify(b)); renderBackup(); }
-function markExported() { localStorage.setItem(DK, JSON.stringify({at: Date.now(), dirty: 0})); renderBackup(); }
+const bk = () => { try { return JSON.parse(stor.getItem(DK)) || {}; } catch (e) { return {}; } };
+function bumpDirty() { const b = bk(); b.dirty = (b.dirty || 0) + 1; stor.setItem(DK, JSON.stringify(b)); renderBackup(); }
+function markExported() { stor.setItem(DK, JSON.stringify({at: Date.now(), dirty: 0})); renderBackup(); }
 function renderBackup() {
   const b = bk(), d = b.at ? Math.floor((Date.now() - b.at) / 864e5) : null, el = $('backup-note');
   const parts = [];
@@ -462,6 +502,17 @@ function renderBackup() {
   parts.push(b.at ? `terakhir diunduh ${d ? d + ' hari lalu' : 'hari ini'}` : 'belum pernah diunduh ke data.json');
   el.textContent = records.length ? parts.join(' · ') : '';
   el.className = (b.dirty || !b.at || d >= 7) ? 'warn' : '';
+  el.dataset.base = el.textContent;
+  showStorage();
+}
+// indikator pemakaian penyimpanan browser (perkiraan)
+async function showStorage() {
+  try {
+    const e = await navigator.storage.estimate(), el = $('backup-note');
+    if (!e || !e.quota || !el || !records.length) return;
+    const mb = n => (n / 1048576).toFixed(n < 10485760 ? 1 : 0);
+    el.textContent = (el.dataset.base || '') + ` · penyimpanan ${mb(e.usage)} MB dari ±${mb(e.quota)} MB`;
+  } catch (err) { /* tidak didukung */ }
 }
 
 // ---------- Modal ----------
@@ -550,7 +601,7 @@ function setPhoto(k, d) {
   $('pi-' + k).src = cur[k];
   $('pv-' + k).style.display = cur[k] ? 'flex' : 'none';
 }
-// Kompres foto (maks 900px, JPEG) supaya hemat localStorage
+// Kompres foto (maks 900px, JPEG) supaya hemat stor
 function compress(file, max = 900, q = 0.75) {
   return new Promise((res, rej) => {
     const url = URL.createObjectURL(file), img = new Image();
@@ -723,11 +774,11 @@ function makeZip(files) {
 }
 // Paket publish: data.json tanpa base64 + folder photos/ berisi foto sebagai file
 const POK = KEY + '_pub';
-const pubOpts = () => { try { return JSON.parse(localStorage.getItem(POK)) || {}; } catch (e) { return {}; } };
+const pubOpts = () => { try { return JSON.parse(stor.getItem(POK)) || {}; } catch (e) { return {}; } };
 ['tickets', 'photos', 'mask'].forEach(k => {
   const el = $('po-' + k), o = pubOpts();
   if (k in o) el.checked = o[k];
-  el.addEventListener('change', () => { const x = pubOpts(); x[k] = el.checked; localStorage.setItem(POK, JSON.stringify(x)); });
+  el.addEventListener('change', () => { const x = pubOpts(); x[k] = el.checked; stor.setItem(POK, JSON.stringify(x)); });
 });
 $('btn-zip').addEventListener('click', async () => {
   const btn = $('btn-zip'), label = btn.textContent;
@@ -830,7 +881,7 @@ const localDay = d => [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'
 function jkCode() { // kode Console; mode "baru saja" memakai tanggal impor terakhir dikurangi 30 hari (untuk menangkap status terpakai/kalah yang berubah)
   let since = '';
   try {
-    const last = localStorage.getItem('jkt48_last_import');
+    const last = stor.getItem('jkt48_last_import');
     if ($('jk-new').checked && last && tickets.length) { const d = new Date(last + 'T00:00:00'); d.setDate(d.getDate() - 30); since = localDay(d); }
   } catch (e) {}
   return $('jk-src').textContent.trim().replace('__SINCE__', since);
@@ -898,14 +949,14 @@ function mergeTickets(list) { // kunci sama = diperbarui, sisanya ditambah; tike
     m.set(tkey(t), t);
   });
   tickets = [...m.values()];
-  try { localStorage.setItem(KEY + '_tickets', JSON.stringify(tickets)); } catch (e) { alert('Gagal menyimpan data tiket (penyimpanan penuh?)'); }
+  try { stor.setItem(KEY + '_tickets', JSON.stringify(tickets)); } catch (e) { alert('Gagal menyimpan data tiket (penyimpanan penuh?)'); }
   bumpDirty();
 }
-try { tickets = (JSON.parse(localStorage.getItem(KEY + '_tickets')) || []).map(sanitizeTicket); } catch (e) { tickets = []; }
+try { tickets = (JSON.parse(stor.getItem(KEY + '_tickets')) || []).map(sanitizeTicket); } catch (e) { tickets = []; }
 $('jk-add').addEventListener('click', () => {
   const now = Date.now(), n = jkNew.length, nt = $('jk-tk').checked ? jkTk.length : 0;
   jkNew.forEach((x, i) => records.push(sanitize({id: now + i, seat: '?', setlist: x.setlist, date: x.date, sesi: x.sesi}, i)));
-  if (nt) { mergeTickets(jkTk); try { localStorage.setItem('jkt48_last_import', localDay(new Date())); } catch (e) {} }
+  if (nt) { mergeTickets(jkTk); try { stor.setItem('jkt48_last_import', localDay(new Date())); } catch (e) {} }
   save(); renderAll();
   jkNew = []; jkTk = []; $('jk-add').disabled = true; $('jk-out').textContent = ''; $('jk-in').value = '';
   closeEl('jk-modal');
@@ -914,7 +965,7 @@ $('jk-add').addEventListener('click', () => {
 
 // ---------- Kategori tiket (diatur per nama tiket) ----------
 function persistTickets() {
-  try { localStorage.setItem(KEY + '_tickets', JSON.stringify(tickets)); } catch (e) { alert('Gagal menyimpan data tiket (penyimpanan penuh?)'); }
+  try { stor.setItem(KEY + '_tickets', JSON.stringify(tickets)); } catch (e) { alert('Gagal menyimpan data tiket (penyimpanan penuh?)'); }
   bumpDirty(); renderTodo(); renderTotals(); renderExpense();
 }
 function renderCats() {
@@ -1092,10 +1143,10 @@ const exItem = k => EX_ITEM[k] || (k.startsWith('misc:') ? {label: MISC.find(M =
 const PRK = 'jkt48_prices_v1';
 const DEF_PRICES = {base: Object.fromEntries(EX_ITEMS.map(i => [i.k, i.base])), over: [{m: '2026-10', k: 'ts_event', p: 200000}, {m: '2026-10', k: 'mng', p: 60000}]}; // Okt 2026 harganya berbeda
 let prices = (() => {
-  try { const s = JSON.parse(localStorage.getItem(PRK)); if (s && s.base && Array.isArray(s.over)) return {base: {...DEF_PRICES.base, ...s.base}, over: s.over}; } catch (e) {}
+  try { const s = JSON.parse(stor.getItem(PRK)); if (s && s.base && Array.isArray(s.over)) return {base: {...DEF_PRICES.base, ...s.base}, over: s.over}; } catch (e) {}
   return JSON.parse(JSON.stringify(DEF_PRICES));
 })();
-const savePrices = () => { try { localStorage.setItem(PRK, JSON.stringify(prices)); } catch (e) {} bumpDirty(); };
+const savePrices = () => { try { stor.setItem(PRK, JSON.stringify(prices)); } catch (e) {} bumpDirty(); };
 const priceOf = (k, m) => { const o = prices.over.find(x => x.k === k && x.m === m); return o ? o.p : prices.base[k]; }; // harga khusus bulan itu, kalau tidak ada pakai harga dasar
 let exYear = '', exOpen = false;
 function expenseLines() {
@@ -1174,8 +1225,8 @@ $('ex').addEventListener('toggle', e => { if (e.target.classList && e.target.cla
 const MISK = 'jkt48_misc_v1';
 const cleanMisc = w => ({id: Number(w.id) || Date.now() + Math.floor(Math.random() * 1000), date: /^\d{4}-\d{2}-\d{2}/.test(w.date || '') ? String(w.date).slice(0, 10) : '', kind: MISC.some(M => M.k === w.kind) ? w.kind : 'merch',
   name: String(w.name || '').trim().slice(0, 100), amount: Math.max(0, Math.round(Number(w.amount) || 0)), note: String(w.note || '').trim().slice(0, 200)});
-let misc = (() => { try { const s = JSON.parse(localStorage.getItem(MISK)); if (Array.isArray(s)) return s.map(cleanMisc).filter(w => w.date || miscByName(w.kind)); } catch (e) {} return []; })();
-const saveMisc = () => { try { localStorage.setItem(MISK, JSON.stringify(misc)); } catch (e) { alert('Gagal menyimpan catatan (penyimpanan penuh?)'); } bumpDirty(); };
+let misc = (() => { try { const s = JSON.parse(stor.getItem(MISK)); if (Array.isArray(s)) return s.map(cleanMisc).filter(w => w.date || miscByName(w.kind)); } catch (e) {} return []; })();
+const saveMisc = () => { try { stor.setItem(MISK, JSON.stringify(misc)); } catch (e) { alert('Gagal menyimpan catatan (penyimpanan penuh?)'); } bumpDirty(); };
 let miscKind = 'live', miscEdit = 0, miscLast = '';
 // catatan Away yang bertanda "off-air" dipindah ke Off-Air supaya tidak terhitung dua kali
 function moveOffair() {
@@ -1241,8 +1292,8 @@ const AWAY_CATS = [
 const AWK = 'jkt48_away_v1';
 const cleanAway = w => ({id: Number(w.id) || Date.now() + Math.floor(Math.random() * 1000), date: String(w.date || '').slice(0, 10), trip: String(w.trip || '').trim().slice(0, 80),
   cat: AWAY_CATS.some(x => x.c === w.cat) ? w.cat : 'Lainnya', amount: Math.max(0, Math.round(Number(w.amount) || 0)), note: String(w.note || '').trim().slice(0, 200)});
-let away = (() => { try { const s = JSON.parse(localStorage.getItem(AWK)); if (Array.isArray(s)) return s.map(cleanAway).filter(w => w.date); } catch (e) {} return []; })();
-const saveAway = () => { try { localStorage.setItem(AWK, JSON.stringify(away)); } catch (e) { alert('Gagal menyimpan catatan Away (penyimpanan penuh?)'); } bumpDirty(); };
+let away = (() => { try { const s = JSON.parse(stor.getItem(AWK)); if (Array.isArray(s)) return s.map(cleanAway).filter(w => w.date); } catch (e) {} return []; })();
+const saveAway = () => { try { stor.setItem(AWK, JSON.stringify(away)); } catch (e) { alert('Gagal menyimpan catatan Away (penyimpanan penuh?)'); } bumpDirty(); };
 let awayEdit = 0, awayLast = {date: '', trip: ''}; // awayLast: tanggal & perjalanan terakhir, supaya input beruntun lebih cepat
 offairMoved = moveOffair(); // pindahkan catatan off-air dari Away ke Off-Air (sekali jalan, aman diulang)
 
@@ -1312,8 +1363,8 @@ document.querySelectorAll('.ex-t').forEach(b => b.addEventListener('click', () =
 
 // ---------- Sesi lepas: Chekicha / 2-Shot di luar menonton theater ----------
 const SOLO_KEY = 'jkt48_solo_v1';
-solo = (() => { try { const s = JSON.parse(localStorage.getItem(SOLO_KEY)); if (Array.isArray(s)) return s.map(sanitizeSolo).filter(w => w.date); } catch (e) {} return []; })();
-const saveSolo = () => { try { localStorage.setItem(SOLO_KEY, JSON.stringify(solo)); } catch (e) { alert('Gagal menyimpan (penyimpanan penuh?). Unduh Backup lengkap dulu, lalu kurangi foto lama.'); } bumpDirty(); };
+solo = (() => { try { const s = JSON.parse(stor.getItem(SOLO_KEY)); if (Array.isArray(s)) return s.map(sanitizeSolo).filter(w => w.date); } catch (e) {} return []; })();
+const saveSolo = () => { try { stor.setItem(SOLO_KEY, JSON.stringify(solo)); } catch (e) { alert('Gagal menyimpan (penyimpanan penuh?). Unduh Backup lengkap dulu, lalu kurangi foto lama.'); } bumpDirty(); };
 const soloKey = w => (w.kind === 'ck' ? 'ck_' : 'ts_') + (w.type === 'birthday' ? 'bday' : 'roulette');
 const soloLabel = w => KINDS.find(k => k.k === w.kind).short[w.type];
 // ---------- Foto 2-Shot event: pilih event dari data tiket, cukup unggah fotonya ----------
@@ -1323,7 +1374,7 @@ const tsEvList = () => tickets.filter(t => t.type !== 'SHOW' && ['2S & MnG Event
   .sort((a, b) => b.date.localeCompare(a.date) || (b.start || '').localeCompare(a.start || '') || (a.member || '').localeCompare(b.member || ''));
 let tsevFilter = 'all';
 function saveTickets() {
-  try { localStorage.setItem(KEY + '_tickets', JSON.stringify(tickets)); } catch (e) { alert('Gagal menyimpan foto (penyimpanan penuh?). Unduh Backup lengkap dulu, lalu kurangi foto lama.'); }
+  try { stor.setItem(KEY + '_tickets', JSON.stringify(tickets)); } catch (e) { alert('Gagal menyimpan foto (penyimpanan penuh?). Unduh Backup lengkap dulu, lalu kurangi foto lama.'); }
   bumpDirty();
 }
 function renderTsEv() {
