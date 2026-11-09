@@ -841,3 +841,68 @@ img,canvas{max-width:100%}
 .lot-cards .stat.main .ring{grid-area:r}
 .lot-cards .stat.main>.sl{grid-area:l;align-self:end}
 .lot-cards .stat.main>.ss{grid-area:s;align-self:start}
+
+/* =====================================================================
+   v6 — animasi ala iOS (kurva pegas), lembar bawah di HP, foto modal tidak "muncul tiba-tiba",
+        pindah tab lebih ringan
+   ===================================================================== */
+:root{--ios:cubic-bezier(.32,.72,0,1)}
+
+/* ---- pindah tab: tanpa animasi di wadah besar (itu yang bikin patah), gerak hanya di item yang masuk ---- */
+#view-main,#view-gal,#view-tl,#view-ev{animation:none}
+.enter .tl-i,.enter .gi{animation:none}
+.enter .tl-i.a{animation:rise .55s var(--ios) both;animation-delay:calc(var(--i,0) * 30ms)}
+.enter .ev-g:nth-child(-n+8),.enter .ev-c{animation:rise .55s var(--ios) both;animation-delay:calc(var(--i,0) * 30ms)}
+.enter .ev-g:nth-child(n+9){animation:none}
+#gallery .gi{animation:none}
+#gallery .gi.a{animation:drop-pol .6s var(--ios) backwards;animation-delay:calc(var(--i,0) * 45ms)}
+.enter #stats .stat,.enter #story,.enter .last-c,.enter #cover,.enter #filters{animation-duration:.6s;animation-timing-function:var(--ios)}
+.tab-ind{transition:transform .5s var(--ios),width .5s var(--ios)}
+
+/* ---- modal & lightbox: masuk dengan kurva iOS ---- */
+@keyframes ov-in{from{opacity:0}}
+@keyframes modal-in{from{opacity:0;transform:translate3d(0,22px,0) scale(.96)}}
+@keyframes sheet-in{from{transform:translate3d(0,100%,0)}}
+.overlay.open{animation:ov-in .35s var(--ios)}
+.overlay.open>.modal{animation:modal-in .5s var(--ios)}
+#lightbox.open>img{animation:none}
+#lb-img{will-change:transform;transition:none}
+.overlay.closing{animation:fade-out .28s ease-in forwards}
+.overlay.closing>.modal,#lightbox.closing>img{animation:pop-out .24s cubic-bezier(.4,0,1,1) forwards}
+
+/* kartu di dalam modal muncul bertahap */
+@keyframes hi-in{from{opacity:0;transform:translate3d(0,14px,0)}}
+.overlay.open .hi{animation:hi-in .55s var(--ios) both;animation-delay:calc(var(--i,0) * 55ms + 120ms)}
+
+/* foto di modal: tempat sudah dipesan + skeleton, lalu memudar masuk */
+.hi-ph{position:relative;margin-top:10px;border-radius:12px;overflow:hidden;aspect-ratio:4/3;max-height:240px;width:100%;
+  background:linear-gradient(90deg,#2a1520 25%,#3a1d2b 50%,#2a1520 75%);background-size:200% 100%;animation:shimmer 1.3s linear infinite}
+.hi-ph.ld{animation:none;background:#1d1017}
+.hi .hi-ph img{display:block;width:100%;height:100%;max-height:none;margin:0;border-radius:0;object-fit:cover;object-position:50% 20%;
+  opacity:0;transform:scale(1.04);transition:opacity .5s var(--ios),transform .7s var(--ios);cursor:zoom-in}
+.hi .hi-ph img.ld{opacity:1;transform:none}
+
+/* ---- HP: modal jadi lembar bawah (bottom sheet) ---- */
+.sheet-grip{display:none}
+@media(max-width:600px){
+  #seat-modal{align-items:flex-end;padding:0}
+  #seat-modal .modal{max-width:none;width:100%;max-height:88vh;max-height:88dvh;display:flex;flex-direction:column;
+    border-radius:28px 28px 0 0;padding:8px 18px calc(18px + env(safe-area-inset-bottom));
+    animation:sheet-in .6s var(--ios);transition:transform .38s var(--ios);will-change:transform}
+  #seat-modal .sheet-grip{display:block;flex:none;width:40px;height:5px;margin:2px auto 14px;border-radius:3px;background:rgba(255,255,255,.3);touch-action:none}
+  #seat-modal #modal-title{flex:none;padding:6px 0;touch-action:none}
+  #seat-modal .x{top:12px}
+  #seat-modal .hist{flex:1 1 auto;max-height:none;min-height:0;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-bottom:6px}
+  #seat-modal.closing>.modal{animation:none;transform:translate3d(0,105%,0);transition:transform .32s cubic-bezier(.4,0,1,1)}
+  #seat-modal.closing{animation:fade-out .32s ease-in forwards}
+}
+
+/* ---- sentuhan iOS: tombol/kartu menekan dengan halus ---- */
+.btn-s,.gk,.tab,.seat-badge.tl-s,.last-c,.stat:not(.sk){transition-timing-function:var(--ios)}
+@media(prefers-reduced-motion:reduce){
+  .overlay.open,.overlay.open>.modal,.overlay.open .hi,#seat-modal .modal,.hi .hi-ph img{animation:none!important;transition:none!important}
+  .hi .hi-ph img{opacity:1;transform:none}
+}
+/* galeri: buang filter warna per foto (mahal di HP), isolasi gambar supaya cat ulang murah */
+.gi-ph img{filter:none}
+.gi-ph{contain:paint}
