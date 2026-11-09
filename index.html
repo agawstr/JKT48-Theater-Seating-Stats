@@ -126,19 +126,14 @@ document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () =>
   tl.forEach(t => { t.classList.toggle('on', t === b); t.setAttribute('aria-selected', t === b); });
   const show = () => {
     VIEWS.forEach(k => $('view-' + k).hidden = b.dataset.tab !== k);
-    flushLazy('view-' + b.dataset.tab); // gambar ulang isi tab yang usang sebelum ditampilkan
+    flushLazy('view-' + b.dataset.tab); // kalau masih usang (jarang), gambar sekarang
     const hd = document.querySelector('.head'), top = hd.getBoundingClientRect().bottom + scrollY - 8; // posisi tab bar sebelum menempel
-    if (scrollY > top) scrollTo({top, behavior: 'instant'}); // isi baru mulai dari bawah tab bar, bukan di tengah halaman
-    centerChart();
-    next.style.setProperty('--tabx', dir * 18 + 'px');
+    if (scrollY > top) scrollTo({top, behavior: 'instant'}); // isi baru mulai dari bawah tab bar
+    if (b.dataset.tab === 'main') centerChart(); // ukur peta hanya saat tab peta dibuka
     playEnter(next);
   };
   clearTimeout(tabTimer);
-  if (prev && prev !== next && !still) {
-    prev.style.setProperty('--tabx', dir * 18 + 'px');
-    prev.classList.add('leave');
-    tabTimer = setTimeout(() => { prev.classList.remove('leave'); show(); }, 90);
-  } else show();
+  show(); // langsung ganti (tanpa jeda); geraknya ada di item yang masuk
 }));
 // geser kiri/kanan untuk pindah tab (layar sentuh)
 (() => {
