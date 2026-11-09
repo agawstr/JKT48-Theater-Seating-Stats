@@ -10,13 +10,13 @@ Tanpa backend dan tanpa proses build: cukup file statis yang bisa di-hosting di 
 - Peta baris A–J (4 blok, panggung, dermaga) dengan **warna heatmap**: makin sering ditempati, makin terang. Ada legenda dan label baris.
 - **Popover saat hover** (perangkat dengan mouse): 3 riwayat terbaru dan jumlah kunjungan. Kursi yang belum pernah ditempati tidak punya popover. Klik kursi untuk riwayat lengkap dan foto.
 - **Sorot cahaya** yang mengikuti kursor di atas peta.
-- **▶ Putar ulang**: peta terisi satu per satu sesuai urutan tanggal.
-- **📷 Simpan peta (PNG)** dan **✨ Wrapped**: kartu tahunan siap bagikan (tahun mengikuti kalender).
-- **📤 Bagikan kartu** per show di modal kursi, memakai foto 2-Shot/Chekicha jika ada.
+- **Putar ulang**: peta terisi satu per satu sesuai urutan tanggal.
+- **Simpan peta (PNG)** dan **Wrapped**: kartu tahunan siap bagikan (tahun mengikuti kalender).
+- **Bagikan kartu** per show di modal kursi, memakai foto 2-Shot/Chekicha jika ada.
 
 **Statistik**
 - Kartu ringkasan: total show, kursi favorit, baris favorit, 2-Shot, Chekicha, member terbanyak, serta total biaya dan rata-rata per show bila harga tiket diisi. Kursi dengan jumlah sama dipilih dari baris paling depan, lalu nomor paling kanan.
-- **Cakupan kursi** dengan progress bar dan tombol **🎯 Sorot yang belum** untuk menandai kursi yang belum pernah ditempati.
+- **Cakupan kursi** dengan progress bar dan tombol **Sorot yang belum** untuk menandai kursi yang belum pernah ditempati.
 - **Filter** setlist, member, dan rentang tanggal. Hasilnya tersimpan di URL (`?setlist=...&member=...&from=2026-01-01&to=2026-06-30`), jadi bisa dibagikan lewat link.
 - Grafik total kunjungan per setlist (klik bar untuk memfilter), sebaran per baris, kalender kehadiran per hari, dan kunjungan per bulan.
 - **Kartu terakhir nonton** di bagian atas.
@@ -40,6 +40,8 @@ Tampilan dirancang supaya tetap lancar di HP kelas menengah:
 - **Animasi hanya memakai `transform` dan `opacity`**. Pindah tab = satu gerakan geser-pudar singkat, lalu isinya muncul bertahap (maksimal beberapa item pertama), dan halaman otomatis kembali ke atas supaya isi baru tidak muncul di tengah.
 - Daftar tiket memakai `content-visibility: auto`; foto galeri `loading="lazy"` + `decoding="async"` dan memudar masuk setelah dimuat.
 - Efek hover (naik, miring, sorot cahaya) dimatikan di perangkat tanpa mouse.
+- Peta kursi di HP otomatis muat selebar layar (cubit dua jari atau tombol + untuk memperbesar, **Pas layar** untuk kembali); di laptop peta mengecil otomatis jika jendela sempit. Halaman tidak pernah bergeser ke samping.
+- Filter tanggal punya label "Mulai tanggal" dan "Sampai tanggal" dengan tulisan "Pilih tanggal" saat kosong.
 - Dropdown memakai latar solid dan panah khusus, jadi pilihannya terbaca jelas di semua browser (dark maupun light).
 - Animasi otomatis dimatikan jika perangkat memakai pengaturan "kurangi gerakan" atau "kurangi transparansi".
 
@@ -61,11 +63,11 @@ Responsif untuk HP dan desktop, dan kontras warna sudah dicek.
 ## Cara memperbarui data
 
 1. Buka `admin.html`, lalu isi riwayat show baru di tab **Tambah & Kelola Data**.
-2. Klik **⬇ Unduh paket (ZIP)**, lalu ekstrak. Isinya `data.json` dan folder `photos/`.
+2. Klik **Unduh paket (ZIP)**, lalu ekstrak. Isinya `data.json` dan folder `photos/`.
 3. Di GitHub, upload `data.json` dan folder `photos/` ke root repo (**Add file → Upload files**, drag keduanya, lalu commit). File bernama sama otomatis menimpa.
 4. Tunggu sekitar 1 menit sampai GitHub Pages selesai deploy, lalu muat ulang dengan Ctrl+Shift+R.
 
-Data di admin tersimpan di browser yang dipakai untuk input. Kalau pindah perangkat atau browser, data kosong. Gunakan **⬇ Backup lengkap (JSON)** (foto ikut di dalamnya) untuk menyimpan cadangan, lalu **⬆ Restore (JSON)** untuk memuatnya kembali.
+Data di admin tersimpan di browser yang dipakai untuk input. Kalau pindah perangkat atau browser, data kosong. Gunakan ** Backup lengkap (JSON)** (foto ikut di dalamnya) untuk menyimpan cadangan, lalu ** Restore (JSON)** untuk memuatnya kembali.
 
 ## Format data
 
