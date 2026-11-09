@@ -732,7 +732,7 @@ body::before{inset:0;contain:strict}
 .gi-ph::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(135deg,rgba(255,255,255,.14),transparent 38%)}
 .gi figcaption{position:relative;font-family:'Inter',sans-serif;display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center;padding:11px 4px 15px;color:#6b5a60}
 .gi .gi-n{font-family:'Caveat','Segoe Print','Bradley Hand',cursive;font-size:25px;font-weight:700;line-height:1.05;color:var(--ink);letter-spacing:.2px;overflow-wrap:anywhere}
-.gi .gi-tag{font-size:9.5px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;color:#fff;background:var(--accent);padding:3px 8px 3px;border-radius:99px;margin:3px 0 2px}
+.gi .gi-tag{font-size:11px;font-weight:700;letter-spacing:.2px;color:#fff;background:var(--accent);padding:3px 8px 3px;border-radius:99px;margin:3px 0 2px}
 .gi .gi-m{font-size:11px;font-weight:600;color:#6b5a60;line-height:1.3;overflow-wrap:anywhere}
 .gi .gi-d{font-size:10.5px;font-weight:500;color:#9a8b90;font-variant-numeric:tabular-nums}
 .gi .gi-x{font-size:10px;font-style:italic;color:#9a6a1a}
@@ -760,3 +760,84 @@ body::before{inset:0;contain:strict}
   .gi{transform:rotate(calc(var(--t,0deg) * .45))}
   .gi:active{transform:rotate(0) scale(.98)}
 }
+
+/* =====================================================================
+   v5 — filter tanggal berlabel, statistik lotre rapi, sub-tab galeri rapi, pas layar
+   ===================================================================== */
+/* ---- pas di semua layar ---- */
+html,body{min-height:100%}
+body{min-height:100vh;min-height:100dvh;overflow-x:hidden}
+.wrap{padding:36px clamp(12px,3vw,28px) calc(40px + env(safe-area-inset-bottom));padding-left:max(clamp(12px,3vw,28px),env(safe-area-inset-left));padding-right:max(clamp(12px,3vw,28px),env(safe-area-inset-right))}
+.head h1{font-size:clamp(26px,6.2vw,42px)}
+.sub{font-size:clamp(13px,3.4vw,15px);max-width:34em}
+#view-main,#view-gal,#view-tl,#view-ev{min-width:0}
+img,canvas{max-width:100%}
+@media(min-width:1100px){#stats{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}}
+
+/* ---- filter peta: 2 kolom rapi, tanggal berlabel ---- */
+#filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:end;width:100%}
+#filters select,#filters input{flex:none;width:100%;min-height:44px}
+#filters .fld{position:relative;display:flex;flex-direction:column;gap:4px;min-width:0}
+#filters .fl{font-size:11px;font-weight:700;color:#f0a9b9;letter-spacing:.3px;padding-left:2px}
+#filters .fld input{padding-right:10px;font-variant-numeric:tabular-nums}
+#filters .fv{position:absolute;left:11px;bottom:0;height:44px;display:none;align-items:center;font-size:13px;color:#a1a1aa;pointer-events:none}
+#filters .fld.empty .fv{display:flex}
+#filters .fld.empty input{color:transparent}
+#filters .fld.empty input::-webkit-datetime-edit{color:transparent}
+#filters #flt-reset{grid-column:1/-1;justify-self:center;min-width:120px}
+#flt-info{grid-column:1/-1}
+@media(max-width:768px){
+  #filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #filters select{align-self:end}
+}
+@media(min-width:769px){#filters #flt-reset{grid-column:auto;align-self:end;min-height:44px;min-width:0;padding:0 18px}#filters{grid-template-columns:repeat(4,minmax(0,1fr)) auto}}
+
+/* ---- statistik lotre ---- */
+.lot-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.lot-cards .stat{min-height:96px;justify-content:center}
+.lot-cards .stat.main{grid-column:1/-1;flex-direction:row;align-items:center;justify-content:flex-start;gap:16px;text-align:left;padding:14px 18px;min-height:0}
+.lot-cards .stat.main .ring{margin:0;flex:none;width:92px;height:92px}
+.lot-cards .stat.main .sl,.lot-cards .stat.main .ss{text-align:left}
+.lot-cards .stat.main>.sl{font-size:14px;font-weight:700;color:#fff;margin:0}
+.lot-cards .stat.main>.ss{margin-top:4px;line-height:1.4}
+.lot-cards .stat.main>div:not(.ring){min-width:0}
+@media(min-width:700px){.lot-cards{grid-template-columns:repeat(4,minmax(0,1fr))}.lot-cards .stat.main{grid-column:1/-1}}
+.lot-cards .sv{font-size:26px}
+.lot-cards .ss{font-size:11.5px;line-height:1.35}
+
+.lot-r{grid-template-columns:minmax(96px,150px) 1fr minmax(0,auto);padding:8px 4px}
+.lot-r>span:last-child{text-align:right;color:#d4d4d8;font-variant-numeric:tabular-nums}
+.sl-bar{min-width:40px}
+@media(max-width:600px){
+  .lot-r{grid-template-columns:1fr auto;grid-template-areas:"l t" "b b";gap:6px 12px;padding:9px 4px;align-items:baseline}
+  .lot-r>span:nth-child(1){grid-area:l;font-weight:700}
+  .lot-r>span:nth-child(2){grid-area:b}
+  .lot-r>span:nth-child(3){grid-area:t;font-size:12px;text-align:right}
+  .ls-r{grid-template-columns:1fr auto}
+  .sec2{margin-top:22px}
+}
+.lot-n{line-height:1.5}
+
+/* ---- sub-tab galeri: kontrol segmen yang rapi ---- */
+.gk-bar{display:grid;grid-template-columns:repeat(4,auto);justify-content:center;gap:8px;width:100%;max-width:720px}
+.gk{display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;padding:9px 16px;min-height:42px}
+.gk b{margin:0;font-variant-numeric:tabular-nums}
+@media(max-width:600px){
+  .gk-bar{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .gk{padding:9px 8px;font-size:13px}
+}
+#gallery-bar{display:flex;align-items:center;gap:12px;max-width:720px}
+#gallery-bar select{flex:1 1 auto;min-height:44px}
+#g-info{flex:none}
+/* kolom tanggal: tinggi & lebar dipaksa seragam dengan dropdown (input date punya ukuran bawaan yang besar) */
+#filters .fld input[type=date]{-webkit-appearance:none;appearance:none;display:block;height:44px;min-height:0;width:100%;min-width:0;max-width:100%;box-sizing:border-box;padding:0 10px;line-height:44px;text-align:left}
+#filters .fld input[type=date]::-webkit-date-and-time-value{text-align:left;margin:0;min-height:0}
+#filters .fld input[type=date]::-webkit-datetime-edit{padding:0}
+#filters .fld{overflow:hidden;overflow:clip}
+#filters .fl{text-align:left}
+#filters .fld{padding:0;margin:0;border:0;background:none;box-shadow:none}
+/* kartu utama lotre: cincin di kiri, judul + keterangan bertumpuk di kanan */
+.lot-cards .stat.main{display:grid;grid-template-columns:auto 1fr;grid-template-areas:"r l" "r s";column-gap:18px;row-gap:4px;align-content:center}
+.lot-cards .stat.main .ring{grid-area:r}
+.lot-cards .stat.main>.sl{grid-area:l;align-self:end}
+.lot-cards .stat.main>.ss{grid-area:s;align-self:start}
