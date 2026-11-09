@@ -237,10 +237,55 @@
     const list = tabs(), from = list.findIndex(t => t.classList.contains('on')), to = list.indexOf(b);
     if (from < 0 || to === from) return;
     const dir = to > from ? 1 : -1;
-    document.documentElement.style.setProperty('--tabx', mqDesk.matches || calm() ? '0px' : dir * 34 + 'px');
-    const ind = document.querySelector('.tabbar .tab-ind');
-    if (ind && !calm()) { ind.classList.add('moving'); setTimeout(() => ind.classList.remove('moving'), 260); }
+    document.documentElement.style.setProperty('--tabx', mqDesk.matches || calm() ? '0px' : dir * 26 + 'px');
   }, true);
+  document.addEventListener('click', e => { // tandai "sedang ganti tab" sampai handler tab selesai
+    if (!e.target.closest('.tabbar .tab')) return;
+    switching = true; setTimeout(() => { switching = false; }, 60);
+  }, true);
+
+  // Saat ganti tab cukup isinya yang meluncur. Animasi item bertingkat (.enter) hanya untuk pemuatan pertama,
+  // kalau tidak, geseran + kaskade item jalan bersamaan dan terasa kasar.
+  let switching = false;
+  if (typeof playEnter === 'function') {
+    const baseEnter = playEnter;
+    playEnter = function (el) {
+      if (switching && el && /^view-/.test(el.id)) { if (typeof watchReveal === 'function') watchReveal(el); return; }
+      return baseEnter(el);
+    };
+  }
+
+  // Pil tab "cair": tepi depan melaju duluan, tepi belakang menyusul (memanjang lalu memendek), tanpa memantul
+  (() => {
+    const lead = k => 1 - Math.pow(1 - k, 4);
+    const trail = k => 1 - Math.pow(1 - Math.max(0, (k - 0.1) / 0.9), 3);
+    const axis = (p0, s0, p1, s1, k) => {
+      const fwd = p1 >= p0, ea = fwd ? trail(k) : lead(k), eb = fwd ? lead(k) : trail(k);
+      const a = p0 + (p1 - p0) * ea, b = (p0 + s0) + ((p1 + s1) - (p0 + s0)) * eb;
+      return [a, Math.max(b - a, 0)];
+    };
+    window.moveInd = function (instant) {
+      if (typeof setStick === 'function') setStick();
+      const bar = document.querySelector('.tabbar'), on = bar && bar.querySelector('.tab.on');
+      if (!on) return;
+      let ind = bar.querySelector('.tab-ind');
+      if (!ind) { ind = document.createElement('i'); ind.className = 'tab-ind'; bar.prepend(ind); instant = true; }
+      cancelAnimationFrame(ind._raf);
+      const to = {x: on.offsetLeft, y: on.offsetTop, w: on.offsetWidth, h: on.offsetHeight};
+      const paint = r => { ind.style.width = r.w + 'px'; ind.style.height = r.h + 'px'; ind.style.transform = `translate3d(${r.x}px,${r.y}px,0)`; };
+      const from = ind._cur || to;
+      if (instant || calm() || (from.x === to.x && from.y === to.y && from.w === to.w && from.h === to.h)) { ind._cur = to; paint(to); return; }
+      const f = {...from}, t0 = performance.now(), D = 460;
+      const step = now => {
+        const k = Math.min(1, (now - t0) / D);
+        const [x, w] = axis(f.x, f.w, to.x, to.w, k), [y, h] = axis(f.y, f.h, to.y, to.h, k);
+        ind._cur = k < 1 ? {x, y, w, h} : to;
+        paint(ind._cur);
+        if (k < 1) ind._raf = requestAnimationFrame(step);
+      };
+      ind._raf = requestAnimationFrame(step);
+    };
+  })();
 
   /* ---------- "Sorot yang belum" / "Tampilkan semua": kursi berubah bergelombang, bukan tiba-tiba ---------- */
   (() => {
@@ -267,11 +312,10 @@
         const row = 'ABCDEFGHIJ'.indexOf(el.dataset.seat[0]), num = parseInt(el.dataset.seat.slice(1)) || 0;
         const from = {opacity: o.o, backgroundColor: o.bg, color: o.c, borderColor: o.bd, boxShadow: o.sh};
         const to = {opacity: n.o, backgroundColor: n.bg, color: n.c, borderColor: n.bd, boxShadow: n.sh};
-        const glow = el.classList.contains('want'); // kursi yang disorot membal sedikit
-        const kf = glow ? [{...from, transform: 'scale(.88)'}, {transform: 'scale(1.14)', offset: .45}, {...to, transform: 'scale(1)'}]
-                        : [{...from, transform: 'scale(1)'}, {...to, transform: 'scale(1)'}];
-        anims.push(el.animate(kf, {duration: glow ? 700 : 520, delay: Math.min(520, row * 34 + (num % 9) * 6),
-          easing: glow ? 'cubic-bezier(.34,1.3,.64,1)' : 'cubic-bezier(.32,.72,0,1)', fill: 'backwards'}));
+        const glow = el.classList.contains('want'); // kursi yang disorot tumbuh pelan dari sedikit lebih kecil
+        const kf = [{...from, transform: glow ? 'scale(.9)' : 'scale(1)'}, {...to, transform: 'scale(1)'}];
+        anims.push(el.animate(kf, {duration: 560, delay: Math.min(480, row * 32 + (num % 9) * 5),
+          easing: 'cubic-bezier(.32,.72,0,1)', fill: 'backwards'}));
       });
       const done = () => ch.classList.remove('morph');
       if (!anims.length) return done();
