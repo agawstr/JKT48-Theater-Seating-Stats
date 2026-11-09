@@ -237,7 +237,10 @@
     const list = tabs(), from = list.findIndex(t => t.classList.contains('on')), to = list.indexOf(b);
     if (from < 0 || to === from) return;
     const dir = to > from ? 1 : -1;
-    document.documentElement.style.setProperty('--tabx', mqDesk.matches || calm() ? '0px' : dir * 26 + 'px');
+    const root = document.documentElement.style, still = calm();
+    // HP/tablet: isi meluncur ke samping. Laptop (tab di sidebar kiri, tersusun ke bawah): isi naik/turun mengikuti arah tab.
+    root.setProperty('--tabx', mqDesk.matches || still ? '0px' : dir * 26 + 'px');
+    root.setProperty('--taby', mqDesk.matches && !still ? dir * 20 + 'px' : '0px');
   }, true);
   document.addEventListener('click', e => { // tandai "sedang ganti tab" sampai handler tab selesai
     if (!e.target.closest('.tabbar .tab')) return;
