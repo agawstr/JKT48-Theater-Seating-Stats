@@ -92,6 +92,10 @@ function renderChartRaw() {
   hidePop();
   const counts = {}, all = {}, on = isFiltered();
   records.forEach(r => all[r.seat] = 1);
+  const allTime = {}; // skala warna memakai semua riwayat (bukan hasil filter) supaya warna tidak bergeser saat memfilter
+  records.forEach(r => allTime[r.seat] = (allTime[r.seat] || 0) + 1);
+  setHeatScale(Math.max(0, ...Object.values(allTime)));
+  const lgs = $('lg-scale'); if (lgs) lgs.innerHTML = heatLegend();
   view().forEach(r => counts[r.seat] = (counts[r.seat] || 0) + 1);
   const seat = code => {
     const c = counts[code] || 0, h = c ? heat(c) : null;
@@ -245,15 +249,25 @@ const view = () => viewEx([]);
 // jumlah sesi lepas yang lolos filter aktif (filter setlist/baris tidak berlaku untuk sesi lepas, jadi ikut disembunyikan)
 const soloIn = kind => solo.filter(s => s.kind === kind && !filter.setlist && !filter.row && (!filter.member || s.member === filter.member) && (!filter.from || s.date >= filter.from) && (!filter.to || s.date <= filter.to)).length; // record yang lolos semua filter (dipakai peta)
 
-// warna heatmap: makin sering makin terang
-const HEAT = [
-  {min:1, bg:'#5c2e0c', fg:'#ffd9b0', bd:'#8a4b1a'},
-  {min:2, bg:'#8f4a0a', fg:'#fff0dd', bd:'#b8620a'},
-  {min:3, bg:'#c96a00', fg:'#fff',    bd:'#e07a00'},
-  {min:5, bg:'#ff8c00', fg:'#000',    bd:'#ffaa00'},
-  {min:8, bg:'#ffd23f', fg:'#000',    bd:'#fff3b0'}];
+// warna heatmap: makin sering makin terang.
+// Ambang menyesuaikan data (setHeatScale): kalau kunjungan terbanyak <= 5, tiap jumlah dapat warna sendiri
+// yang jaraknya jelas; kalau lebih, dipakai ambang tetap 1 / 2 / 3 / 5 / 8.
+const HEAT_COLORS = [
+  {bg:'#5c2e0c', fg:'#ffd9b0', bd:'#8a4b1a'},
+  {bg:'#8f4a0a', fg:'#fff0dd', bd:'#b8620a'},
+  {bg:'#c96a00', fg:'#fff',    bd:'#e07a00'},
+  {bg:'#ff8c00', fg:'#000',    bd:'#ffaa00'},
+  {bg:'#ffd23f', fg:'#000',    bd:'#fff3b0'}];
+const HEAT_STATIC_MIN = [1, 2, 3, 5, 8];
+const HEAT_PICK = {1: [2], 2: [1, 4], 3: [1, 3, 4], 4: [0, 2, 3, 4], 5: [0, 1, 2, 3, 4]}; // kunjungan terbanyak -> indeks warna
+let HEAT = HEAT_COLORS.map((c, i) => ({...c, min: HEAT_STATIC_MIN[i]})), heatExact = false;
+function setHeatScale(max) {
+  const pick = HEAT_PICK[max];
+  heatExact = !!pick;
+  HEAT = pick ? pick.map((ci, k) => ({...HEAT_COLORS[ci], min: k + 1})) : HEAT_COLORS.map((c, i) => ({...c, min: HEAT_STATIC_MIN[i]}));
+}
 const heat = c => HEAT.filter(h => c >= h.min).pop();
-const heatLabel = (h, i) => HEAT[i + 1] ? (HEAT[i + 1].min - 1 > h.min ? `${h.min}–${HEAT[i + 1].min - 1}×` : `${h.min}×`) : `${h.min}+×`;
+const heatLabel = (h, i) => heatExact ? `${h.min}×` : HEAT[i + 1] ? (HEAT[i + 1].min - 1 > h.min ? `${h.min}–${HEAT[i + 1].min - 1}×` : `${h.min}×`) : `${h.min}+×`;
 
 // kontainer disisipkan lewat JS supaya index & admin otomatis sama
 const wrapEl = $('seating-wrapper');
@@ -271,8 +285,9 @@ wrapEl.insertAdjacentHTML('afterend', `<div id="legend"></div>
   <h2 class="sec" id="mc-h">Kunjungan per bulan</h2><div id="mchart"></div>`);
 $('flt-from').value = filter.from;
 $('flt-to').value = filter.to;
-$('legend').innerHTML = 'Jumlah kunjungan: ' + HEAT.map((h, i) =>
-  `<span class="lg"><i style="background:${h.bg};border-color:${h.bd}"></i>${heatLabel(h, i)}</span>`).join('') +
+const heatLegend = () => HEAT.map((h, i) =>
+  `<span class="lg"><i style="background:${h.bg};border-color:${h.bd}"></i>${heatLabel(h, i)}</span>`).join('');
+$('legend').innerHTML = 'Jumlah kunjungan: <span id="lg-scale">' + heatLegend() + '</span>' +
   '<button type="button" class="btn-s" id="png-btn">📷 Simpan peta (PNG)</button><button type="button" class="btn-s" id="rp-btn">▶ Putar ulang</button><button type="button" class="btn-s" id="wrap-btn">✨ Wrapped</button>';
 
 function renderFilters() {
@@ -1216,18 +1231,21 @@ function renderStory() {
   const who = ((document.querySelector('h1') || {textContent: ''}).textContent.match(/^(.+?)['’]s\b/) || [])[1] || 'Pemilik halaman ini';
   const ok = records.filter(r => SEATS.has(r.seat)), ds = records.map(r => r.date).filter(Boolean).sort();
   const seat = tally(ok, r => r.seat, seatTie), row = tally(ok, r => r.seat[0], (a, b) => a.localeCompare(b)), sl = tally(records, r => r.setlist);
-  const b = t => `<b>${esc(t)}</b>`;
-  let h = (ds.length ? `Sejak ${b(MON_ID[+ds[0].slice(5, 7) - 1] + ' ' + ds[0].slice(0, 4))}, ${esc(who)} sudah menonton ` : `${esc(who)} sudah menonton `)
-    + `${b(records.length + ' show')} di ${b(new Set(ok.map(r => r.seat)).size + ' kursi berbeda')}.`;
-  if (seat && row) h += ` Kursi favoritnya ${b(seat[0])} (${seat[1]}×), paling sering di ${b('baris ' + row[0])} (${row[1]}×)` + (sl ? `, dan setlist yang paling sering ditonton ${b(sl[0])} (${sl[1]}×).` : '.');
+  const b = t => `<b>${esc(t)}</b>`; // hanya angka utama yang ditebalkan
+  const line = (t, cls = '') => `<span class="st${cls ? ' ' + cls : ''}">${t}</span>`;
+  const out = [];
+  out.push(line((ds.length ? `Sejak ${esc(MON_ID[+ds[0].slice(5, 7) - 1] + ' ' + ds[0].slice(0, 4))}, ${esc(who)} sudah menonton ` : `${esc(who)} sudah menonton `)
+    + `${b(records.length)} show di ${b(new Set(ok.map(r => r.seat)).size)} kursi berbeda.`));
+  if (seat && row) out.push(line(`Kursi favoritnya ${esc(seat[0])} (${seat[1]}×), paling sering di baris ${esc(row[0])} (${row[1]}×).` + (sl ? ` Setlist yang paling sering ditonton: ${esc(sl[0])} (${sl[1]}×).` : '')));
   try {
     const fl = lotFlowStats();
     if (fl && fl.n) {
       const refunds = tickets.filter(t => t.status === 'refund').length, watched = fl.got - refunds, rest = records.length - watched, gen = fl.got - fl.ofcWin;
-      h += ` Dari ${fl.n} show teater yang diincar lewat undian, ${fl.got} berhasil didapat (${b(Math.round(fl.got / fl.n * 100) + '%')}): ${fl.ofcWin} langsung menang di OFC${gen ? ' dan ' + gen + ' lewat General' : ''}.`
-        + ` ${refunds ? refunds + ' show dibatalkan dan di-refund, jadi ' : ''}${watched} ditonton${rest > 0 ? ', ditambah ' + rest + ' show lain di luar undian show teater (mis. JKT48 School)' : ''}.`;
+      out.push(line(`Dari ${fl.n} show teater yang diincar lewat undian, ${fl.got} berhasil didapat (${b(Math.round(fl.got / fl.n * 100) + '%')}): ${fl.ofcWin} langsung menang di OFC${gen ? ' dan ' + gen + ' lewat General' : ''}.`
+        + ` ${refunds ? refunds + ' show dibatalkan dan di-refund, jadi ' : ''}${watched} ditonton${rest > 0 ? ', ditambah ' + rest + ' show lain di luar undian show teater (mis. JKT48 School)' : ''}.`, 'mute'));
     }
   } catch (e) { /* data tiket belum dimuat */ }
+  const h = out.join('');
   el.innerHTML = h;
 }
 
