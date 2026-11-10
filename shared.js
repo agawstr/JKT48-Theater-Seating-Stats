@@ -14,7 +14,7 @@ const closeEl = id => {
   const el = $(id);
   if (!el.classList.contains('open') || el.classList.contains('closing')) return;
   el.classList.add('closing'); // animasi tutup dulu, baru disembunyikan
-  timers[id] = setTimeout(() => { el.classList.remove('open', 'closing'); lastFocus[id]?.focus?.(); }, 300);
+  timers[id] = setTimeout(() => { el.classList.remove('open', 'closing'); lastFocus[id]?.focus?.(); }, 420);
 };
 
 // ---------- Layout kursi: jumlah kursi per blok (b1..b4) di tiap baris ----------
@@ -258,7 +258,7 @@ function openLightbox(im) { // foto kecil langsung tampil & membesar dari posisi
     const to = lb.getBoundingClientRect();
     if (!to.width || tok !== lbTok) return;
     const s = from.width / to.width, dx = from.left + from.width / 2 - (to.left + to.width / 2), dy = from.top + from.height / 2 - (to.top + to.height / 2);
-    lb.animate([{transform: `translate(${dx}px,${dy}px) scale(${s})`, opacity: .6}, {transform: 'none', opacity: 1}], {duration: 520, easing: 'cubic-bezier(.32,.72,0,1)'});
+    lb.animate([{transform: `translate(${dx}px,${dy}px) scale(${s})`, opacity: .6}, {transform: 'none', opacity: 1}], {duration: 640, easing: 'cubic-bezier(.32,.72,0,1)'});
   });
   if (full !== lb.src) {
     const pre = new Image(); pre.src = full;
@@ -468,7 +468,7 @@ function countUp(root) {
   root.querySelectorAll('[data-n]').forEach(el => {
     const n = +el.dataset.n, t0 = performance.now();
     const step = t => {
-      const p = Math.min(1, (t - t0) / 800);
+      const p = Math.min(1, (t - t0) / 1100);
       el.textContent = Math.round(n * (1 - Math.pow(1 - p, 3)));
       if (p < 1) requestAnimationFrame(step);
     };
@@ -1053,7 +1053,7 @@ function tweenNum(el, from, to) {
   if (!m) return;
   const t0 = performance.now();
   const step = t => {
-    const p = Math.min(1, (t - t0) / 550);
+    const p = Math.min(1, (t - t0) / 850);
     el.textContent = m[1] + Math.round(from + (to - from) * (1 - Math.pow(1 - p, 3))) + m[3];
     if (p < 1) requestAnimationFrame(step);
   };
@@ -1114,7 +1114,7 @@ function tweenNums(id, box) {
     if (skip || from === undefined || from === to) return;
     const t0 = performance.now();
     const step = t => {
-      const p = Math.min(1, (t - t0) / 600);
+      const p = Math.min(1, (t - t0) / 900);
       el.textContent = Math.round(from + (to - from) * (1 - Math.pow(1 - p, 3)));
       if (p < 1) requestAnimationFrame(step);
     };
@@ -1131,27 +1131,32 @@ function playRefresh() {
   void c.offsetWidth;
   c.classList.add('refresh');
   clearTimeout(c._rf);
-  c._rf = setTimeout(() => c.classList.remove('refresh'), 1100);
+  c._rf = setTimeout(() => c.classList.remove('refresh'), 1700);
 }
 
 // ================= Animasi lanjutan: tampil saat terlihat, daftar bergeser, tab meluncur, pil filter, hitung mundur, kembang api =================
 const REVEAL = ['sl-chart', 'rchart', 'cal', 'mchart', 'ev-rank', 'lot'];
-const revealIO = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => {
-  if (!e.isIntersecting) return;
-  const el = e.target;
-  revealIO.unobserve(el);
+function showReveal(el) { // nyalakan animasi bar / kalender / cincin pada bagian ini
   el.classList.add('shown');
   if (el.id === 'lot') flowCount(el);
   clearTimeout(el._sh);
-  el._sh = setTimeout(() => el.classList.remove('shown'), 2600);
+  el._sh = setTimeout(() => el.classList.remove('shown'), 3600);
+}
+const revealIO = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  revealIO.unobserve(e.target);
+  showReveal(e.target);
 }), {threshold: 0.15}) : null;
-function watchReveal(root) { // animasi bar/kalender/cincin baru jalan saat bagiannya benar-benar terlihat
+function watchReveal(root) { // animasi bar/kalender/cincin jalan saat bagiannya terlihat
   REVEAL.forEach(id => {
     const el = $(id);
     if (!el || (root && !root.contains(el))) return;
     el.classList.remove('shown');
-    if (revealIO) revealIO.observe(el);
-    else { el.classList.add('shown'); setTimeout(() => el.classList.remove('shown'), 2600); }
+    if (revealIO) revealIO.unobserve(el);
+    const r = el.getBoundingClientRect();
+    if (r.width && r.top < innerHeight * 0.9 && r.bottom > 0) showReveal(el); // sudah di layar: nyalakan sekarang juga, jadi tidak ada frame "penuh lalu kosong"
+    else if (revealIO) revealIO.observe(el);
+    else showReveal(el);
   });
 }
 
@@ -1164,29 +1169,76 @@ function flipRender(box, itemSel, keyOf, doRender) {
   if (!first.size) return;
   box.querySelectorAll(itemSel).forEach(el => {
     const a = first.get(keyOf(el)), b = el.getBoundingClientRect();
-    if (!a) el.animate([{opacity: 0, transform: 'translateY(8px)'}, {opacity: 1, transform: 'none'}], {duration: 300});
-    else if (a.left !== b.left || a.top !== b.top) el.animate([{transform: `translate(${a.left - b.left}px, ${a.top - b.top}px)`}, {transform: 'none'}], {duration: 350, easing: 'cubic-bezier(.2,.8,.2,1)'});
+    if (!a) el.animate([{opacity: 0, transform: 'translateY(10px)'}, {opacity: 1, transform: 'none'}], {duration: 520, easing: 'cubic-bezier(.32,.72,0,1)'});
+    else if (a.left !== b.left || a.top !== b.top) el.animate([{transform: `translate(${a.left - b.left}px, ${a.top - b.top}px)`}, {transform: 'none'}], {duration: 620, easing: 'cubic-bezier(.32,.72,0,1)'});
   });
 }
 
-// penanda tab aktif yang meluncur
+// penanda tab aktif yang meluncur ("pil cair")
 function setStick() { // tinggi tab bar -> posisi header bulan yang menempel
   const bar = document.querySelector('.tabbar');
   if (bar) document.documentElement.style.setProperty('--stick', Math.round(bar.getBoundingClientRect().height + 16) + 'px');
 }
-function moveInd(instant) {
+/* Satu-satunya tempat yang menggerakkan pil. Aturan:
+   - moveInd()      -> meluncur ke tab aktif (tepi depan melaju duluan, tepi belakang menyusul, tanpa memantul)
+   - moveInd(true)  -> ukur ulang saja (ukuran layar / label berubah). Kalau pil sedang meluncur, hanya target yang diperbarui,
+                       jadi gerakannya tidak pernah dipotong atau dilempar ke posisi akhir.
+   - indFollow()    -> mengikuti jari saat menggeser tab */
+const IND_MS = 720;
+const indLead = k => 1 - Math.pow(1 - k, 3);
+const indTrail = k => { k = Math.min(1, Math.max(0, (k - 0.14) / 0.86)); return 1 - Math.pow(1 - k, 2.4); };
+const indRectOf = el => ({x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight});
+function indPaint(ind, r) {
+  ind._cur = r;
+  ind.style.width = r.w + 'px'; ind.style.height = r.h + 'px';
+  ind.style.transform = `translate3d(${r.x}px,${r.y}px,0)`;
+}
+function indAxis(p0, s0, p1, s1, ea, eb) { // ea: easing tepi awal, eb: easing tepi akhir
+  const a = p0 + (p1 - p0) * ea, b = (p0 + s0) + ((p1 + s1) - (p0 + s0)) * eb;
+  return [a, Math.max(b - a, 0)];
+}
+function indBlend(f, t, kLead, kTrail) { // f -> t; arah gerak menentukan tepi mana yang memimpin
+  const fx = t.x >= f.x, fy = t.y >= f.y;
+  const [x, w] = indAxis(f.x, f.w, t.x, t.w, fx ? kTrail : kLead, fx ? kLead : kTrail);
+  const [y, h] = indAxis(f.y, f.h, t.y, t.h, fy ? kTrail : kLead, fy ? kLead : kTrail);
+  return {x, y, w, h};
+}
+function indEl(create) {
+  const bar = document.querySelector('.tabbar');
+  if (!bar) return null;
+  let ind = bar.querySelector('.tab-ind');
+  if (!ind && create) { ind = document.createElement('i'); ind.className = 'tab-ind'; bar.prepend(ind); }
+  return ind;
+}
+function moveInd(remeasure) {
   setStick();
   const bar = document.querySelector('.tabbar'), on = bar && bar.querySelector('.tab.on');
   if (!on) return;
-  let ind = bar.querySelector('.tab-ind');
-  if (!ind) { ind = document.createElement('i'); ind.className = 'tab-ind'; bar.prepend(ind); instant = true; }
-  if (instant) ind.style.transition = 'none';
-  ind.style.width = on.offsetWidth + 'px';
-  ind.style.height = on.offsetHeight + 'px';
-  ind.style.transform = `translate(${on.offsetLeft}px, ${on.offsetTop}px)`;
-  if (instant) { void ind.offsetWidth; ind.style.transition = ''; }
+  let ind = indEl(false), fresh = false;
+  if (!ind) { ind = indEl(true); fresh = true; }
+  const to = indRectOf(on);
+  ind._to = to;
+  const same = ind._cur && ['x', 'y', 'w', 'h'].every(k => ind._cur[k] === to[k]);
+  if (fresh || calm() || !ind._cur || (remeasure === true && !ind._raf)) { cancelAnimationFrame(ind._raf); ind._raf = 0; indPaint(ind, to); return; }
+  if (remeasure === true) return; // sedang meluncur: loop di bawah membaca ind._to terbaru
+  if (same && !ind._raf) return;
+  cancelAnimationFrame(ind._raf);
+  const from = {...ind._cur}, t0 = performance.now();
+  const step = now => {
+    const k = Math.min(1, (now - t0) / IND_MS);
+    if (k >= 1) { ind._raf = 0; indPaint(ind, ind._to); return; }
+    indPaint(ind, indBlend(from, ind._to, indLead(k), indTrail(k)));
+    ind._raf = requestAnimationFrame(step);
+  };
+  ind._raf = requestAnimationFrame(step);
 }
-document.querySelector('.tabbar')?.addEventListener('click', () => requestAnimationFrame(() => { moveInd(); syncFbar(); }));
+function indFollow(fromTab, toTab, p) { // p 0..1: pil mengikuti jari di antara dua tab
+  const ind = indEl(true);
+  if (!ind || !fromTab || !toTab) return;
+  cancelAnimationFrame(ind._raf); ind._raf = 0;
+  p = Math.max(0, Math.min(1, p));
+  indPaint(ind, indBlend(indRectOf(fromTab), indRectOf(toTab), Math.pow(p, 0.85), Math.pow(p, 1.3)));
+}
 if (document.querySelector('.tabbar')) {
   const ro = new ResizeObserver(() => moveInd(true)); // lebar tab berubah saat angka jumlah muncul
   document.querySelectorAll('.tab').forEach(t => ro.observe(t));
@@ -1253,7 +1305,7 @@ function flowCount(box) {
   if (calm()) return;
   box.querySelectorAll('.lot-r.fl').forEach((row, i) => {
     row.querySelectorAll('[data-n]').forEach(el => { el.textContent = '0'; });
-    setTimeout(() => countUp(row), i * 550 + 150);
+    setTimeout(() => countUp(row), i * 260 + 200);
   });
 }
 
