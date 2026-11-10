@@ -411,9 +411,8 @@ body.app #view-main,body.app #view-gal,body.app #view-tl{animation:none}
 body.app .enter #stats .stat,body.app .enter #story,body.app .enter .last-c,body.app .enter #cover,body.app .enter #filters,
 body.app .enter .tl-i,body.app .enter #gallery .gi{animation:none}
 
-/* Riwayat: garis timeline digerakkan cascade() di app.js (tumbuh dari atas bersama kartu) */
-#timeline::before{transform-origin:top}
-#timeline.ln0::before{transform:scaleY(0);will-change:transform}
-#timeline.ln1::before{transform:scaleY(1);transition:transform var(--ln-dur,900ms) cubic-bezier(.3,.6,.3,1) var(--ln-delay,0ms)}
+/* Riwayat: garis timeline digambar cascade() lewat clip-path, sejalan dengan kartu (ln0 = tersembunyi, ln1 = tumbuh sampai --ln-rest dari bawah) */
+#timeline.ln0::before{clip-path:inset(0 0 100% 0)}
+#timeline.ln1::before{clip-path:inset(0 0 var(--ln-rest,0px) 0);transition:clip-path var(--ln-dur,900ms) linear var(--ln-delay,0ms)}
 /* Tiket: item bertahap ditangani cascade() juga, jangan dobel dengan animasi CSS */
 body.app .enter .ev-g,body.app .enter .ev-c{animation:none}
