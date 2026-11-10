@@ -270,6 +270,12 @@
        3. baru setelah itu semua animasi dimulai pada frame yang sama (hanya transform & opacity). */
   const VIEW_IDS = ['main', 'gal', 'tl', 'ev'];
   const EASE = 'cubic-bezier(.32,.72,0,1)';
+  // pegas "pop" ala iOS untuk item yang masuk (nilai dari --spring-b di app.css); browser lama jatuh ke kurva biasa
+  const POP = (() => {
+    try { if (!CSS.supports('transition-timing-function', 'linear(0,1)')) return EASE; } catch (e) { return EASE; }
+    const v = getComputedStyle(document.documentElement).getPropertyValue('--spring-b').trim();
+    return /^linear\(/.test(v) ? v : EASE;
+  })();
   const IN_MS = () => lite() ? 460 : 640, OUT_MS = () => lite() ? 260 : 360;
   const viewOf = k => $('view-' + k);
   let run = null; // transisi yang sedang berjalan: {anims, done}
@@ -318,29 +324,39 @@
     const rowStep = Math.min(L ? 70 : 85, (L ? 520 : 680) / Math.max(1, rows.length)); // total waktu bertahap dibatasi
     const colStep = L ? 40 : 50;
     const base0 = new Map(items.map(it => { const t = getComputedStyle(it.el).transform; return [it.el, t && t !== 'none' ? ' ' + t : '']; })); // jaga kemiringan polaroid
+    // garis timeline: ukur SEBELUM animasi item dibuat (supaya posisi belum bergeser oleh keyframe awal)
+    const tl = view.id === 'view-tl' ? $('timeline') : null;
+    let lnRest = 0;
+    if (tl) {
+      const tr = tl.getBoundingClientRect();
+      const reach = items.reduce((m, it) => Math.max(m, it.top + it.el.offsetHeight - tr.top), 0); // ujung bawah kartu terbawah yang ikut beranimasi
+      lnRest = Math.max(0, Math.round(tr.height - reach));
+    }
     const dur = L ? 520 : 640, anims = [];
     let lastDelay = 0;
     rows.forEach((row, ri) => {
       row.items.sort((a, b) => a.left - b.left).forEach((it, ci) => {
         const delay = start + ri * rowStep + ci * colStep, b = base0.get(it.el);
         lastDelay = Math.max(lastDelay, delay);
-        anims.push(it.el.animate([{opacity: 0, transform: 'translate3d(0,18px,0)' + b}, {opacity: 1, transform: b ? b.trim() : 'none'}],
-          {duration: dur, delay, easing: EASE, fill: 'backwards'}));
+        anims.push(it.el.animate([{opacity: 0, transform: 'translate3d(0,22px,0) scale(.94)' + b}, {opacity: 1, transform: b ? b.trim() : 'none'}],
+          {duration: dur + 80, delay, easing: POP, fill: 'backwards'}));
       });
     });
-    // garis timeline tumbuh dari atas bersamaan dengan kartu yang muncul (bukan sudah ada duluan).
-    // Pakai transisi CSS biasa (class ln0 -> ln1), BUKAN el.animate({pseudoElement}): di Safari/iPad animasi pseudo-elemen
-    // lewat WAAPI sering tidak menerapkan fill 'backwards' selama delay, jadi garis kelihatan penuh duluan.
-    const tl = view.id === 'view-tl' ? $('timeline') : null;
+    // garis timeline "digambar" dari atas SEJALAN dengan kartu (bukan sudah ada duluan).
+    // Dulu: scaleY pada seluruh tinggi timeline (bisa ribuan px) dengan kurva ease-out -> dalam ~300ms garis sudah
+    // melewati layar sementara kartu pertama baru muncul di ~550ms. Sekarang: clip-path dipotong sampai ujung kartu
+    // terbawah yang ikut beranimasi, kecepatan linear, mulai bersamaan dengan kartu pertama.
+    // Transisi CSS biasa (ln0 -> ln1), BUKAN el.animate({pseudoElement}): di Safari/iPad fill 'backwards' pada pseudo-elemen tidak andal.
     if (tl && anims.length) {
       clearTimeout(tl._lnT);
-      const dly = start, dur2 = Math.round(lastDelay - start + dur * 0.7);
-      tl.classList.remove('ln1'); tl.classList.add('ln0'); // garis dikecilkan SEKARANG (frame yang sama dengan item disembunyikan)
+      const dly = start, dur2 = Math.max(200, Math.round(lastDelay - start + 160));
+      tl.classList.remove('ln1'); tl.classList.add('ln0'); // garis disembunyikan SEKARANG (frame yang sama dengan item disembunyikan)
       tl.style.setProperty('--ln-delay', dly + 'ms');
       tl.style.setProperty('--ln-dur', dur2 + 'ms');
-      void tl.offsetHeight;                                // commit scaleY(0) tanpa transisi
-      tl.classList.add('ln1');                             // lalu tumbuh ke scaleY(1) lewat transisi
-      const clean = () => { clearTimeout(tl._lnT); tl.classList.remove('ln0', 'ln1'); tl.style.removeProperty('--ln-delay'); tl.style.removeProperty('--ln-dur'); };
+      tl.style.setProperty('--ln-rest', lnRest + 'px');
+      void tl.offsetHeight;                                // commit keadaan tersembunyi tanpa transisi
+      tl.classList.add('ln1');                             // lalu tumbuh lewat transisi
+      const clean = () => { clearTimeout(tl._lnT); tl.classList.remove('ln0', 'ln1'); ['--ln-delay', '--ln-dur', '--ln-rest'].forEach(k => tl.style.removeProperty(k)); };
       tl._lnT = setTimeout(clean, dly + dur2 + 150);
       // tab diketuk beruntun -> settle() memanggil cancel(): garis langsung penuh lagi
       anims.push({cancel: clean, finished: new Promise(r => setTimeout(r, dly + dur2))});
@@ -488,7 +504,12 @@
     };
     const r = {anims, done: clean};
     run = r;
-    if (still) { playEnter(next); settle(); return; }
+    if (still) { // "Kurangi Gerakan" aktif: tanpa geser/skala, tapi tetap pudar lembut (seperti iOS) supaya tidak muncul tiba-tiba
+      anims.push(next.animate([{opacity: 0}, {opacity: 1}], {duration: 240, easing: 'ease-out', fill: 'backwards'}));
+      playEnter(next);
+      Promise.allSettled(anims.map(a => a.finished)).then(() => { if (run === r) { run = null; r.done(); } });
+      return;
+    }
 
     void next.offsetHeight; // paksa tata letak selesai sekarang, bukan di tengah animasi
     const off = dir * travel();
