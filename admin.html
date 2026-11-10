@@ -281,6 +281,43 @@ body.adm .tab::before{content:'';flex:none;width:22px;height:22px;background:cur
   body.adm input,body.adm textarea,body.adm select,body.adm [contenteditable],body.adm pre,body.adm #jk-out{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
   body.adm img{-webkit-user-drag:none;user-drag:none;-webkit-touch-callout:none}
 }
+/* ---------- toast (simpan / urungkan hapus) ---------- */
+#toast{position:fixed;left:50%;bottom:24px;z-index:60;transform:translate(-50%,12px);opacity:0;pointer-events:none;display:flex;align-items:center;gap:6px;
+  padding:6px 8px 6px 16px;border-radius:99px;background:rgba(36,20,27,.97);border:1px solid rgba(255,255,255,.16);color:#fff;font-size:13px;font-weight:600;
+  box-shadow:0 12px 30px rgba(0,0,0,.5);max-width:calc(100vw - 24px);box-sizing:border-box;transition:transform .55s cubic-bezier(.32,.72,0,1),opacity .35s}
+#toast.on{transform:translate(-50%,0);opacity:1;pointer-events:auto}
+#toast span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:8px 6px 8px 0}
+#toast button{flex:none;min-height:40px;padding:0 14px;border:none;border-radius:99px;background:rgba(255,255,255,.1);color:#ff8fab;font:inherit;font-weight:800;cursor:pointer}
+#toast button:active{transform:scale(.94)}
+@media(max-width:768px){#toast{bottom:calc(92px + env(safe-area-inset-bottom,0px))}}
+@media(min-width:1280px){#toast{left:calc(50% + 120px)}}
+
+/* ---------- baris yang baru disimpan menyala sebentar ---------- */
+@keyframes rowflash{from{background:rgba(255,42,95,.3)}to{background:rgba(255,42,95,0)}}
+body.adm tr.flash{animation:rowflash 2s ease-out}
+@media(prefers-reduced-motion:reduce){body.adm tr.flash{animation:none;background:rgba(255,42,95,.14)}}
+
+/* ---------- HP: tabel jadi kartu, tombol simpan melekat ---------- */
+@media(max-width:768px){
+  body.adm .scroll{overflow-x:visible}
+  body.adm table{display:block;min-width:0;width:100%}
+  body.adm thead{display:none}
+  body.adm tbody{display:flex;flex-direction:column;gap:10px}
+  body.adm tbody tr{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 12px;align-items:center;padding:14px;border:1px solid #2a1820;border-radius:16px;background:#1d1318}
+  body.adm td{display:block;min-width:0;padding:0;border:0;overflow-wrap:anywhere}
+  body.adm td[colspan]{grid-column:1/-1;padding:18px 0}
+  body.adm td:nth-child(3),body.adm td:nth-child(4),body.adm td:nth-child(5),body.adm td:nth-child(6){grid-column:1/-1}
+  body.adm td:nth-child(3){color:#a1a1aa;font-size:12.5px}
+  body.adm td:nth-child(4)::before,body.adm td:nth-child(5)::before,body.adm td:nth-child(6)::before{content:attr(data-l);display:block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#a1a1aa;margin-bottom:2px}
+  body.adm td.nil{display:none}
+  body.adm td:nth-child(7){grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+  body.adm .act{min-height:44px;margin:0;font-size:14px;border-radius:10px}
+  /* lencana "Tersimpan" bawaan: pindah ke atas supaya tidak menutupi tab bar (gaya bawaannya inline, jadi perlu !important) */
+  #stor-badge{top:calc(env(safe-area-inset-top,0px) + 10px)!important;bottom:auto!important}
+  /* tombol simpan form menempel di atas tab bar selama form masih panjang */
+  body.adm #form .actions{position:sticky;bottom:calc(86px + env(safe-area-inset-bottom,0px));z-index:5;margin:14px -8px 0;padding:18px 8px 8px;
+    background:linear-gradient(to bottom,rgba(20,13,17,0),#140d11 38%)}
+}
 </style>
 </head>
 <body class="adm">
@@ -638,7 +675,7 @@ $('ask-ok').addEventListener('click', () => askDone && askDone(true));
 $('ask-no').addEventListener('click', () => askDone && askDone(false));
 $('ask-modal').addEventListener('click', e => { if (e.target.id === 'ask-modal' && askDone) askDone(false); });
 
-let page = 1;
+let page = 1, focusId = 0;
 const PER = 25;
 function renderTable() {
   const q = $('search').value.toLowerCase();
@@ -646,23 +683,25 @@ function renderTable() {
     .sort(cmp)
     .filter(r => !taskF || TASKS[taskF].f(r))
     .filter(r => [r.seat, r.setlist, r.note, r.member, r.ckMember, r.date, r.sesi, r.tiket].some(v => v.toLowerCase().includes(q)));
+  if (focusId) { const fi = list.findIndex(r => r.id === focusId); if (fi >= 0) page = Math.floor(fi / PER) + 1; } // tampilkan halaman yang memuat data yang baru disimpan
   const pages = Math.max(1, Math.ceil(list.length / PER));
   page = Math.min(page, pages);
   $('pager').innerHTML = pages > 1
     ? `<button class="btn-s" data-pg="-1" ${page <= 1 ? 'disabled' : ''}>‹ Sebelumnya</button><span>Hal ${page}/${pages} · ${list.length} data</span><button class="btn-s" data-pg="1" ${page >= pages ? 'disabled' : ''}>Berikutnya ›</button>` : '';
   $('tbody').innerHTML = list.length ? list.slice((page - 1) * PER, page * PER).map(r => `
-    <tr>
-      <td><span class="seat-badge${SEATS.has(r.seat) ? '' : ' bad'}" ${SEATS.has(r.seat) ? '' : 'title="Kursi tidak ada di peta — edit supaya muncul"'}>${esc(r.seat)}</span></td>
-      <td><b>${esc(r.setlist)}</b></td>
-      <td>${esc(r.date)}${r.sesi ? ' · ' + r.sesi : ''}</td>
-      <td>${r.harga ? esc(rupiah(r.harga)) + (r.tiket ? '<br><small>' + esc(r.tiket) + '</small>' : '') : '-'}</td><td>${esc(r.note) || '-'}</td>
-      <td>${exCell(r)}</td>
-      <td>
+    <tr data-rid="${r.id}"${r.id === focusId ? ' class="flash"' : ''}>
+      <td data-l="Kursi"><span class="seat-badge${SEATS.has(r.seat) ? '' : ' bad'}" ${SEATS.has(r.seat) ? '' : 'title="Kursi tidak ada di peta — edit supaya muncul"'}>${esc(r.seat)}</span></td>
+      <td data-l="Setlist"><b>${esc(r.setlist)}</b></td>
+      <td data-l="Tanggal">${esc(r.date)}${r.sesi ? ' · ' + r.sesi : ''}</td>
+      <td data-l="Harga"${r.harga ? '' : ' class="nil"'}>${r.harga ? esc(rupiah(r.harga)) + (r.tiket ? '<br><small>' + esc(r.tiket) + '</small>' : '') : '-'}</td><td data-l="Keterangan"${r.note ? '' : ' class="nil"'}>${esc(r.note) || '-'}</td>
+      <td data-l="2-Shot / Chekicha"${extras(r).length ? '' : ' class="nil"'}>${exCell(r)}</td>
+      <td data-l="Aksi">
         <button class="act edit" data-act="edit" data-id="${r.id}">Edit</button>
         <button class="act del" data-act="del" data-id="${r.id}">Hapus</button>
       </td>
     </tr>`).join('')
     : '<tr><td colspan="7" style="text-align:center;color:#71717a">Data tidak ditemukan</td></tr>';
+  focusId = 0; // sorotan hanya untuk satu kali gambar
 }
 
 // saran otomatis (datalist) dari setlist & member yang pernah diinput
@@ -784,6 +823,25 @@ const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTod
   })();
 })();
 
+// ---------- Toast & urungkan ----------
+const toastEl = document.body.appendChild(Object.assign(document.createElement('div'), {id: 'toast', role: 'status'}));
+let toastT = 0;
+function toast(msg, action, ms = 2600) { // action: {label, fn}
+  clearTimeout(toastT);
+  toastEl.innerHTML = '<span></span>' + (action ? '<button type="button"></button>' : '');
+  toastEl.firstChild.textContent = msg;
+  if (action) {
+    const b = toastEl.querySelector('button');
+    b.textContent = action.label;
+    b.addEventListener('click', () => { clearTimeout(toastT); toastEl.classList.remove('on'); action.fn(); });
+  }
+  void toastEl.offsetWidth;
+  toastEl.classList.add('on');
+  toastT = setTimeout(() => toastEl.classList.remove('on'), ms);
+}
+// hapus langsung, tanpa dialog; "Urungkan" memulihkan selama beberapa detik (toast terbaru menggantikan yang lama)
+const undoToast = (what, restore) => toast('Dihapus: ' + what, {label: 'Urungkan', fn: restore}, 6500);
+
 // ---------- Form ----------
 const setMsg = t => { const m = $('msg'); m.textContent = t || ''; m.classList.remove('pulse'); if (t) { void m.offsetWidth; m.classList.add('pulse'); } };
 
@@ -893,7 +951,10 @@ $('form').addEventListener('submit', async e => {
 
   save();
   resetForm();
+  focusId = rec.id; // baris ini menyala sebentar & halamannya dibuka
   renderAll();
+  toast((id ? 'Diperbarui: ' : 'Tersimpan: ') + rec.seat + ' · ' + rec.setlist,
+    {label: 'Lihat', fn: () => { const tr = $('tbody').querySelector(`tr[data-rid="${rec.id}"]`); if (!tr) return; tr.scrollIntoView({behavior: 'smooth', block: 'center'}); tr.classList.remove('flash'); void tr.offsetWidth; tr.classList.add('flash'); }});
 });
 
 // ---------- Aksi tabel & peta ----------
@@ -927,10 +988,13 @@ $('tbody').addEventListener('click', async e => {
     $('btn-cancel').style.display = 'block';
     setMsg('');
     $('form').scrollIntoView({ behavior: 'smooth' });
-  } else if (await ask(`Hapus riwayat ${rec.seat} — ${rec.setlist} (${rec.date})?`, 'Hapus')) {
+  } else {
+    const at = records.findIndex(r => r.id === id);
     records = records.filter(r => r.id !== id);
+    if ($('f-id').value === String(id)) resetForm(); // sedang diedit: jangan simpan ulang sebagai data baru
     save();
     renderAll();
+    undoToast(rec.seat + ' · ' + rec.setlist, () => { if (!records.some(r => r.id === id)) records.splice(Math.min(at, records.length), 0, rec); save(); renderAll(); });
   }
 });
 
@@ -1485,7 +1549,11 @@ $('misc').addEventListener('click', async e => {
   else if (q('[data-miedit]')) { miscEdit = Number(q('[data-miedit]').dataset.miedit); renderMisc(); $('mi-amt').scrollIntoView({behavior: 'smooth', block: 'center'}); }
   else if (q('[data-midel]')) {
     const id = Number(q('[data-midel]').dataset.midel), w = misc.find(x => x.id === id);
-    if (w && await ask(`Hapus ${M.label} ${w.date ? fmtDate(w.date) + ' ' : ''}${w.name} ${rupiah(w.amount)}?`, 'Hapus')) { misc = misc.filter(x => x.id !== id); if (miscEdit === id) miscEdit = 0; saveMisc(); renderMisc(); renderExpense(); }
+    if (w) {
+      const at = misc.findIndex(x => x.id === id);
+      misc = misc.filter(x => x.id !== id); if (miscEdit === id) miscEdit = 0; saveMisc(); renderMisc(); renderExpense();
+      undoToast(`${M.label} ${w.name} ${rupiah(w.amount)}`, () => { if (!misc.some(x => x.id === id)) misc.splice(Math.min(at, misc.length), 0, w); saveMisc(); renderMisc(); renderExpense(); });
+    }
   }
 });
 $('misc').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.closest('.aw-form input')) { e.preventDefault(); $('misc').querySelector('[data-misave]').click(); } });
@@ -1551,9 +1619,11 @@ $('away').addEventListener('click', async e => {
   else if (q('[data-aedit]')) { awayEdit = Number(q('[data-aedit]').dataset.aedit); renderAway(); $('aw-date').scrollIntoView({behavior: 'smooth', block: 'center'}); }
   else if (q('[data-adel]')) {
     const id = Number(q('[data-adel]').dataset.adel), w = away.find(x => x.id === id);
-    if (w && await ask(`Hapus catatan Away ${fmtDate(w.date)} · ${w.cat} ${rupiah(w.amount)}?`, 'Hapus')) {
+    if (w) {
+      const at = away.findIndex(x => x.id === id);
       away = away.filter(x => x.id !== id); if (awayEdit === id) awayEdit = 0;
       saveAway(); renderAway(); renderExpense();
+      undoToast(`Away ${w.cat} ${rupiah(w.amount)}`, () => { if (!away.some(x => x.id === id)) away.splice(Math.min(at, away.length), 0, w); saveAway(); renderAway(); renderExpense(); });
     }
   }
 });
@@ -1608,7 +1678,11 @@ $('tsev').addEventListener('click', async e => {
   const b = e.target.closest('[data-tkrm]');
   if (!b) return;
   const t = tickets.find(x => tkey(x) === b.dataset.tkrm);
-  if (t && await ask(`Hapus foto 2-Shot ${t.member || ''} ${fmtDate(t.date)}?`, 'Hapus')) { t.photo = ''; saveTickets(); renderTsEv(); }
+  if (t && t.photo) {
+    const old = t.photo;
+    t.photo = ''; saveTickets(); renderTsEv();
+    toast('Foto dihapus', {label: 'Urungkan', fn: () => { if (!t.photo) { t.photo = old; saveTickets(); renderTsEv(); } }}, 6500);
+  }
 });
 
 let soloEdit = 0, soloPhoto = '', soloDraft = null;
@@ -1672,9 +1746,11 @@ $('solo').addEventListener('click', async e => {
     renderSolo(); $('so-date').scrollIntoView({behavior: 'smooth', block: 'center'});
   } else if (q('[data-sodel]')) {
     const id = Number(q('[data-sodel]').dataset.sodel), w = solo.find(x => x.id === id);
-    if (w && await ask(`Hapus ${soloLabel(w)} ${fmtDate(w.date)}${w.member ? ' dengan ' + w.member : ''}?`, 'Hapus')) {
+    if (w) {
+      const at = solo.findIndex(x => x.id === id);
       solo = solo.filter(x => x.id !== id); if (soloEdit === id) { soloEdit = 0; soloPhoto = ''; soloDraft = null; }
       saveSolo(); renderSolo(); renderExpense();
+      undoToast(`${soloLabel(w)} ${fmtDate(w.date)}`, () => { if (!solo.some(x => x.id === id)) solo.splice(Math.min(at, solo.length), 0, w); saveSolo(); renderSolo(); renderExpense(); });
     }
   }
 });
