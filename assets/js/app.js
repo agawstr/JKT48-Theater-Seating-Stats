@@ -294,6 +294,37 @@
     return {el: prev, off: Math.max(0, -r.top)};
   }
 
+  /* Galeri: foto baru mulai dimuat SETELAH geseran tab selesai. Sebelumnya begitu tab dibuka, puluhan <img loading=lazy>
+     langsung mengunduh + decode + memudar masuk tepat saat pil dan isi tab sedang bergerak -> patah-patah.
+     Selama transisi, src ditahan di data-src; tempat foto tetap ada (aspect-ratio), jadi layout tidak bergeser. */
+  let hold = false;
+  const stashImgs = () => document.querySelectorAll('#gallery img[src]').forEach(im => {
+    if (im.naturalWidth) return; // sudah termuat: aman
+    im.dataset.src = im.getAttribute('src'); im.removeAttribute('src');
+  });
+  const releaseImgs = () => {
+    hold = false;
+    document.querySelectorAll('#gallery img[data-src]').forEach(im => { im.src = im.dataset.src; im.removeAttribute('data-src'); });
+  };
+  // saat browser menganggur, unduh ~12 thumbnail pertama ke cache supaya muncul seketika begitu galeri dibuka
+  const warmed = new Set();
+  const warm = () => {
+    if (navigator.connection && navigator.connection.saveData) return;
+    [...document.querySelectorAll('#gallery img')].slice(0, 12).forEach(im => {
+      const u = im.dataset.src || im.getAttribute('src');
+      if (!u || warmed.has(u)) return;
+      warmed.add(u); const p = new Image(); p.decoding = 'async'; p.src = u;
+    });
+  };
+  if (typeof renderGallery === 'function') {
+    const baseGal = renderGallery;
+    renderGallery = function () {
+      baseGal();
+      if (hold) stashImgs();
+      if ('requestIdleCallback' in window) requestIdleCallback(warm, {timeout: 4000}); else setTimeout(warm, 1500);
+    };
+  }
+
   function switchTab(name, drag) {
     const list = tabs(), from = list.findIndex(t => t.classList.contains('on')), to = list.findIndex(t => t.dataset.tab === name);
     if (to < 0 || to === from) return;
@@ -307,6 +338,7 @@
 
     const ghost = !still && !lite() && prev && !prev.hidden ? makeGhost(prev) : null;
     if (!ghost && prev) { prev.style.transform = ''; prev.style.opacity = ''; }
+    hold = name === 'gal' && !still && !!$('gallery'); if (hold) stashImgs();
     VIEW_IDS.forEach(k => { viewOf(k).hidden = k !== name; });
     flushLazy('view-' + name); // kalau masih usang, gambar sekarang (sebelum animasi dimulai)
 
@@ -319,6 +351,7 @@
 
     const anims = [];
     const clean = () => {
+      if (hold) releaseImgs(); // jaga-jaga: transisi dibatalkan / diselesaikan paksa
       if (ghost) { ghost.el.classList.remove('ghost'); ghost.el.style.cssText = ''; }
       anims.forEach(a => { try { a.cancel(); } catch (e) {} }); // fill:'forwards' tidak boleh tersisa di tab yang nanti dibuka lagi
     };
@@ -330,6 +363,7 @@
     const off = dir * travel();
     anims.push(next.animate([{opacity: 0, transform: shift(off)}, {opacity: 1, transform: 'none'}],
       {duration: IN_MS(), delay: lite() ? 30 : 80, easing: EASE, fill: 'backwards'}));
+    if (hold) { const main = anims[0]; main.finished.then(() => { if (run === r) releaseImgs(); }, () => {}); } // geseran utama selesai -> mulai muat foto
     if (ghost) {
       const ga = ghost.el.animate([{opacity: dragO, transform: 'none'}, {opacity: 0, transform: shift(-off * 0.6)}],
         {duration: OUT_MS(), easing: 'cubic-bezier(.3,.6,.3,1)', fill: 'forwards'});
