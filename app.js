@@ -4,7 +4,7 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const mqMobile = matchMedia('(max-width:768px)');
-  const mqDesk = matchMedia('(min-width:1100px)');
+  const mqDesk = matchMedia('(min-width:1280px)');
   const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   const tabs = () => [...document.querySelectorAll('.tabbar .tab')].filter(b => !b.hidden);
 
@@ -240,7 +240,8 @@
   const viewOf = k => $('view-' + k);
   let run = null; // transisi yang sedang berjalan: {anims, done}
 
-  const travel = () => mqDesk.matches ? 28 : Math.round(Math.min(104, Math.max(48, innerWidth * 0.18)));
+  const lite = () => mqMobile.matches; // HP: layer lebih sedikit supaya tetap 60fps
+  const travel = () => mqDesk.matches ? 28 : lite() ? 34 : Math.round(Math.min(104, Math.max(48, innerWidth * 0.18)));
   const shift = d => mqDesk.matches ? `translate3d(0,${d}px,0)` : `translate3d(${d}px,0,0)`;
 
   function settle() { // selesaikan seketika transisi sebelumnya (mis. tab diketuk beruntun)
@@ -265,11 +266,11 @@
       const r = el.getBoundingClientRect();
       if (!r.height || r.bottom < 0 || r.top > innerHeight) continue;
       els.push(el);
-      if (els.length >= 9) break;
+      if (els.length >= (lite() ? 5 : 9)) break;
     }
     const base0 = els.map(el => { const t = getComputedStyle(el).transform; return t && t !== 'none' ? ' ' + t : ''; }); // jaga kemiringan polaroid
     return els.map((el, i) => el.animate([{opacity: 0, transform: 'translate3d(0,22px,0)' + base0[i]}, {opacity: 1, transform: base0[i] ? base0[i].trim() : 'none'}],
-      {duration: 900, delay: base + i * 75, easing: EASE, fill: 'backwards'}));
+      {duration: lite() ? 760 : 900, delay: base + i * (lite() ? 60 : 75), easing: EASE, fill: 'backwards'}));
   }
 
   // playEnter (dipakai shared.js saat data pertama tampil) memakai sistem yang sama
@@ -303,7 +304,7 @@
     list.forEach((t, i) => { t.classList.toggle('on', i === to); t.setAttribute('aria-selected', i === to); });
     moveInd(); // pil meluncur (mulai dari posisi sekarang, jadi tetap mulus walau ketukan beruntun)
 
-    const ghost = !still && prev && !prev.hidden ? makeGhost(prev) : null;
+    const ghost = !still && !lite() && prev && !prev.hidden ? makeGhost(prev) : null;
     if (!ghost && prev) { prev.style.transform = ''; prev.style.opacity = ''; }
     VIEW_IDS.forEach(k => { viewOf(k).hidden = k !== name; });
     flushLazy('view-' + name); // kalau masih usang, gambar sekarang (sebelum animasi dimulai)
