@@ -456,22 +456,6 @@
     };
   }
 
-  /* pengaman kaca: kalau pindah tab berkali-kali terasa patah (banyak frame > 40ms), efek kaca dimatikan di perangkat ini
-     (hanya untuk sesi ini; ?glass=on untuk menyalakan lagi). Satu frame lambat tidak dihitung: harus >50% frame dan 6 kali. */
-  let strikes = 0;
-  function watchFrames(ms) {
-    if (!perf.glassOn() || document.hidden) return;
-    const end = performance.now() + ms;
-    let last = 0, n = 0, bad = 0;
-    const tick = t => {
-      if (last) { n++; if (t - last > 40) bad++; }
-      last = t;
-      if (t < end) { requestAnimationFrame(tick); return; }
-      if (n > 8 && bad / n > 0.5 && ++strikes >= 6 && perf.degrade()) say('Efek kaca dimatikan agar lebih lancar');
-    };
-    requestAnimationFrame(tick);
-  }
-
   function switchTab(name, drag) {
     const list = tabs(), from = list.findIndex(t => t.classList.contains('on')), to = list.findIndex(t => t.dataset.tab === name);
     if (to < 0 || to === from) return;
@@ -527,7 +511,7 @@
       anims.push(ga);
     }
     playEnter(next); // .enter + reveal + item bertahap (masuk ke run.anims lewat override di atas)
-    watchFrames(IN_MS() + 220);
+    if (window.liquid) window.liquid.watch(IN_MS() + 220, say);
     Promise.allSettled(anims.map(a => a.finished)).then(() => { if (run === r) { run = null; r.done(); } });
   }
   window.switchTab = switchTab;
@@ -570,59 +554,7 @@
     };
   })();
 
-  /* ---------- tab bar bawah (HP): tahan lalu geser pil ke tab lain, lepas untuk pindah. Ketukan biasa tetap jalan seperti biasa ---------- */
-  (() => {
-    const bar = document.querySelector('.tabbar');
-    if (!bar) return;
-    let d = null, raf = 0, swallow = false;
-    const nearest = (cs, x) => cs.reduce((b, c, i) => Math.abs(c - x) < Math.abs(cs[b] - x) ? i : b, 0);
-    const buzz = () => { if (typeof navigator.vibrate === 'function' && !calm()) { try { navigator.vibrate(6); } catch (e) {} } };
-    const centers = () => d.list.map(b => { const r = b.getBoundingClientRect(); return r.left + r.width / 2; });
-
-    const follow = () => { // pil mengikuti jari di antara dua tab terdekat
-      raf = 0;
-      if (!d || !d.drag) return;
-      const cs = d.cs || (d.cs = centers()), n = cs.length, x = d.x; // posisi tab tidak berubah selama drag: ukur sekali
-      let i = 0, p = 0;
-      if (x >= cs[n - 1]) { i = n - 2; p = 1; }
-      else if (x > cs[0]) { i = cs.findIndex((c, k) => k < n - 1 && x >= c && x < cs[k + 1]); p = (x - cs[i]) / (cs[i + 1] - cs[i]); }
-      indFollow(d.list[i], d.list[i + 1], p);
-      const hot = nearest(cs, x);
-      if (hot !== d.hot) { d.hot = hot; d.list.forEach((b, k) => b.classList.toggle('hot', k === hot)); buzz(); }
-    };
-    const finish = commit => {
-      if (!d) return;
-      const s = d; d = null;
-      cancelAnimationFrame(raf); raf = 0;
-      bar.classList.remove('dragging');
-      s.list.forEach(b => b.classList.remove('hot'));
-      if (!s.drag) return;
-      swallow = true; setTimeout(() => { swallow = false; }, 80); // klik susulan setelah geser tidak boleh ikut memicu tab
-      const cur = s.list.findIndex(b => b.classList.contains('on'));
-      if (commit && s.hot >= 0 && s.hot !== cur) switchTab(s.list[s.hot].dataset.tab);
-      else moveInd(); // tidak pindah: pil kembali pelan ke tab aktif
-    };
-
-    bar.addEventListener('pointerdown', e => {
-      if (e.pointerType === 'mouse' || !e.isPrimary || !(mqMobile.matches || mqTouch.matches) || !e.target.closest('.tab')) return;
-      d = {id: e.pointerId, x0: e.clientX, x: e.clientX, drag: false, list: tabs(), hot: -1};
-    });
-    bar.addEventListener('pointermove', e => {
-      if (!d || e.pointerId !== d.id) return;
-      d.x = e.clientX;
-      if (!d.drag) {
-        if (Math.abs(d.x - d.x0) < 8) return; // di bawah ambang = masih ketukan
-        d.drag = true;
-        try { bar.setPointerCapture(d.id); } catch (err) {}
-        bar.classList.add('dragging');
-        buzz();
-      }
-      if (!raf) raf = requestAnimationFrame(follow);
-    });
-    bar.addEventListener('pointerup', e => { if (d && e.pointerId === d.id) finish(true); });
-    bar.addEventListener('pointercancel', e => { if (d && e.pointerId === d.id) finish(false); });
-    bar.addEventListener('click', e => { if (swallow) { e.stopPropagation(); e.preventDefault(); } }, true);
-  })();
+  /* tahan & geser pil tab: dipindah ke liquid.js (dipakai bersama dengan admin) */
 
   /* ---------- foto: kartu "terakhir nonton" memudar masuk + tampilan saat gagal dimuat ---------- */
   (() => {
@@ -642,21 +574,8 @@
     }, true);
   })();
 
-  /* ---------- getar halus saat ketuk kursi / pindah tab (Android; iOS Safari tidak mendukung API ini, jadi diabaikan) ---------- */
-  (() => {
-    if (typeof navigator.vibrate !== 'function') return;
-    let last = 0;
-    const buzz = ms => {
-      const t = performance.now();
-      if (calm() || t - last < 60) return;
-      last = t;
-      try { navigator.vibrate(ms); } catch (e) { /* diabaikan */ }
-    };
-    document.addEventListener('click', e => {
-      if (e.target.closest('.seat')) buzz(10);
-      else if (e.target.closest('.tabbar .tab')) buzz(8);
-    }, true);
-  })();
+  /* getar halus: dipindah ke liquid.js */
+
 
   /* ---------- PWA: service worker ---------- */
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
@@ -664,26 +583,4 @@
   }
   addEventListener('offline', () => say('Offline: menampilkan data tersimpan'));
   addEventListener('online', () => say('Kembali online'));
-})();
-
-
-/* liquid.js — kilau kaca yang mengikuti kursor (hanya perangkat dengan mouse, dan bukan "kurangi gerakan").
-   Hanya mengisi variabel CSS --mx/--my; tampilannya diatur di liquid.css. */
-(() => {
-  'use strict';
-  if (!matchMedia('(hover:hover) and (pointer:fine)').matches || matchMedia('(prefers-reduced-motion:reduce)').matches) return;
-  const SEL = '.stat,.last-c,.tl-i,.ev-g,.ev-c,.btn-s,.badge,.gk,.tabbar,.modal';
-  let raf = 0, ev = null;
-  addEventListener('pointermove', e => {
-    ev = e;
-    if (raf) return;
-    raf = requestAnimationFrame(() => {
-      raf = 0;
-      const el = ev.target.closest && ev.target.closest(SEL);
-      if (!el) return;
-      const r = el.getBoundingClientRect();
-      el.style.setProperty('--mx', (ev.clientX - r.left) + 'px');
-      el.style.setProperty('--my', (ev.clientY - r.top) + 'px');
-    });
-  }, {passive: true});
 })();
