@@ -772,7 +772,7 @@ body{min-height:100vh;min-height:100dvh;overflow-x:hidden}
 .sub{font-size:clamp(13px,3.4vw,15px);max-width:34em}
 #view-main,#view-gal,#view-tl,#view-ev{min-width:0}
 img,canvas{max-width:100%}
-@media(min-width:1100px){#stats{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}}
+@media(min-width:1280px){#stats{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}}
 
 /* ---- filter peta: 2 kolom rapi, tanggal berlabel ---- */
 #filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:end;width:100%}
@@ -976,9 +976,9 @@ img,canvas{max-width:100%}
 .seat-badge{white-space:nowrap}
 /* kolom konten tab Riwayat, Tiket, dan bilah Galeri memakai lebar yang sama (sebelumnya 720 / 860 / 720) */
 #timeline,#tl-bar,#view-ev,#gallery-bar,.gk-bar{max-width:var(--col-w)}
-@media(min-width:1100px){body.app #view-gal #gallery-bar,body.app #view-gal .gk-bar{max-width:var(--col-w)}}
+@media(min-width:1280px){body.app #view-gal #gallery-bar,body.app #view-gal .gk-bar{max-width:var(--col-w)}}
 /* kartu statistik: jangan menyisakan satu kartu sendirian di baris kedua */
-@media(min-width:601px) and (max-width:1099px){
+@media(min-width:601px) and (max-width:1279px){
   #stats{grid-template-columns:repeat(3,minmax(0,1fr))}
   #stats:has(.stat:nth-child(7)){grid-template-columns:repeat(4,minmax(0,1fr))}
 }
@@ -987,8 +987,11 @@ img,canvas{max-width:100%}
   .lot-r,.ls-r{grid-template-columns:160px minmax(0,1fr) 15.5rem;gap:12px;padding:8px 4px}
 }
 /* kartu "Terakhir nonton" di kolom samping laptop yang sempit: susun ke bawah, jangan menjepit teks */
-@media(min-width:1100px){
+@media(min-width:1280px){
   body.app .col-side .last-c{flex-wrap:wrap}
   body.app .col-side .last-b{flex:1 1 140px}
   body.app .col-side .last-a{width:100%;text-align:left;font-size:18px}
 }
+
+/* pil tab: ukuran dasar tetap, peregangan lewat scale dari pojok kiri atas */
+.tab-ind{transform-origin:0 0}
