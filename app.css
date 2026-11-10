@@ -7,7 +7,7 @@
 #appbar,#ptr,.sb-brand,.sb-keys{display:none}
 #toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:60;transform:translate(-50%,12px);opacity:0;pointer-events:none;
   padding:10px 16px;border-radius:99px;background:rgba(36,20,27,.96);border:1px solid rgba(255,255,255,.16);color:#fff;font-size:13px;font-weight:600;
-  max-width:calc(100vw - 32px);text-align:center;transition:transform .35s cubic-bezier(.22,1,.36,1),opacity .25s}
+  max-width:calc(100vw - 32px);text-align:center;transition:transform .55s cubic-bezier(.32,.72,0,1),opacity .4s}
 #toast.on{transform:translate(-50%,0);opacity:1}
 
 /* ---------- gerak ala iOS ---------- */
@@ -26,7 +26,7 @@ body.app .overlay.open .hi{animation-duration:.42s;animation-delay:calc(var(--i,
 /* pil tab digerakkan app.js (tepi depan melaju duluan, tepi belakang menyusul): tanpa transition CSS */
 body.app .tab-ind{transition:none!important;will-change:transform,width,height}
 /* ditekan: mengecil cepat, lepas: kembali pelan */
-body.app .tl-i,body.app .gi,body.app .last-c,body.app .stat:not(.sk){transition:transform .45s var(--ios),border-color .25s,background .25s,box-shadow .3s}
+body.app .tl-i,body.app .gi,body.app .last-c,body.app .stat:not(.sk){transition:transform .6s var(--ios),border-color .35s,background .35s,box-shadow .4s}
 body.app .tl-i:active,body.app .last-c:active{transform:scale(.985);transition-duration:.2s;transition-delay:.09s}
 body.app .tab:active{transform:scale(.93)}
 body.app .btn-s:active,body.app .gk:active{transform:scale(.94)}
@@ -96,17 +96,17 @@ body.app #legend{justify-content:center}
     border-radius:50%;background:#24141b;border:1px solid rgba(255,255,255,.16);box-shadow:0 8px 22px rgba(0,0,0,.5);
     opacity:var(--ptr-o,0);transform:translateY(calc(var(--ptr,0px) - 58px)) scale(calc(.6 + var(--ptr-o,0) * .4));pointer-events:none}
   #ptr svg{width:20px;height:20px;transform:rotate(var(--ptr-r,0deg))}
-  #ptr.spin{opacity:1;--ptr-o:1;transform:translateY(14px) scale(1);transition:transform .3s cubic-bezier(.22,1,.36,1)}
+  #ptr.spin{opacity:1;--ptr-o:1;transform:translateY(14px) scale(1);transition:transform .5s cubic-bezier(.32,.72,0,1)}
   #ptr.spin svg{animation:ptr-spin .8s linear infinite}
-  #ptr.back{transition:transform .3s cubic-bezier(.22,1,.36,1),opacity .25s}
+  #ptr.back{transition:transform .5s cubic-bezier(.32,.72,0,1),opacity .4s}
   @keyframes ptr-spin{to{transform:rotate(360deg)}}
 
   /* transisi bersama kartu Riwayat -> detail kursi */
-  ::view-transition-group(seat-card){animation-duration:.45s;animation-timing-function:cubic-bezier(.2,.9,.25,1);overflow:clip;border-radius:20px}
+  ::view-transition-group(seat-card){animation-duration:.65s;animation-timing-function:cubic-bezier(.32,.72,0,1);overflow:clip;border-radius:20px}
   ::view-transition-old(seat-card),::view-transition-new(seat-card){height:100%;width:100%;object-fit:cover;object-position:top center}
   #seat-modal[data-vt]:not(.closing),#seat-modal[data-vt]:not(.closing)>.modal,#seat-modal[data-vt] .hi{animation:none!important}
   #seat-modal.vt .modal{transition:none!important}
-  html.vt-run::view-transition-old(root),html.vt-run::view-transition-new(root){animation-duration:.25s}
+  html.vt-run::view-transition-old(root),html.vt-run::view-transition-new(root){animation-duration:.4s}
 }
 
 /* =====================================================================
