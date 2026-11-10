@@ -10,14 +10,14 @@ on:
       - data.json
       - 'photos/**'
       - '!photos/t/**'   # commit thumbnail dari bot tidak memicu ulang
-      - shared.js
+      - assets/js/shared.js
       - scripts/**
       - .github/workflows/site-check.yml
   pull_request:
     paths:
       - data.json
       - 'photos/**'
-      - shared.js
+      - assets/js/shared.js
       - scripts/**
   workflow_dispatch:
 
