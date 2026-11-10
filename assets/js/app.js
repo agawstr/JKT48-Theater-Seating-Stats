@@ -5,6 +5,7 @@
   const $ = id => document.getElementById(id);
   const mqMobile = matchMedia('(max-width:768px)');
   const mqDesk = matchMedia('(min-width:1280px)');
+  const mqTouch = matchMedia('(hover:none) and (pointer:coarse)'); // iPad/tablet: lebarnya > 768px tapi tetap butuh mode ringan
   const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   const tabs = () => [...document.querySelectorAll('.tabbar .tab')].filter(b => !b.hidden);
 
@@ -236,11 +237,11 @@
        3. baru setelah itu semua animasi dimulai pada frame yang sama (hanya transform & opacity). */
   const VIEW_IDS = ['main', 'gal', 'tl', 'ev'];
   const EASE = 'cubic-bezier(.32,.72,0,1)';
-  const IN_MS = 820, OUT_MS = 460;
+  const IN_MS = () => lite() ? 460 : 820, OUT_MS = () => lite() ? 260 : 460;
   const viewOf = k => $('view-' + k);
   let run = null; // transisi yang sedang berjalan: {anims, done}
 
-  const lite = () => mqMobile.matches; // HP: layer lebih sedikit supaya tetap 60fps
+  const lite = () => mqMobile.matches || mqTouch.matches; // HP & tablet sentuh: layer lebih sedikit supaya tetap 60fps
   const travel = () => mqDesk.matches ? 28 : lite() ? 34 : Math.round(Math.min(104, Math.max(48, innerWidth * 0.18)));
   const shift = d => mqDesk.matches ? `translate3d(0,${d}px,0)` : `translate3d(${d}px,0,0)`;
 
@@ -270,7 +271,7 @@
     }
     const base0 = els.map(el => { const t = getComputedStyle(el).transform; return t && t !== 'none' ? ' ' + t : ''; }); // jaga kemiringan polaroid
     return els.map((el, i) => el.animate([{opacity: 0, transform: 'translate3d(0,22px,0)' + base0[i]}, {opacity: 1, transform: base0[i] ? base0[i].trim() : 'none'}],
-      {duration: lite() ? 760 : 900, delay: base + i * (lite() ? 60 : 75), easing: EASE, fill: 'backwards'}));
+      {duration: lite() ? 600 : 900, delay: (lite() ? 40 : base) + i * (lite() ? 45 : 75), easing: EASE, fill: 'backwards'}));
   }
 
   // playEnter (dipakai shared.js saat data pertama tampil) memakai sistem yang sama
@@ -328,10 +329,10 @@
     void next.offsetHeight; // paksa tata letak selesai sekarang, bukan di tengah animasi
     const off = dir * travel();
     anims.push(next.animate([{opacity: 0, transform: shift(off)}, {opacity: 1, transform: 'none'}],
-      {duration: IN_MS, delay: 80, easing: EASE, fill: 'backwards'}));
+      {duration: IN_MS(), delay: lite() ? 30 : 80, easing: EASE, fill: 'backwards'}));
     if (ghost) {
       const ga = ghost.el.animate([{opacity: dragO, transform: 'none'}, {opacity: 0, transform: shift(-off * 0.6)}],
-        {duration: OUT_MS, easing: 'cubic-bezier(.3,.6,.3,1)', fill: 'forwards'});
+        {duration: OUT_MS(), easing: 'cubic-bezier(.3,.6,.3,1)', fill: 'forwards'});
       ga.finished.then(() => { if (run === r) { ghost.el.classList.remove('ghost'); ghost.el.style.cssText = ''; ga.cancel(); } }, () => {});
       anims.push(ga);
     }
@@ -346,6 +347,19 @@
   (() => {
     let st = null;
     const skip = el => el.closest('#seating-wrapper, #cal, #zoomctl, select, input, textarea, .overlay, #fbar, .ev-d, .actions-m, .tabbar, #appbar');
+    // tulis style sekali per frame (event sentuh iPad Pro bisa 120Hz), bukan tiap event
+    const paintDrag = s => {
+      s.raf = 0;
+      if (s.done) return;
+      s.view.style.transform = `translate3d(${s.shown}px,0,0)`;
+      if (s.opa !== 1) s.view.style.opacity = s.opa.toFixed(3);
+      if (s.j >= 0) indFollow(s.list[s.i], s.list[s.j], Math.abs(s.dx) / (innerWidth * 0.42));
+    };
+    const stopDrag = s => { // terapkan posisi terakhir yang tertunda, lalu lepas layer
+      if (s.raf) { cancelAnimationFrame(s.raf); paintDrag(s); }
+      s.done = true;
+      s.view.style.willChange = '';
+    };
     const reset = (v, fromPx, fromO) => {
       v.style.transform = ''; v.style.opacity = '';
       if (calm() || (!fromPx && fromO === 1)) return;
@@ -359,7 +373,7 @@
     }, {passive: true});
     document.addEventListener('touchmove', e => {
       if (!st) return;
-      if (e.touches.length !== 1) { if (st.lock) { reset(st.view, st.shown, st.opa); moveInd(); } st = null; return; }
+      if (e.touches.length !== 1) { if (st.lock) { stopDrag(st); reset(st.view, st.shown, st.opa); moveInd(); } st = null; return; }
       const t = e.touches[0], dx = t.clientX - st.x0, dy = t.clientY - st.y0;
       if (!st.lock) {
         if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
@@ -367,7 +381,8 @@
           settle();
           const list = tabs(), i = list.findIndex(b => b.classList.contains('on'));
           if (i < 0) { st = null; return; }
-          Object.assign(st, {lock: 'x', list, i, view: viewOf(list[i].dataset.tab), shown: 0, opa: 1});
+          Object.assign(st, {lock: 'x', list, i, view: viewOf(list[i].dataset.tab), shown: 0, opa: 1, j: -1, raf: 0, done: false});
+          st.view.style.willChange = lite() ? 'transform' : 'transform, opacity';
         } else { st = null; return; } // vertikal / ragu: biarkan halaman menggulir
       }
       e.preventDefault();
@@ -376,14 +391,14 @@
       st.dx = dx;
       const j = st.i + (dx < 0 ? 1 : -1), has = j >= 0 && j < st.list.length;
       const px = dx * (has ? 0.5 : 0.2);
-      st.shown = px; st.opa = 1 - Math.min(0.55, Math.abs(px) / innerWidth * 1.2);
-      st.view.style.transform = `translate3d(${px}px,0,0)`;
-      st.view.style.opacity = st.opa.toFixed(3);
-      if (has) indFollow(st.list[st.i], st.list[j], Math.abs(dx) / (innerWidth * 0.42));
+      st.shown = px; st.j = has ? j : -1;
+      st.opa = lite() ? 1 : 1 - Math.min(0.55, Math.abs(px) / innerWidth * 1.2); // fade seluruh tab itu mahal: dilewati di layar sentuh
+      if (!st.raf) { const cur = st; cur.raf = requestAnimationFrame(() => paintDrag(cur)); }
     }, {passive: false});
     const end = () => {
       const s = st; st = null;
       if (!s || s.lock !== 'x') return;
+      stopDrag(s);
       const j = s.i + (s.dx < 0 ? 1 : -1), has = j >= 0 && j < s.list.length;
       const go = has && (Math.abs(s.dx) > innerWidth * 0.22 || (Math.abs(s.v) > 0.5 && Math.abs(s.dx) > 30 && Math.sign(s.v) === Math.sign(s.dx)));
       if (go) switchTab(s.list[j].dataset.tab, {px: s.shown, opacity: s.opa}); // transform inline sengaja dibiarkan: dipakai untuk mengukur posisi awal tab lama
@@ -464,7 +479,7 @@
     };
 
     bar.addEventListener('pointerdown', e => {
-      if (e.pointerType === 'mouse' || !e.isPrimary || !mqMobile.matches || !e.target.closest('.tab')) return;
+      if (e.pointerType === 'mouse' || !e.isPrimary || !(mqMobile.matches || (mqTouch.matches && !mqDesk.matches)) || !e.target.closest('.tab')) return;
       d = {id: e.pointerId, x0: e.clientX, x: e.clientX, drag: false, list: tabs(), hot: -1};
     });
     bar.addEventListener('pointermove', e => {
