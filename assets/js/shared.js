@@ -13,9 +13,13 @@ const perf = (() => {
   const root = document.documentElement;
   const q = new URLSearchParams(location.search), force = q.get('perf'), forceGlass = q.get('glass');
   const mqs = [matchMedia('(max-width:768px)'), matchMedia('(hover:none) and (pointer:coarse)'), matchMedia('(prefers-reduced-transparency: reduce)')];
-  const lsGet = () => { try { return localStorage.getItem('jkt48_glass'); } catch (e) { return null; } };
-  const lsSet = v => { try { if (v) localStorage.setItem('jkt48_glass', v); else localStorage.removeItem('jkt48_glass'); } catch (e) {} };
-  if (forceGlass === 'on') lsSet(null); else if (forceGlass === 'off') lsSet('off');
+  // ?glass=off (uji manual) tersimpan di perangkat; pengaman otomatis HANYA berlaku selama sesi ini (sessionStorage)
+  const lsGet = () => { try { return localStorage.getItem('jkt48_glass_m'); } catch (e) { return null; } };
+  const lsSet = v => { try { if (v) localStorage.setItem('jkt48_glass_m', v); else localStorage.removeItem('jkt48_glass_m'); } catch (e) {} };
+  const autoGet = () => { try { return sessionStorage.getItem('jkt48_glass_auto'); } catch (e) { return null; } };
+  const autoSet = v => { try { if (v) sessionStorage.setItem('jkt48_glass_auto', v); else sessionStorage.removeItem('jkt48_glass_auto'); } catch (e) {} };
+  try { localStorage.removeItem('jkt48_glass'); } catch (e) {} // status "mati otomatis" lama (permanen) dibersihkan
+  if (forceGlass === 'on') { lsSet(null); autoSet(null); } else if (forceGlass === 'off') lsSet('off');
   const weak = () => {
     const c = navigator.connection || {};
     return !!c.saveData || (navigator.deviceMemory && navigator.deviceMemory <= 2) || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2);
@@ -24,7 +28,7 @@ const perf = (() => {
   const glass = () => {
     if (forceGlass === 'on') return 'on';
     if (!(CSS.supports('backdrop-filter', 'blur(1px)') || CSS.supports('-webkit-backdrop-filter', 'blur(1px)'))) return 'off';
-    return weak() || mqs[2].matches || lsGet() === 'off' ? 'off' : 'on';
+    return weak() || mqs[2].matches || lsGet() === 'off' || autoGet() === 'off' ? 'off' : 'on';
   };
   const apply = () => {
     const t = tier(), g = glass();
@@ -37,7 +41,7 @@ const perf = (() => {
   return {
     lite: () => root.dataset.perf === 'lite',
     glassOn: () => root.dataset.glass === 'on',
-    degrade() { if (root.dataset.glass !== 'on') return false; lsSet('off'); apply(); return true; }
+    degrade() { if (root.dataset.glass !== 'on') return false; autoSet('off'); apply(); return true; }
   };
 })();
 const openEl = id => {
