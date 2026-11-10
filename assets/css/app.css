@@ -402,3 +402,11 @@ body.app #lightbox.open.closing>img{animation:none} /* gerak tutupnya (terbang k
 /* lightbox: geser untuk menutup tidak boleh ikut menggulung halaman di belakangnya */
 #lightbox{touch-action:none;overscroll-behavior:contain;-webkit-user-select:none;user-select:none}
 #lb-img{-webkit-user-drag:none;-webkit-touch-callout:none;backface-visibility:hidden}
+
+/* ---------- ganti tab: satu sistem animasi saja (WAAPI di switchTab/cascade) ----------
+   Sebelumnya tab Peta/Riwayat/Galeri dianimasikan 3 lapis sekaligus: keyframe CSS pada view,
+   animasi WAAPI pada view, lalu item di dalamnya dianimasikan lagi oleh CSS (.enter ...) DAN cascade().
+   Tab Tiket terasa mulus karena isinya ringan dan hampir tidak ada lapisan ganda. */
+body.app #view-main,body.app #view-gal,body.app #view-tl{animation:none}
+body.app .enter #stats .stat,body.app .enter #story,body.app .enter .last-c,body.app .enter #cover,body.app .enter #filters,
+body.app .enter .tl-i,body.app .enter #gallery .gi{animation:none}
