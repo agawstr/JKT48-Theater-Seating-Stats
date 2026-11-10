@@ -790,7 +790,7 @@ function renderLast() {
   const ago = isNaN(d) ? '' : d < 0 ? `${-d} hari lagi` : d === 0 ? 'Hari ini' : `${d} hari yang lalu`;
   const ph = extras(r).find(x => x.photo);
   el.innerHTML = `<div class="last-c">
-    ${ph ? `<img src="${esc(thumbOf(ph.photo))}" data-full="${esc(ph.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="Foto show terakhir">` : `<div class="last-s">${esc(r.seat)}</div>`}
+    ${ph ? `<div class="last-ph"><img src="${esc(thumbOf(ph.photo))}" data-full="${esc(ph.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="Foto show terakhir"></div>` : `<div class="last-s">${esc(r.seat)}</div>`}
     <div class="last-b"><span class="last-l">Terakhir nonton</span><b>${esc(r.setlist) || '(tanpa setlist)'}</b>
       <span>${esc(fmtDate(r.date))}${r.sesi ? ' · ' + esc(r.sesi) : ''} · Kursi <button type="button" class="seat-badge tl-s" data-seat="${esc(r.seat)}">${esc(r.seat)}</button></span></div>
     <div class="last-a">${esc(ago)}</div></div>`;
