@@ -123,6 +123,7 @@ function renderChartRaw() {
   $('chart').innerHTML = rowLabels() + [0, 1, 2, 3].map(j =>
     `<div class="seat-block block-${j + 1}">` +
     LAYOUT.map((row, i) => `<div class="seat-row" style="--r:${i}">${row[j].map(seat).join('')}</div>`).join('') + '</div>').join('') + rowLabels();
+  fitKey = ''; // isi peta baru digambar: ukurannya harus diukur ulang
   $('total').textContent = records.length;
   const first = !introDone && records.length > 0; // animasi masuk hanya sekali
   introDone = introDone || first; intro = first;
@@ -139,10 +140,10 @@ function renderChartRaw() {
 }
 
 let mapScale = 1, mapAuto = true; // zoom peta di HP (cubit dua jari / tombol); mapAuto = otomatis pas lebar layar
-let fitKey = ''; // ukuran saat terakhir diukur: kalau sama, peta tidak perlu diukur ulang (hemat 250 kursi x 2 tata letak)
+var fitKey = ''; // ukuran saat terakhir diukur: kalau sama, peta tidak perlu diukur ulang (hemat 250 kursi x 2 tata letak)
 function fitChart(force) {
   const w = $('seating-wrapper'), c = $('stage-container');
-  const key = w.clientWidth + ':' + innerWidth + ':' + (mapAuto ? 'a' : mapScale) + ':' + records.length;
+  const key = w.clientWidth + ':' + innerWidth + ':' + (mapAuto ? 'a' : mapScale);
   if (!force && key === fitKey && w.clientWidth) return;
   fitKey = key;
   c.style.zoom = ''; c.style.transform = ''; c.style.marginLeft = c.style.marginBottom = ''; w.style.overflowX = '';
