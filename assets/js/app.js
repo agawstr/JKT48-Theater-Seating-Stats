@@ -457,7 +457,7 @@
     const follow = () => { // pil mengikuti jari di antara dua tab terdekat
       raf = 0;
       if (!d || !d.drag) return;
-      const cs = centers(), n = cs.length, x = d.x;
+      const cs = d.cs || (d.cs = centers()), n = cs.length, x = d.x; // posisi tab tidak berubah selama drag: ukur sekali
       let i = 0, p = 0;
       if (x >= cs[n - 1]) { i = n - 2; p = 1; }
       else if (x > cs[0]) { i = cs.findIndex((c, k) => k < n - 1 && x >= c && x < cs[k + 1]); p = (x - cs[i]) / (cs[i + 1] - cs[i]); }
