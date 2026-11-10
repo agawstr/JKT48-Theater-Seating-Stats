@@ -40,7 +40,7 @@
   const tb = document.querySelector('.tabbar');
   if (tb) {
     const ico = document.querySelector('link[rel=apple-touch-icon]')?.href || 'icons/icon-192.png';
-    tb.insertAdjacentHTML('afterbegin', `<div class="sb-brand" aria-hidden="true"><img src="${ico}" alt=""><b>Theater<br>Stats</b></div>`);
+    tb.insertAdjacentHTML('afterbegin', `<div class="sb-brand" aria-hidden="true"><img src="${ico}" alt=""><b>Idoling<br>Diary</b></div>`);
     tb.insertAdjacentHTML('beforeend', `<div class="sb-keys" aria-hidden="true"><div><kbd>←</kbd><kbd>→</kbd>ganti tab</div><div><kbd>/</kbd>cari riwayat</div><div><kbd>Esc</kbd>tutup</div></div>`);
   }
 
