@@ -24,7 +24,7 @@ body.app .enter .tl-i.a,body.app .enter .ev-g:nth-child(-n+8),body.app .enter .e
 body.app #gallery .gi.a{animation-duration:.45s;animation-delay:calc(min(var(--i,0),8) * 32ms)}
 body.app .overlay.open .hi{animation-duration:.42s;animation-delay:calc(var(--i,0) * 36ms + 70ms)}
 /* pil tab digerakkan app.js (tepi depan melaju duluan, tepi belakang menyusul): tanpa transition CSS */
-body.app .tab-ind{transition:none!important;will-change:transform,width,height}
+body.app .tab-ind{transition:none!important;will-change:transform}
 /* ditekan: mengecil cepat, lepas: kembali pelan */
 body.app .tl-i,body.app .gi,body.app .last-c,body.app .stat:not(.sk){transition:transform .6s var(--ios),border-color .35s,background .35s,box-shadow .4s}
 body.app .tl-i:active,body.app .last-c:active{transform:scale(.985);transition-duration:.2s;transition-delay:.09s}
