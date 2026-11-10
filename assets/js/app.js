@@ -201,8 +201,38 @@
     const prev = openSeat;
     openSeat = function (code) {
       prev(code);
+      originFromTap();
       if (seatOv.classList.contains('docked')) seatOv.scrollIntoView({block: 'nearest', behavior: calm() ? 'auto' : 'smooth'});
     };
+  }
+
+  /* ---------- kilau kaca mengikuti jari / kursor (hanya tab bar & pil filter, hanya saat kaca aktif) ----------
+     Yang berubah hanya dua variabel CSS per frame di elemen kecil; tidak ada layout, tidak ada blur yang dianimasikan. */
+  (() => {
+    [document.querySelector('.tabbar'), $('fbar')].filter(Boolean).forEach(el => {
+      let rect = null, raf = 0, px = 0, py = 0;
+      const paint = () => { raf = 0; el.style.setProperty('--gx', px + 'px'); el.style.setProperty('--gy', py + 'px'); };
+      const move = e => { if (!rect) return; px = e.clientX - rect.left; py = e.clientY - rect.top; if (!raf) raf = requestAnimationFrame(paint); };
+      const enter = e => { if (!perf.glassOn() || calm()) return; rect = el.getBoundingClientRect(); move(e); el.style.setProperty('--gl', 1); };
+      const leave = () => { rect = null; el.style.setProperty('--gl', 0); };
+      el.addEventListener('pointerenter', enter);
+      el.addEventListener('pointerdown', enter);
+      el.addEventListener('pointermove', move, {passive: true});
+      el.addEventListener('pointerleave', leave);
+      el.addEventListener('pointercancel', leave);
+      el.addEventListener('pointerup', e => { if (e.pointerType !== 'mouse') leave(); });
+    });
+  })();
+
+  /* ---------- modal kursi (tablet/laptop) tumbuh dari titik yang diketuk, bukan dari tengah layar ---------- */
+  let tap = null;
+  document.addEventListener('pointerdown', e => { tap = {x: e.clientX, y: e.clientY, t: performance.now()}; }, true);
+  const sheetMq = matchMedia('(max-width:600px)'); // di bawah ini modal berupa lembar bawah: animasinya sendiri
+  function originFromTap() {
+    const m = seatOv && seatOv.querySelector('.modal');
+    if (!m || seatOv.classList.contains('docked') || !perf.glassOn() || sheetMq.matches || !tap || performance.now() - tap.t > 1500) { m && m.style.removeProperty('--ox'); m && m.style.removeProperty('--oy'); return; }
+    m.style.setProperty('--ox', (tap.x - m.offsetLeft) + 'px'); // offset* tidak ikut transform, jadi tetap benar di frame pertama animasi
+    m.style.setProperty('--oy', (tap.y - m.offsetTop) + 'px');
   }
 
   /* ---------- keyboard: ← → ganti tab, / cari, Esc tutup ---------- */
@@ -332,6 +362,22 @@
     };
   }
 
+  /* pengaman kaca: kalau pindah tab berkali-kali terasa patah (banyak frame > 40ms), efek kaca dimatikan di perangkat ini
+     (tersimpan; ?glass=on untuk menyalakan lagi). Satu frame lambat saat render pertama tidak dihitung: harus >30% frame dan 3 kali. */
+  let strikes = 0;
+  function watchFrames(ms) {
+    if (!perf.glassOn() || document.hidden) return;
+    const end = performance.now() + ms;
+    let last = 0, n = 0, bad = 0;
+    const tick = t => {
+      if (last) { n++; if (t - last > 40) bad++; }
+      last = t;
+      if (t < end) { requestAnimationFrame(tick); return; }
+      if (n > 8 && bad / n > 0.3 && ++strikes >= 3 && perf.degrade()) say('Efek kaca dimatikan agar lebih lancar');
+    };
+    requestAnimationFrame(tick);
+  }
+
   function switchTab(name, drag) {
     const list = tabs(), from = list.findIndex(t => t.classList.contains('on')), to = list.findIndex(t => t.dataset.tab === name);
     if (to < 0 || to === from) return;
@@ -382,6 +428,7 @@
       anims.push(ga);
     }
     playEnter(next); // .enter + reveal + item bertahap (masuk ke run.anims lewat override di atas)
+    watchFrames(IN_MS() + 220);
     Promise.allSettled(anims.map(a => a.finished)).then(() => { if (run === r) { run = null; r.done(); } });
   }
   window.switchTab = switchTab;
