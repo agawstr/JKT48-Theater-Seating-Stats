@@ -410,3 +410,7 @@ body.app #lightbox.open.closing>img{animation:none} /* gerak tutupnya (terbang k
 body.app #view-main,body.app #view-gal,body.app #view-tl{animation:none}
 body.app .enter #stats .stat,body.app .enter #story,body.app .enter .last-c,body.app .enter #cover,body.app .enter #filters,
 body.app .enter .tl-i,body.app .enter #gallery .gi{animation:none}
+
+/* selama transisi tab: blur kaca dimatikan (isi di bawahnya bergerak, jadi blur dihitung ulang tiap frame) */
+html.tabbing .tabbar{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;background:rgba(26,11,18,.95)!important}
+html.tabbing #fbar{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
