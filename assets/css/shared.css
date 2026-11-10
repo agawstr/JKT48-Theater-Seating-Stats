@@ -999,16 +999,75 @@ img,canvas{max-width:100%}
 .tab-ind{transform-origin:0 0}
 
 /* =====================================================================
-   Tingkat performa: html[data-perf="lite"] (ditentukan shared.js: HP, tablet sentuh, hemat data, perangkat lemah)
+   Tingkat performa (ditentukan shared.js)
+     html[data-perf=lite]  : HP, tablet sentuh, hemat data, perangkat lemah  -> layer & bayangan lebih sedikit
+     html[data-glass=off]  : kaca dimatikan (perangkat lemah, hemat data, reduced-transparency, atau dimatikan otomatis)
    ===================================================================== */
-html[data-perf=lite] .tabbar{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(30,10,20,.94)}
-html[data-perf=lite] .overlay{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(8,3,6,.82)}
-html[data-perf=lite] .modal,html[data-perf=lite] #pop{-webkit-backdrop-filter:none;backdrop-filter:none;background:#21101a}
-html[data-perf=lite] #fbar{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(30,12,22,.97)}
+/* latar gelap di belakang modal: cukup diredupkan, TIDAK diblur (blur layar penuh = hal paling mahal di GPU) */
+.overlay{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(8,3,6,.62)}
+#lightbox{background:rgba(6,2,5,.88)}
+
+html[data-glass=off] .tabbar{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(30,10,20,.94)}
+html[data-glass=off] .modal,html[data-glass=off] #pop{-webkit-backdrop-filter:none;backdrop-filter:none;background:#21101a}
+html[data-glass=off] #fbar{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(30,12,22,.97)}
 html[data-perf=lite] #stage-container::after{display:none}
 /* polaroid: bayangan blur besar x puluhan kartu mahal di GPU */
 html[data-perf=lite] .gi,html[data-perf=lite] body.app #gallery .gi{box-shadow:0 1px 1px rgba(0,0,0,.25),0 5px 10px -4px rgba(0,0,0,.5)}
 html[data-perf=lite] .gi::before{box-shadow:none}
+
+/* =====================================================================
+   Kaca ala iOS 26 (Liquid Glass) — html[data-glass=on]
+   Aturan keringanan:
+   - backdrop-filter HANYA di benda kecil yang melayang: tab bar, pil filter, toast, header kecil (HP), dan modal/panel (bukan HP)
+   - kartu & daftar tetap solid; latar modal tidak diblur
+   - blur tidak pernah dianimasikan; hanya transform & opacity (dan satu variabel kilau di elemen kecil)
+   ===================================================================== */
+@property --gl{syntax:'<number>';inherits:false;initial-value:0}
+html[data-glass=on]{--gl-blur:blur(20px) saturate(180%);--gl-tint:rgba(24,10,18,.40)}
+html[data-glass=on][data-perf=lite]{--gl-blur:blur(12px) saturate(150%)}  /* HP: blur lebih kecil = jauh lebih murah */
+
+html[data-glass=on] .tabbar,
+html[data-glass=on] #fbar,
+html[data-glass=on] #toast,
+html[data-glass=on] #appbar{
+  -webkit-backdrop-filter:var(--gl-blur);backdrop-filter:var(--gl-blur);
+  /* kilau mengikuti jari/kursor (--gx, --gy, --gl diisi app.js) di atas warna kaca */
+  background:
+    radial-gradient(140px circle at var(--gx,50%) var(--gy,-40%),rgba(255,255,255,calc(.06 + var(--gl,0) * .22)),transparent 70%),
+    var(--g-bg),var(--gl-tint)}
+html[data-glass=on] #appbar{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02)),rgba(13,9,13,.62)}
+html[data-glass=on] .tabbar{transition:--gl .35s ease,box-shadow .3s}
+html[data-glass=on] #fbar{transition:--gl .35s ease,transform .55s var(--ios),opacity .3s}
+
+/* muncul: membesar halus dari bawah (hanya transform & opacity) */
+html[data-glass=on] #fbar{transform:translate(-50%,14px) scale(.9);transform-origin:50% 100%}
+html[data-glass=on] #fbar.on{transform:translate(-50%,0) scale(1)}
+html[data-glass=on] #toast{transform:translate(-50%,12px) scale(.9);transform-origin:50% 100%;transition:transform .55s var(--ios),opacity .35s}
+html[data-glass=on] #toast.on{transform:translate(-50%,0) scale(1)}
+
+/* pil tab: kaca berwarna dengan kilau tepi atas */
+html[data-glass=on] .tab-ind{
+  background:linear-gradient(135deg,rgba(255,255,255,.30),rgba(255,255,255,.04) 55%),linear-gradient(135deg,rgba(255,60,110,.62),rgba(136,19,55,.5));
+  border-color:rgba(255,160,185,.6);
+  box-shadow:0 4px 16px rgba(255,42,95,.38),inset 0 1px 0 rgba(255,255,255,.6),inset 0 -1px 0 rgba(255,255,255,.14)}
+/* tekan: mengecil sedikit, melenting kembali */
+html[data-glass=on] .tab:active{transform:scale(.94)}
+
+/* modal / panel kursi: blur hanya di tablet & laptop; di HP tetap tampak kaca (tint + garis terang) tanpa blur */
+html[data-glass=on][data-perf=full] .modal{-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%)}
+html[data-glass=on][data-perf=lite] .modal{-webkit-backdrop-filter:none;backdrop-filter:none;
+  background:linear-gradient(135deg,rgba(255,60,110,.2),rgba(136,19,55,.08)),rgba(28,8,16,.92);
+  box-shadow:inset 0 1px 0 rgba(255,200,215,.35),0 18px 50px rgba(0,0,0,.5)}
+html[data-glass=on] #pop{-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%)}
+@keyframes glass-in{from{opacity:0;transform:scale(.88)}}
+@media(min-width:601px){
+  html[data-glass=on] .overlay.open>.modal{transform-origin:var(--ox,50%) var(--oy,50%);animation:glass-in .6s var(--ios)}
+}
+@media(prefers-reduced-motion:reduce){
+  html[data-glass=on] #fbar,html[data-glass=on] #toast,html[data-glass=on] .tabbar{transition:none}
+  html[data-glass=on] .overlay.open>.modal{animation:none}
+  html[data-glass=on] .tab:active{transform:none}
+}
 
 /* =====================================================================
    Galeri: placeholder sebelum foto muncul (JS menambah .ok di .gi-ph saat foto selesai dimuat, .bad kalau gagal)
