@@ -328,13 +328,22 @@
           {duration: dur, delay, easing: EASE, fill: 'backwards'}));
       });
     });
-    // garis timeline tumbuh dari atas bersamaan dengan kartu yang muncul (bukan sudah ada duluan)
+    // garis timeline tumbuh dari atas bersamaan dengan kartu yang muncul (bukan sudah ada duluan).
+    // Pakai transisi CSS biasa (class ln0 -> ln1), BUKAN el.animate({pseudoElement}): di Safari/iPad animasi pseudo-elemen
+    // lewat WAAPI sering tidak menerapkan fill 'backwards' selama delay, jadi garis kelihatan penuh duluan.
     const tl = view.id === 'view-tl' ? $('timeline') : null;
     if (tl && anims.length) {
-      try {
-        anims.push(tl.animate([{transform: 'scaleY(0)'}, {transform: 'scaleY(1)'}],
-          {duration: lastDelay - start + dur * 0.7, delay: start, easing: 'cubic-bezier(.3,.6,.3,1)', fill: 'backwards', pseudoElement: '::before'}));
-      } catch (e) { /* browser lama tanpa animasi pseudo-elemen: garis tampil biasa */ }
+      clearTimeout(tl._lnT);
+      const dly = start, dur2 = Math.round(lastDelay - start + dur * 0.7);
+      tl.classList.remove('ln1'); tl.classList.add('ln0'); // garis dikecilkan SEKARANG (frame yang sama dengan item disembunyikan)
+      tl.style.setProperty('--ln-delay', dly + 'ms');
+      tl.style.setProperty('--ln-dur', dur2 + 'ms');
+      void tl.offsetHeight;                                // commit scaleY(0) tanpa transisi
+      tl.classList.add('ln1');                             // lalu tumbuh ke scaleY(1) lewat transisi
+      const clean = () => { clearTimeout(tl._lnT); tl.classList.remove('ln0', 'ln1'); tl.style.removeProperty('--ln-delay'); tl.style.removeProperty('--ln-dur'); };
+      tl._lnT = setTimeout(clean, dly + dur2 + 150);
+      // tab diketuk beruntun -> settle() memanggil cancel(): garis langsung penuh lagi
+      anims.push({cancel: clean, finished: new Promise(r => setTimeout(r, dly + dur2))});
     }
     return anims;
   }
