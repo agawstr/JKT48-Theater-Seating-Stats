@@ -1266,7 +1266,7 @@ if (document.querySelector('.tabbar')) {
 }
 
 // pil pemberitahuan filter aktif (hanya di halaman publik)
-const fbar = document.querySelector('.tabbar') ? document.body.appendChild(Object.assign(document.createElement('div'), {id: 'fbar'})) : null;
+const fbar = document.querySelector('.tabbar') && $('view-main') ? document.body.appendChild(Object.assign(document.createElement('div'), {id: 'fbar'})) : null;
 fbar?.setAttribute('role', 'status');
 fbar?.addEventListener('click', e => { if (e.target.closest('button')) $('flt-reset').click(); });
 function syncFbar() {
