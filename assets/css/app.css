@@ -386,3 +386,19 @@ h1{font-size:clamp(30px,5vw,40px);font-weight:700;letter-spacing:-.03em;color:#f
 @keyframes sp-sweep{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
 @keyframes sp-failsafe{to{opacity:0;visibility:hidden}} /* cadangan kalau JS gagal: hilang sendiri setelah 10 detik */
 @media(prefers-reduced-motion:reduce){#splash b,#splash span,#splash i{animation:none}#splash i::after{animation:none;left:30%}}
+
+
+/* ---------- Animasi TUTUP modal / lightbox ----------
+   Penyebab "tiba-tiba hilang": .overlay.open{animation:fade} di atas (dimuat setelah shared.css, kekhususan sama)
+   mengalahkan .overlay.closing yang masih membawa kelas .open, jadi animasi tutup tidak pernah jalan.
+   Selektor di bawah lebih spesifik (open+closing sekaligus). Lembar bawah HP (#seat-modal.closing) tetap pakai aturannya sendiri. */
+@keyframes ov-out{to{opacity:0}}
+@keyframes modal-out{to{opacity:0;transform:scale(.92) translate3d(0,8px,0)}}
+body.app .overlay.open.closing:not(.docked){animation:ov-out .3s var(--ios) forwards}
+body.app .overlay.open.closing:not(.docked)>.modal{transform-origin:var(--ox,50%) var(--oy,50%);animation:modal-out .3s var(--ios) forwards}
+body.app #lightbox.open.closing>img{animation:none} /* gerak tutupnya (terbang ke thumbnail) diatur closeLightbox() */
+@media(prefers-reduced-motion:reduce){body.app .overlay.open.closing:not(.docked),body.app .overlay.open.closing:not(.docked)>.modal{animation:none}}
+
+/* lightbox: geser untuk menutup tidak boleh ikut menggulung halaman di belakangnya */
+#lightbox{touch-action:none;overscroll-behavior:contain;-webkit-user-select:none;user-select:none}
+#lb-img{-webkit-user-drag:none;-webkit-touch-callout:none;backface-visibility:hidden}
