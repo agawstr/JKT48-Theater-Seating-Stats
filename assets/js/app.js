@@ -302,11 +302,11 @@
       const r = el.getBoundingClientRect();
       if (!r.height || r.bottom < 0 || r.top > innerHeight) continue;
       els.push(el);
-      if (els.length >= (lite() ? 5 : 9)) break;
+      if (els.length >= (lite() ? 12 : 16)) break;
     }
     const base0 = els.map(el => { const t = getComputedStyle(el).transform; return t && t !== 'none' ? ' ' + t : ''; }); // jaga kemiringan polaroid
     return els.map((el, i) => el.animate([{opacity: 0, transform: 'translate3d(0,22px,0)' + base0[i]}, {opacity: 1, transform: base0[i] ? base0[i].trim() : 'none'}],
-      {duration: lite() ? 600 : 900, delay: (lite() ? 40 : base) + i * (lite() ? 45 : 75), easing: EASE, fill: 'backwards'}));
+      {duration: lite() ? 520 : 800, delay: (lite() ? 60 : base) + i * (lite() ? 38 : 55), easing: EASE, fill: 'backwards'}));
   }
 
   // playEnter (dipakai shared.js saat data pertama tampil) memakai sistem yang sama
@@ -333,8 +333,8 @@
      langsung mengunduh + decode + memudar masuk tepat saat pil dan isi tab sedang bergerak -> patah-patah.
      Selama transisi, src ditahan di data-src; tempat foto tetap ada (aspect-ratio), jadi layout tidak bergeser. */
   let hold = false;
-  const stashImgs = () => document.querySelectorAll('#gallery img[src]').forEach(im => {
-    if (im.naturalWidth) return; // sudah termuat: aman
+  const stashImgs = () => document.querySelectorAll('#gallery img[src]').forEach((im, i) => {
+    if (i < 12 || im.naturalWidth) return; // 12 pertama (dimuat eager) & yang sudah termuat: aman
     im.dataset.src = im.getAttribute('src'); im.removeAttribute('src');
   });
   const releaseImgs = () => { // dilepas bertahap (6 foto per frame), bukan puluhan sekaligus
@@ -452,9 +452,12 @@
     if (still) { playEnter(next); settle(); return; }
 
     void next.offsetHeight; // paksa tata letak selesai sekarang, bukan di tengah animasi
-    const off = dir * travel();
-    anims.push(next.animate([{opacity: 0, transform: shift(off)}, {opacity: 1, transform: 'none'}],
-      {duration: IN_MS(), delay: lite() ? 30 : 80, easing: EASE, fill: 'backwards'}));
+    // dari geseran jari: tab baru masuk dari sisi yang ditarik (jarak lebih jauh, tanpa jeda), melanjutkan gerak jari;
+    // dari ketukan: geseran pendek seperti biasa
+    const swipe = !!drag && !sideNav();
+    const off = swipe ? dir * Math.round(Math.min(innerWidth * 0.32, 170)) : dir * travel();
+    anims.push(next.animate([{opacity: 0, transform: shift(off)}, {opacity: 1, offset: swipe ? 0.22 : 0.3}, {opacity: 1, transform: 'none'}],
+      {duration: swipe ? (lite() ? 520 : 760) : IN_MS(), delay: swipe ? 0 : (lite() ? 30 : 80), easing: EASE, fill: 'backwards'}));
     if (hold) { // tunggu geseran isi DAN pil selesai: pil (720ms) lebih lama dari geseran isi di HP (460ms), jadi dulu foto mulai
       // diunduh/decode/memudar tepat di sisa gerak pil -> pil patah di ujung
       const ia = document.querySelector('.tabbar .tab-ind')?._anim;
