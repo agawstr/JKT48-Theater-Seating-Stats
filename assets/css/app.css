@@ -235,9 +235,17 @@ body.app #legend{justify-content:center}
 }
 
 /* ---------- tab bar HP: tahan & geser pil ---------- */
-@media(max-width:768px){
+@media(max-width:1279px){ /* HP + iPad: bar horizontal */
   body.app .tabbar{touch-action:none} /* geser horizontal di bar tidak boleh dianggap scroll / gesture browser */
   body.app .tabbar.dragging .tab-ind{box-shadow:0 8px 22px rgba(255,42,95,.5),inset 0 1px 0 rgba(255,255,255,.55)}
   body.app .tabbar.dragging .tab.on:not(.hot){color:rgba(255,255,255,.7)}
   body.app .tab.hot{color:#fff}
+}
+
+/* ---------- layar sentuh (iPhone/iPad, semua orientasi): peta lebih ringan di-raster & dianimasikan ----------
+   Glow luar (blur 12-14px) di setiap kursi oranye dan transition semua-properti di ratusan tombol
+   membuat layer tab Peta mahal saat digeser/ditransisikan. Tampilan kaca (sorotan dalam) tetap dipertahankan. */
+@media(hover:none) and (pointer:coarse){
+  body.app .seat{transition:none}
+  body.app .seat.visited{box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 -6px 10px rgba(0,0,0,.12)}
 }
