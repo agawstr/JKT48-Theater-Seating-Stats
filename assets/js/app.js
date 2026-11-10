@@ -241,7 +241,7 @@
   const viewOf = k => $('view-' + k);
   let run = null; // transisi yang sedang berjalan: {anims, done}
 
-  const lite = () => mqMobile.matches || mqTouch.matches; // HP & tablet sentuh: layer lebih sedikit supaya tetap 60fps
+  const lite = () => perf.lite(); // tingkat performa dari shared.js (HP, tablet sentuh, hemat data, perangkat lemah): layer lebih sedikit supaya tetap 60fps
   // sidebar vertikal hanya untuk laptop/mouse (>=1280px). iPad/tablet sentuh memakai dock bawah, jadi geraknya horizontal seperti di HP
   const sideNav = () => mqDesk.matches && !mqTouch.matches;
   const travel = () => sideNav() ? 28 : lite() ? 34 : Math.round(Math.min(104, Math.max(48, innerWidth * 0.18)));
