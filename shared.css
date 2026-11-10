@@ -39,6 +39,8 @@ h1{font-size:42px;font-weight:900;color:#ff2a5f;margin:0 0 8px;letter-spacing:-.
 .ht{font-size:12px;color:#34d399;margin-top:4px;font-weight:600}
 .hi img{display:block;max-width:100%;max-height:160px;border-radius:8px;margin-top:8px;cursor:zoom-in}
 .empty{color:#9a9aa4;font-size:14px;text-align:center;padding:16px 0}
+.empty:not(.fld){padding:26px 16px;border:1px dashed rgba(255,255,255,.14);border-radius:16px;line-height:1.55}
+.empty .btn-s{margin-top:12px}
 #lb-img{max-width:100%;max-height:90vh;border-radius:12px;box-shadow:0 0 30px rgba(0,0,0,.6)}
 #lightbox{cursor:zoom-out;z-index:200}
 
