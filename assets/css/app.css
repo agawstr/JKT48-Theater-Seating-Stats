@@ -411,7 +411,7 @@ body.app #view-main,body.app #view-gal,body.app #view-tl{animation:none}
 body.app .enter #stats .stat,body.app .enter #story,body.app .enter .last-c,body.app .enter #cover,body.app .enter #filters,
 body.app .enter .tl-i,body.app .enter #gallery .gi{animation:none}
 
-/* Riwayat: garis timeline tumbuh dari atas ke bawah saat tab dibuka (sebelumnya sudah ada utuh sebelum kartunya muncul) */
-@keyframes tl-line{from{transform:scaleY(0);opacity:0}}
-body.app .enter #timeline::before{transform-origin:top;animation:tl-line .9s var(--ios) both}
-@media(prefers-reduced-motion:reduce){body.app .enter #timeline::before{animation:none}}
+/* Riwayat: garis timeline digerakkan cascade() di app.js (tumbuh dari atas bersama kartu) */
+#timeline::before{transform-origin:top}
+/* Tiket: item bertahap ditangani cascade() juga, jangan dobel dengan animasi CSS */
+body.app .enter .ev-g,body.app .enter .ev-c{animation:none}
