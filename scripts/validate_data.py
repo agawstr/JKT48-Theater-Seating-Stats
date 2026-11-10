@@ -43,7 +43,7 @@ def valid_date(s):
 
 def load_seats():
     """Baca COUNTS dari shared.js supaya selalu sinkron dengan peta."""
-    src = (ROOT / "shared.js").read_text(encoding="utf-8")
+    src = (ROOT / "assets" / "js" / "shared.js").read_text(encoding="utf-8")
     m = re.search(r"const COUNTS\s*=\s*\{(.*?)\};", src, re.S)
     if not m:
         sys.exit("Tidak menemukan COUNTS di shared.js")

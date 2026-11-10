@@ -56,10 +56,13 @@ Responsif untuk HP dan desktop, dan kontras warna sudah dicek.
 | `admin.html` | Halaman untuk mengelola data. Data disimpan di `localStorage` browser. |
 | `data.json` | Data yang ditampilkan di halaman publik, dibuat dari tombol **Unduh paket (ZIP)** di admin. |
 | `photos/` | Foto 2-Shot/Chekicha sebagai file terpisah (ikut di dalam paket ZIP). Versi kecil untuk galeri ada di `photos/t/` (dibuat dengan `scripts/make_thumbs.py`); kalau belum ada, galeri memakai foto penuh. |
-| `shared.js` | Kode bersama: layout kursi, validasi data, peta, statistik, modal, popover, kartu PNG. |
-| `shared.css` | Gaya bersama untuk kedua halaman. Bagian paling bawah (`v4`) berisi perbaikan performa, dropdown, riwayat, dan polaroid. |
+| `assets/js/shared.js` | Kode bersama: layout kursi, validasi data, peta, statistik, modal, popover, kartu PNG. |
+| `assets/css/shared.css` | Gaya bersama untuk kedua halaman. Bagian paling bawah (`v4`) berisi perbaikan performa, dropdown, riwayat, dan polaroid. |
 
-> `index.html`, `admin.html`, `shared.js`, dan `shared.css` harus berada di folder yang sama.
+| `assets/js/app.js`, `assets/css/app.css` | Perilaku dan gaya "seperti app" khusus `index.html` (tab bawah, tarik-untuk-muat-ulang, dll). |
+| `sw.js`, `manifest.webmanifest` | PWA: cache offline dan pengaturan install. Harus tetap di root. |
+
+> `index.html`, `admin.html`, `sw.js`, `manifest.webmanifest`, dan `data.json` harus di root. CSS dan JS ada di `assets/`; jangan dipindah tanpa memperbarui path di kedua halaman HTML dan `sw.js`.
 
 ## Cara memperbarui data
 
