@@ -906,3 +906,89 @@ img,canvas{max-width:100%}
 /* galeri: buang filter warna per foto (mahal di HP), isolasi gambar supaya cat ulang murah */
 .gi-ph img{filter:none}
 .gi-ph{contain:paint}
+
+/* =====================================================================
+   v7 — satu sistem gerak: pelan, halus, tanpa memantul
+   Semua kurva memakai --ios (cubic-bezier(.32,.72,0,1)): cepat di awal, mengendap lama di akhir.
+   Perpindahan tab digerakkan app.js (switchTab); blok ini hanya merapikan gaya, mematikan animasi
+   lama yang menimpa satu sama lain, dan memperbaiki beberapa posisi yang janggal.
+   ===================================================================== */
+:root{--ios:cubic-bezier(.32,.72,0,1);--ease:cubic-bezier(.32,.72,0,1);--spring:cubic-bezier(.32,.72,0,1);--col-w:840px}
+
+/* --- 1. Tab: wadah & item tidak lagi dianimasikan oleh CSS (sebelumnya 6 lapis aturan saling menimpa,
+        akibatnya kadang jalan, kadang tidak). Semuanya dipegang WAAPI di app.js. --- */
+#view-main,#view-gal,#view-tl,#view-ev,
+.enter .tl-i,.enter .gi,.enter .ev-g,.enter .ev-c,.enter #story,.enter .last-c,.enter #cover,.enter #filters,.enter #stats .stat,
+#gallery .gi,#gallery .gi.a,.enter .tl-i.a,.enter .ev-g:nth-child(-n+8){animation:none!important}
+.leave{animation:none!important}
+
+/* tab lama yang sedang memudar keluar: lepas dari alur halaman, tetap di posisi semula */
+.ghost[hidden]{display:flex!important;position:fixed;margin:0!important;overflow:hidden;pointer-events:none;z-index:5;box-sizing:border-box;contain:paint}
+
+/* pil tab: digerakkan JS (tepi depan melaju, tepi belakang menyusul); CSS tidak boleh ikut menggerakkan */
+.tab-ind{transition:none!important;will-change:transform,width,height}
+.tab{transition:color .5s var(--ios),transform .5s var(--ios),opacity .5s var(--ios)}
+
+/* --- 2. Animasi masuk saat bagian terlihat (bar, cincin, baris) lebih lambat --- */
+.shown .sl-row,.shown .rk{animation-duration:.85s;animation-timing-function:var(--ios)}
+.shown .sl-bar i{animation-duration:1.3s;animation-timing-function:var(--ios)}
+.shown .mc-b i{animation-duration:1.3s;animation-timing-function:var(--ios)}
+.shown .rf{animation-duration:1.6s;animation-timing-function:var(--ios)}
+.shown .cd.on1,.shown .cd.on2,.shown .cd.on3{animation-duration:.7s;animation-timing-function:var(--ios)}
+.shown .lot-r.fl{animation:rise .85s var(--ios) both;animation-delay:calc(var(--i,0) * .26s)}
+.shown .lot-r.fl .sl-bar i{animation:growx 1.2s var(--ios) both;animation-delay:calc(var(--i,0) * .26s + .12s)}
+.intro .seat-row{animation-duration:.95s;animation-timing-function:var(--ios);animation-delay:calc(var(--r) * 60ms)}
+
+/* --- 3. Peta: kursi muncul tanpa memantul (sebelumnya melewati skala 1.12 lalu kembali = "mantul") --- */
+@keyframes seatpop{0%{transform:scale(.82);opacity:.4}100%{transform:none;opacity:1}}
+.refresh .seat.visited{animation:seatpop .85s var(--ios) both;animation-delay:calc(var(--r,0) * 40ms)}
+@keyframes seatflash{0%{transform:scale(1.1);box-shadow:0 0 0 0 rgba(255,210,63,.8)}100%{transform:scale(1);box-shadow:0 0 0 16px rgba(255,210,63,0)}}
+.flash .seat.visited{animation:seatflash 1.1s var(--ios) .35s}
+@keyframes selpulse{0%{box-shadow:0 0 0 0 rgba(255,42,95,.55)}100%{box-shadow:0 0 0 12px rgba(255,42,95,0)}}
+.mc.on .mc-b,.rk.on,.sl-row.on,.ev-c.on,.cd.sel{animation:selpulse 1s var(--ios)}
+
+/* --- 4. Modal, lembar bawah, popover: buka pelan, tutup agak singkat tapi tetap halus --- */
+@keyframes ov-in{from{opacity:0}}
+@keyframes modal-in{from{opacity:0;transform:translate3d(0,26px,0) scale(.97)}}
+@keyframes sheet-in{from{transform:translate3d(0,100%,0)}}
+@keyframes hi-in{from{opacity:0;transform:translate3d(0,16px,0)}}
+@keyframes fade-out{to{opacity:0}}
+@keyframes pop-out{to{opacity:0;transform:translate3d(0,12px,0) scale(.98)}}
+@keyframes menu-in{from{opacity:0;transform:translate3d(0,-8px,0) scale(.97)}}
+.overlay.open{animation:ov-in .5s var(--ios)}
+.overlay.open>.modal{animation:modal-in .75s var(--ios)}
+.overlay.open .hi{animation:hi-in .8s var(--ios) both;animation-delay:calc(var(--i,0) * 70ms + 160ms)}
+.overlay.closing{animation:fade-out .4s cubic-bezier(.4,0,.2,1) forwards}
+.overlay.closing>.modal,#lightbox.closing>img{animation:pop-out .38s cubic-bezier(.4,0,.2,1) forwards}
+@media(max-width:600px){
+  #seat-modal .modal{animation:sheet-in .8s var(--ios);transition:transform .5s var(--ios)}
+  #seat-modal.closing>.modal{animation:none;transform:translate3d(0,105%,0);transition:transform .42s cubic-bezier(.4,0,.2,1)}
+  #seat-modal.closing{animation:fade-out .42s cubic-bezier(.4,0,.2,1) forwards}
+}
+#pop.on{animation:popin .3s var(--ios)}
+.actions.open .actions-m{animation:menu-in .35s var(--ios)}
+.hi .hi-ph img{transition:opacity .7s var(--ios),transform .9s var(--ios)}
+
+/* --- 5. Posisi yang janggal --- */
+/* galeri: lebar 100% + padding tanpa border-box membuat panel melebar keluar kolom (di laptop sampai keluar layar) */
+#gallery{box-sizing:border-box}
+/* nomor kursi tidak boleh terpotong jadi dua baris ("B-" / "16") */
+.seat-badge{white-space:nowrap}
+/* kolom konten tab Riwayat, Tiket, dan bilah Galeri memakai lebar yang sama (sebelumnya 720 / 860 / 720) */
+#timeline,#tl-bar,#view-ev,#gallery-bar,.gk-bar{max-width:var(--col-w)}
+@media(min-width:1100px){body.app #view-gal #gallery-bar,body.app #view-gal .gk-bar{max-width:var(--col-w)}}
+/* kartu statistik: jangan menyisakan satu kartu sendirian di baris kedua */
+@media(min-width:601px) and (max-width:1099px){
+  #stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+  #stats:has(.stat:nth-child(7)){grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+/* baris lotre: kolom bar selalu mulai & berakhir di x yang sama (sebelumnya tiap baris memanjang berbeda) */
+@media(min-width:601px){
+  .lot-r,.ls-r{grid-template-columns:160px minmax(0,1fr) 15.5rem;gap:12px;padding:8px 4px}
+}
+/* kartu "Terakhir nonton" di kolom samping laptop yang sempit: susun ke bawah, jangan menjepit teks */
+@media(min-width:1100px){
+  body.app .col-side .last-c{flex-wrap:wrap}
+  body.app .col-side .last-b{flex:1 1 140px}
+  body.app .col-side .last-a{width:100%;text-align:left;font-size:18px}
+}
