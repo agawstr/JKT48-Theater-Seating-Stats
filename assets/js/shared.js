@@ -137,7 +137,7 @@ let flushT = 0;
 function scheduleFlush() { // gambar ulang tab yang usang saat browser sedang menganggur
   if (flushT) return;
   const run = () => { flushT = 0; Object.keys(lazyStale).forEach(flushLazy); };
-  flushT = 'requestIdleCallback' in window ? requestIdleCallback(run, {timeout: 2000}) : setTimeout(run, 700);
+  flushT = 'requestIdleCallback' in window ? requestIdleCallback(run, {timeout: 500}) : setTimeout(run, 300); // cepat: kalau tab langsung dibuka, tidak perlu menggambar di jalur klik
 }
 function flushLazy(viewId) { const fn = lazyStale[viewId]; if (fn) { delete lazyStale[viewId]; fn(); } }
 
