@@ -270,7 +270,7 @@
        3. baru setelah itu semua animasi dimulai pada frame yang sama (hanya transform & opacity). */
   const VIEW_IDS = ['main', 'gal', 'tl', 'ev'];
   const EASE = 'cubic-bezier(.32,.72,0,1)';
-  const IN_MS = () => lite() ? 460 : 820, OUT_MS = () => lite() ? 260 : 460;
+  const IN_MS = () => lite() ? 460 : 540, OUT_MS = () => lite() ? 260 : 300;
   const viewOf = k => $('view-' + k);
   let run = null; // transisi yang sedang berjalan: {anims, done}
 
@@ -294,7 +294,7 @@
     gal: '.gk-bar, #gallery-bar, #gallery .gi',
     ev: '#view-ev > h2, #lot .lot-cards .stat, #lot .sec2, #lot .lot-r, #ev-up, #ev-cats, #ev-bar'
   };
-  function cascade(view, base = 120) {
+  function cascade(view, base = 90) {
     const sel = CASCADE[view.id.replace('view-', '')];
     if (!sel || calm()) return [];
     const els = [];
@@ -306,7 +306,7 @@
     }
     const base0 = els.map(el => { const t = getComputedStyle(el).transform; return t && t !== 'none' ? ' ' + t : ''; }); // jaga kemiringan polaroid
     return els.map((el, i) => el.animate([{opacity: 0, transform: 'translate3d(0,22px,0)' + base0[i]}, {opacity: 1, transform: base0[i] ? base0[i].trim() : 'none'}],
-      {duration: lite() ? 520 : 800, delay: (lite() ? 60 : base) + i * (lite() ? 38 : 55), easing: EASE, fill: 'backwards'}));
+      {duration: lite() ? 520 : 620, delay: (lite() ? 60 : base) + i * (lite() ? 38 : 45), easing: EASE, fill: 'backwards'}));
   }
 
   // playEnter (dipakai shared.js saat data pertama tampil) memakai sistem yang sama
