@@ -330,6 +330,7 @@ body.adm tr.flash{animation:rowflash 2s ease-out}
 .empty-act{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
 @media(max-width:768px){body.adm tbody tr.none{display:block;padding:0;border:0;background:none}}
 </style>
+<link rel="stylesheet" href="assets/css/liquid.css">
 </head>
 <body class="adm">
 <div class="wrap">
@@ -562,6 +563,7 @@ body.adm tr.flash{animation:rowflash 2s ease-out}
   </div>
 </div>
 <script src="assets/js/shared.js"></script>
+<script src="assets/js/liquid.js"></script>
 <script>
 // ---------- Penyimpanan: IndexedDB (kuota besar) dengan antarmuka sama seperti localStorage ----------
 // Data dibaca sekali ke memori, lalu setiap perubahan ditulis ke IndexedDB di belakang layar.
@@ -734,6 +736,16 @@ const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTod
   const tabs = () => [...document.querySelectorAll('.tabbar .tab')];
   const viewOf = k => document.getElementById('view-' + k);
   let anim = null;
+  const lite = () => perf.lite(); // tingkat performa dari shared.js: sama dengan index (HP / tablet sentuh / hemat data = ringan)
+  const IN_MS = () => lite() ? 460 : 640, OUT_MS = () => lite() ? 260 : 360;
+  function makeGhost(prev) { // tab lama tetap terlihat di tempatnya, lalu memudar keluar (bukan langsung hilang)
+    const r = prev.getBoundingClientRect();
+    if (!r.width || !r.height) return null;
+    const top = Math.max(0, r.top);
+    prev.classList.add('ghost');
+    prev.style.cssText = `top:${top}px;left:${r.left}px;width:${r.width}px;height:${Math.max(0, innerHeight - top)}px`;
+    return {el: prev, off: Math.max(0, -r.top)};
+  }
 
   // pegas "pop" ala iOS (sama dengan index); browser yang belum dukung linear() jatuh ke kurva biasa
   const POP = (() => {
@@ -757,19 +769,19 @@ const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTod
       const r = el.getBoundingClientRect();
       if (!r.height || r.bottom < 0 || r.top > innerHeight) continue;
       items.push({el, top: r.top, left: r.left});
-      if (items.length >= 28) break;
+      if (items.length >= (lite() ? 28 : 40)) break;
     }
     const set = new Set(items.map(it => it.el)); // elemen di dalam elemen yang sudah dianimasikan tidak perlu dobel
     items = items.filter(it => { for (let p = it.el.parentElement; p && p !== view; p = p.parentElement) if (set.has(p)) return false; return true; });
     items.sort((a, b) => a.top - b.top || a.left - b.left);
     const rows = [];
     items.forEach(it => { const l = rows[rows.length - 1]; if (l && Math.abs(it.top - l.top) < 14) l.items.push(it); else rows.push({top: it.top, items: [it]}); });
-    const rowStep = Math.min(85, 680 / Math.max(1, rows.length)), out = [];
+    const L = lite(), rowStep = Math.min(L ? 70 : 85, (L ? 520 : 680) / Math.max(1, rows.length)), colStep = L ? 40 : 50, out = [];
     const base0 = new Map(items.map(it => { const t = getComputedStyle(it.el).transform; return [it.el, t && t !== 'none' ? ' ' + t : '']; }));
     rows.forEach((row, ri) => row.items.sort((a, b) => a.left - b.left).forEach((it, ci) => {
       const b = base0.get(it.el);
       out.push(it.el.animate([{opacity: 0, transform: 'translate3d(0,22px,0) scale(.94)' + b}, {opacity: 1, transform: b ? b.trim() : 'none'}],
-        {duration: 720, delay: 80 + ri * rowStep + ci * 50, easing: POP, fill: 'backwards'}));
+        {duration: L ? 600 : 720, delay: (L ? 40 : 80) + ri * rowStep + ci * colStep, easing: POP, fill: 'backwards'}));
     }));
     return out;
   }
@@ -785,27 +797,39 @@ const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTod
     const list = tabs(), from = list.findIndex(t => t.classList.contains('on')), to = list.findIndex(t => t.dataset.tab === name);
     if (to < 0) return;
     if (anim) { try { anim.cancel(); } catch (e) {} anim = null; }
+    const prevEl = from >= 0 && from !== to ? viewOf(list[from].dataset.tab) : null;
+    const ghost = prevEl && !still() && !lite() && prevEl.classList.contains('active') ? makeGhost(prevEl) : null; // ukur SEBELUM kelas active berpindah
+    document.querySelectorAll('.view.ghost').forEach(v => { if (!ghost || v !== ghost.el) { v.classList.remove('ghost'); v.style.cssText = ''; } });
     list.forEach((t, i) => { t.classList.toggle('on', i === to); t.setAttribute('aria-selected', i === to); });
     if (typeof moveInd === 'function') moveInd(); // pil meluncur ke tab baru
-    document.querySelectorAll('.view').forEach(v => { v.classList.toggle('active', v.id === 'view-' + name); if (v.id !== 'view-' + name) { v.style.transform = ''; v.style.opacity = ''; } });
+    document.querySelectorAll('.view').forEach(v => { v.classList.toggle('active', v.id === 'view-' + name); if (v.id !== 'view-' + name && !(ghost && v === ghost.el)) { v.style.transform = ''; v.style.opacity = ''; } });
     afterSwitch(name);
     const hd = document.querySelector('.head'), top = hd.getBoundingClientRect().bottom + scrollY - 8; // isi baru mulai dari bawah header
     if (scrollY > top && !mqDesk.matches) scrollTo({top, behavior: 'instant'});
+    if (ghost) ghost.el.scrollTop = ghost.off;
     const next = viewOf(name);
-    if (to === from || from < 0 || !next) return;
+    const unGhost = () => { if (ghost) { ghost.el.classList.remove('ghost'); ghost.el.style.cssText = ''; } };
+    if (to === from || from < 0 || !next) { unGhost(); return; }
     const track = list => { // satu "pegangan" untuk semua animasi tab ini, supaya ketukan beruntun / geser jari bisa membatalkannya
-      const h = {cancel() { list.forEach(x => { try { x.cancel(); } catch (e) {} }); }, finished: Promise.allSettled(list.map(x => x.finished))};
-      anim = h; h.finished.then(() => { if (anim === h) anim = null; });
+      const h = {cancel() { list.forEach(x => { try { x.cancel(); } catch (e) {} }); unGhost(); }, finished: Promise.allSettled(list.map(x => x.finished))};
+      anim = h; h.finished.then(() => { if (anim === h) anim = null; unGhost(); });
     };
     if (still()) { // "Kurangi Gerakan" aktif: tanpa geser/skala, tapi tetap pudar lembut (seperti iOS), bukan tiba-tiba muncul
       track([next.animate([{opacity: 0}, {opacity: 1}], {duration: 240, easing: 'ease-out', fill: 'backwards'})]);
       return;
     }
-    const dir = to > from ? 1 : -1, off = mqDesk.matches ? 28 : mqMobile.matches ? 34 : 60;
+    const dir = to > from ? 1 : -1, off = mqDesk.matches ? 28 : (lite() || mqMobile.matches) ? 34 : 60;
     const items = cascade(next); // diukur sebelum animasi view dibuat
     const a = next.animate([{opacity: 0, transform: mqDesk.matches ? `translate3d(0,${dir * off}px,0)` : `translate3d(${dir * off}px,0,0)`}, {opacity: 1, offset: .35}, {opacity: 1, transform: 'none'}],
-      {duration: 640, delay: 60, easing: EASE, fill: 'backwards'});
-    track([a, ...items]);
+      {duration: IN_MS(), delay: lite() ? 30 : 60, easing: EASE, fill: 'backwards'});
+    const outs = [];
+    if (ghost) {
+      const dragO = drag && drag.opacity != null ? drag.opacity : 1;
+      outs.push(ghost.el.animate([{opacity: dragO, transform: 'none'}, {opacity: 0, transform: mqDesk.matches ? `translate3d(0,${-dir * off * 0.6}px,0)` : `translate3d(${-dir * off * 0.6}px,0,0)`}],
+        {duration: OUT_MS(), easing: 'cubic-bezier(.3,.6,.3,1)', fill: 'forwards'}));
+    }
+    track([a, ...items, ...outs]);
+    if (window.liquid) window.liquid.watch(IN_MS() + 220, typeof toast === 'function' ? toast : null);
   }
   window.switchTab = switchTab;
   tabs().forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
