@@ -1206,10 +1206,11 @@ const IND_MS = 720;
 const indLead = k => 1 - Math.pow(1 - k, 3);
 const indTrail = k => { k = Math.min(1, Math.max(0, (k - 0.14) / 0.86)); return 1 - Math.pow(1 - k, 2.4); };
 const indRectOf = el => ({x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight});
+function indSize(ind, b) { if (ind._bw !== b.w || ind._bh !== b.h) { ind.style.width = b.w + 'px'; ind.style.height = b.h + 'px'; ind._bw = b.w; ind._bh = b.h; } }
 function indPaint(ind, r, base) { // base = ukuran dasar elemen; peregangan "cair" hanya lewat scale (tanpa memicu layout)
   const b = base || r;
   ind._cur = r;
-  if (ind._bw !== b.w || ind._bh !== b.h) { ind.style.width = b.w + 'px'; ind.style.height = b.h + 'px'; ind._bw = b.w; ind._bh = b.h; }
+  indSize(ind, b);
   ind.style.transform = `translate3d(${r.x}px,${r.y}px,0) scale(${(r.w / b.w).toFixed(4)},${(r.h / b.h).toFixed(4)})`;
 }
 function indAxis(p0, s0, p1, s1, ea, eb) { // ea: easing tepi awal, eb: easing tepi akhir
@@ -1222,6 +1223,32 @@ function indBlend(f, t, kLead, kTrail) { // f -> t; arah gerak menentukan tepi m
   const [y, h] = indAxis(f.y, f.h, t.y, t.h, fy ? kTrail : kLead, fy ? kLead : kTrail);
   return {x, y, w, h};
 }
+/* Meluncur lewat WAAPI (keyframe transform): berjalan di compositor, jadi tetap mulus walau main thread sedang
+   sibuk menggambar isi tab baru. Sebelumnya digerakkan requestAnimationFrame di main thread -> patah-patah. */
+const indSame = (a, b) => !!a && !!b && ['x', 'y', 'w', 'h'].every(k => Math.abs(a[k] - b[k]) < 0.01);
+function indStop(ind) { const a = ind._anim; ind._anim = null; if (a) { try { a.cancel(); } catch (e) {} } }
+function indProg(ind) { // 0..1 seberapa jauh animasi berjalan
+  const a = ind._anim; if (!a) return 1;
+  return Math.min(1, Math.max(0, Number(a.currentTime || 0) / ind._aDur));
+}
+function indNow(ind) { // posisi pil saat ini, juga ketika sedang meluncur
+  if (ind._anim && ind._aFrom && ind._aTo) { const k = indProg(ind); return indBlend(ind._aFrom, ind._aTo, indLead(k), indTrail(k)); }
+  return ind._cur;
+}
+function indGlide(ind, from, to, ms) {
+  indStop(ind);
+  if (!ind.animate) { indPaint(ind, to); return; }
+  indSize(ind, to);
+  const N = 24, kf = [];
+  for (let n = 0; n <= N; n++) {
+    const k = n / N, r = indBlend(from, to, indLead(k), indTrail(k));
+    kf.push({offset: k, transform: `translate3d(${r.x}px,${r.y}px,0) scale(${(r.w / to.w).toFixed(4)},${(r.h / to.h).toFixed(4)})`});
+  }
+  ind._aFrom = from; ind._aTo = to; ind._aDur = ms;
+  const a = ind.animate(kf, {duration: ms, easing: 'linear', fill: 'forwards'});
+  ind._anim = a;
+  a.onfinish = () => { if (ind._anim !== a) return; ind._anim = null; indPaint(ind, to); try { a.cancel(); } catch (e) {} };
+}
 function indEl(create) {
   const bar = document.querySelector('.tabbar');
   if (!bar) return null;
@@ -1230,31 +1257,27 @@ function indEl(create) {
   return ind;
 }
 function moveInd(remeasure) {
-  setStick();
+  if (remeasure === true || !moveInd._s) { moveInd._s = 1; setStick(); } // tinggi bar tidak berubah saat pindah tab: jangan paksa layout tiap kali
   const bar = document.querySelector('.tabbar'), on = bar && bar.querySelector('.tab.on');
   if (!on) return;
   let ind = indEl(false), fresh = false;
   if (!ind) { ind = indEl(true); fresh = true; }
   const to = indRectOf(on);
   ind._to = to;
-  const same = ind._cur && ['x', 'y', 'w', 'h'].every(k => ind._cur[k] === to[k]);
-  if (fresh || calm() || !ind._cur || (remeasure === true && !ind._raf)) { cancelAnimationFrame(ind._raf); ind._raf = 0; indPaint(ind, to); return; }
-  if (remeasure === true) return; // sedang meluncur: loop di bawah membaca ind._to terbaru
-  if (same && !ind._raf) return;
-  cancelAnimationFrame(ind._raf);
-  const from = {...ind._cur}, t0 = performance.now();
-  const step = now => {
-    const k = Math.min(1, (now - t0) / IND_MS);
-    if (k >= 1) { ind._raf = 0; indPaint(ind, ind._to); return; }
-    indPaint(ind, indBlend(from, ind._to, indLead(k), indTrail(k)), ind._to);
-    ind._raf = requestAnimationFrame(step);
-  };
-  ind._raf = requestAnimationFrame(step);
+  const cur = indNow(ind);
+  if (fresh || calm() || !cur || (remeasure === true && !ind._anim)) { indStop(ind); indPaint(ind, to); return; }
+  if (remeasure === true) { // sedang meluncur: lanjut dari posisi sekarang ke target terbaru, tidak dipotong / dilempar
+    indGlide(ind, cur, to, Math.max(240, ind._aDur * (1 - indProg(ind))));
+    return;
+  }
+  if (ind._anim && indSame(ind._aTo, to)) return; // sudah meluncur ke tab ini
+  if (!ind._anim && indSame(cur, to)) return;
+  indGlide(ind, cur, to, IND_MS);
 }
 function indFollow(fromTab, toTab, p) { // p 0..1: pil mengikuti jari di antara dua tab
   const ind = indEl(true);
   if (!ind || !fromTab || !toTab) return;
-  cancelAnimationFrame(ind._raf); ind._raf = 0;
+  indStop(ind);
   p = Math.max(0, Math.min(1, p));
   const f0 = indRectOf(fromTab);
   indPaint(ind, indBlend(f0, indRectOf(toTab), Math.pow(p, 0.85), Math.pow(p, 1.3)), f0);
