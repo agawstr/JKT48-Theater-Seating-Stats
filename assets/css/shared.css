@@ -730,7 +730,7 @@ body::before{inset:0;contain:strict}
 @media(hover:hover){.gi:hover{transform:rotate(0) translateY(-6px) scale(1.04);box-shadow:0 1px 1px rgba(0,0,0,.25),0 22px 36px -8px rgba(0,0,0,.75);z-index:3}}
 .gi:active{transform:rotate(0) scale(.98)}
 .gi-ph{position:relative;background:#2a1a1f;border-radius:2px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18),inset 0 2px 8px rgba(0,0,0,.35)}
-.gi-ph img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;object-position:50% 22%;cursor:zoom-in;filter:saturate(1.05) contrast(1.02)}
+.gi-ph img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;object-position:50% 22%;cursor:zoom-in}
 .gi-ph::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(135deg,rgba(255,255,255,.14),transparent 38%)}
 .gi figcaption{position:relative;font-family:'Inter',sans-serif;display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center;padding:11px 4px 15px;color:#6b5a60}
 .gi .gi-n{font-family:'Caveat','Segoe Print','Bradley Hand',cursive;font-size:25px;font-weight:700;line-height:1.05;color:var(--ink);letter-spacing:.2px;overflow-wrap:anywhere}
@@ -997,3 +997,9 @@ img,canvas{max-width:100%}
 
 /* pil tab: ukuran dasar tetap, peregangan lewat scale dari pojok kiri atas */
 .tab-ind{transform-origin:0 0}
+
+/* galeri ringan di HP / layar sentuh: bayangan polaroid lebih kecil (blur besar x puluhan kartu = mahal di GPU) */
+@media(max-width:768px),(hover:none){
+  .gi{box-shadow:0 1px 1px rgba(0,0,0,.25),0 5px 10px -4px rgba(0,0,0,.5)}
+  .gi::before{box-shadow:none}
+}
