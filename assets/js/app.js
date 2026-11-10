@@ -442,9 +442,7 @@
     if (ghost) ghost.el.scrollTop = ghost.off;
 
     const anims = [];
-    if (!still) document.documentElement.classList.add('tabbing'); // blur kaca dihitung ulang tiap frame selama isi bergerak: matikan sebentar
     const clean = () => {
-      document.documentElement.classList.remove('tabbing');
       if (hold) releaseImgs(); // jaga-jaga: transisi dibatalkan / diselesaikan paksa
       if (ghost) { ghost.el.classList.remove('ghost'); ghost.el.style.cssText = ''; }
       anims.forEach(a => { try { a.cancel(); } catch (e) {} }); // fill:'forwards' tidak boleh tersisa di tab yang nanti dibuka lagi
