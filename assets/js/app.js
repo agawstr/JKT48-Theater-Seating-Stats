@@ -345,22 +345,53 @@
     };
     step();
   };
-  // saat browser menganggur, unduh ~12 thumbnail pertama ke cache supaya muncul seketika begitu galeri dibuka
+  /* Prefetch thumbnail di belakang (hemat kuota, tidak mengganggu scroll/animasi):
+     - hanya thumbnail photos/t/, satu file per giliran idle, prioritas rendah
+     - tidak jalan: Mode Hemat Data, sinyal bukan 4G, offline, tab tersembunyi (lanjut saat tab terlihat lagi)
+     - data seluler / koneksi tak diketahui (mis. Safari): maksimal 20 foto terbaru; Wi-Fi/ethernet: semua
+     - yang sudah ada di cache dilewati; sisanya tetap diunduh normal saat galeri dibuka */
+  const CELL_MAX = 20;
   const warmed = new Set();
-  const warm = () => {
-    if (navigator.connection && navigator.connection.saveData) return;
-    [...document.querySelectorAll('#gallery img')].slice(0, 12).forEach(im => {
-      const u = im.dataset.src || im.getAttribute('src');
-      if (!u || warmed.has(u)) return;
-      warmed.add(u); const p = new Image(); p.decoding = 'async'; p.src = u;
-    });
+  let wq = [], wBusy = false, wDone = 0;
+  const warmLimit = () => {
+    const c = navigator.connection;
+    if (!navigator.onLine) return 0;
+    if (c) {
+      if (c.saveData) return 0;
+      if (c.effectiveType && c.effectiveType !== '4g') return 0;
+      if (c.type === 'wifi' || c.type === 'ethernet') return Infinity;
+    }
+    return CELL_MAX; // seluler / tidak diketahui
   };
+  const idle = fn => ('requestIdleCallback' in window) ? requestIdleCallback(fn, {timeout: 5000}) : setTimeout(fn, 600);
+  async function warmStep() {
+    if (document.hidden || !wq.length || wDone >= warmLimit()) { wBusy = false; return; }
+    const u = wq.shift();
+    try {
+      if (!(await caches.match(u))) { // belum di cache: unduh (service worker yang menyimpannya)
+        const res = await fetch(u, {priority: 'low'});
+        if (res.ok) await res.blob();
+      }
+      wDone++;
+    } catch (e) { /* gagal/offline: lewati, nanti dimuat normal */ }
+    idle(warmStep);
+  }
+  function warm() {
+    if (warmLimit() === 0) return;
+    [...document.querySelectorAll('#gallery img')].forEach(im => { // urutan DOM = terbaru dulu
+      const u = im.dataset.src || im.getAttribute('src');
+      if (!u || !/^photos\/t\//.test(u) || warmed.has(u)) return;
+      warmed.add(u); wq.push(u);
+    });
+    if (!wBusy && wq.length) { wBusy = true; idle(warmStep); }
+  }
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && wq.length && !wBusy) { wBusy = true; idle(warmStep); } });
   if (typeof renderGallery === 'function') {
     const baseGal = renderGallery;
     renderGallery = function () {
       baseGal();
       if (hold) stashImgs();
-      if ('requestIdleCallback' in window) requestIdleCallback(warm, {timeout: 4000}); else setTimeout(warm, 1500);
+      idle(warm);
     };
   }
 
