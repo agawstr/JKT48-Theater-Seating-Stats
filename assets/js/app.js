@@ -188,10 +188,11 @@
     if (on) { side.prepend(seatOv); seatOv.classList.add('docked'); m.setAttribute('aria-modal', 'false'); m.setAttribute('role', 'region'); }
     else { document.body.appendChild(seatOv); seatOv.classList.remove('docked'); m.setAttribute('aria-modal', 'true'); m.setAttribute('role', 'dialog'); }
   }
-  function syncLayout() {
+  function syncLayout(noMeasure) { // noMeasure === true: dipanggil dari switchTab, jangan ukur ulang tab bar / peta di tengah animasi
     if (!view || !seatOv) return;
     if (mqDesk.matches) { toSplit(); dock(!view.hidden); } // panel hanya menempel saat tab Peta aktif; tab lain tetap pakai modal
     else { dock(false); toFlat(); }
+    if (noMeasure === true) return;
     requestAnimationFrame(() => { if (typeof centerChart === 'function') centerChart(); if (typeof moveInd === 'function') moveInd(true); });
   }
   mqDesk.addEventListener('change', syncLayout);
@@ -390,6 +391,11 @@
     const baseGal = renderGallery;
     renderGallery = function () {
       baseGal();
+      document.querySelectorAll('#gallery .gi img').forEach((im, i) => { // foto yang muncul pertama sudah siap SEBELUM tab dibuka
+        if (i >= 12) return;
+        im.loading = 'eager';
+        if (im.decode) im.decode().catch(() => {});
+      });
       if (hold) stashImgs();
       idle(warm);
     };
@@ -430,13 +436,15 @@
 
     const hd = document.querySelector('.head'), top = hd.getBoundingClientRect().bottom + scrollY - 8; // isi baru mulai dari bawah header
     if (scrollY > top) scrollTo({top, behavior: 'instant'});
-    syncLayout();
+    syncLayout(true);
     if (name === 'main' && typeof centerChart === 'function') centerChart(); // ukur peta hanya saat tab peta dibuka
     syncFbar();
     if (ghost) ghost.el.scrollTop = ghost.off;
 
     const anims = [];
+    if (!still) document.documentElement.classList.add('tabbing'); // blur kaca dihitung ulang tiap frame selama isi bergerak: matikan sebentar
     const clean = () => {
+      document.documentElement.classList.remove('tabbing');
       if (hold) releaseImgs(); // jaga-jaga: transisi dibatalkan / diselesaikan paksa
       if (ghost) { ghost.el.classList.remove('ghost'); ghost.el.style.cssText = ''; }
       anims.forEach(a => { try { a.cancel(); } catch (e) {} }); // fill:'forwards' tidak boleh tersisa di tab yang nanti dibuka lagi
