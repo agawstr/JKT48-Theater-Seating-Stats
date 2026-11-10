@@ -1070,6 +1070,3 @@ html[data-perf=lite] .gi .gi-ph:not(.ok):not(.bad)::before,
 /* lightbox: ukuran tetap sejak thumbnail sampai foto penuh (tidak melompat saat ditukar) */
 #lb-img.fit{width:min(calc(100vw - 30px),calc(90vh * var(--ar)),720px);height:auto;aspect-ratio:var(--ar);max-width:none;max-height:none;object-fit:contain}
 @supports(height:1dvh){#lb-img.fit{width:min(calc(100vw - 30px),calc(90dvh * var(--ar)),720px)}}
-
-/* peta: tata letak kursi diisolasi supaya hover/render ulang satu kursi tidak memicu layout halaman (tanpa contain:paint agar glow kursi tidak terpotong) */
-#chart{contain:layout style}
