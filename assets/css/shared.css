@@ -1081,3 +1081,7 @@ html[data-glass=on] #pop{-webkit-backdrop-filter:blur(14px) saturate(160%);backd
 html[data-perf=lite] .gi .gi-ph:not(.ok):not(.bad)::before,
 .gi:nth-child(n+13) .gi-ph:not(.ok):not(.bad)::before{animation:none}
 @media(prefers-reduced-motion:reduce){.gi .gi-ph:not(.ok):not(.bad)::before{animation:none}}
+
+/* lightbox: ukuran tetap sejak thumbnail sampai foto penuh (tidak melompat saat ditukar) */
+#lb-img.fit{width:min(calc(100vw - 30px),calc(90vh * var(--ar)),720px);height:auto;aspect-ratio:var(--ar);max-width:none;max-height:none;object-fit:contain}
+@supports(height:1dvh){#lb-img.fit{width:min(calc(100vw - 30px),calc(90dvh * var(--ar)),720px)}}
