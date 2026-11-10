@@ -413,5 +413,7 @@ body.app .enter .tl-i,body.app .enter #gallery .gi{animation:none}
 
 /* Riwayat: garis timeline digerakkan cascade() di app.js (tumbuh dari atas bersama kartu) */
 #timeline::before{transform-origin:top}
+#timeline.ln0::before{transform:scaleY(0);will-change:transform}
+#timeline.ln1::before{transform:scaleY(1);transition:transform var(--ln-dur,900ms) cubic-bezier(.3,.6,.3,1) var(--ln-delay,0ms)}
 /* Tiket: item bertahap ditangani cascade() juga, jangan dobel dengan animasi CSS */
 body.app .enter .ev-g,body.app .enter .ev-c{animation:none}
