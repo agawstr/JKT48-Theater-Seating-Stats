@@ -270,7 +270,7 @@
        3. baru setelah itu semua animasi dimulai pada frame yang sama (hanya transform & opacity). */
   const VIEW_IDS = ['main', 'gal', 'tl', 'ev'];
   const EASE = 'cubic-bezier(.32,.72,0,1)';
-  const IN_MS = () => lite() ? 460 : 540, OUT_MS = () => lite() ? 260 : 300;
+  const IN_MS = () => lite() ? 460 : 640, OUT_MS = () => lite() ? 260 : 360;
   const viewOf = k => $('view-' + k);
   let run = null; // transisi yang sedang berjalan: {anims, done}
 
@@ -305,8 +305,8 @@
       if (els.length >= (lite() ? 12 : 16)) break;
     }
     const base0 = els.map(el => { const t = getComputedStyle(el).transform; return t && t !== 'none' ? ' ' + t : ''; }); // jaga kemiringan polaroid
-    return els.map((el, i) => el.animate([{opacity: 0, transform: 'translate3d(0,22px,0)' + base0[i]}, {opacity: 1, transform: base0[i] ? base0[i].trim() : 'none'}],
-      {duration: lite() ? 520 : 620, delay: (lite() ? 60 : base) + i * (lite() ? 38 : 45), easing: EASE, fill: 'backwards'}));
+    return els.map((el, i) => el.animate([{opacity: 0, transform: 'translate3d(0,14px,0)' + base0[i]}, {opacity: 1, transform: base0[i] ? base0[i].trim() : 'none'}],
+      {duration: lite() ? 520 : 680, delay: (lite() ? 60 : base) + i * (lite() ? 38 : 48), easing: EASE, fill: 'backwards'}));
   }
 
   // playEnter (dipakai shared.js saat data pertama tampil) memakai sistem yang sama
@@ -452,12 +452,9 @@
     if (still) { playEnter(next); settle(); return; }
 
     void next.offsetHeight; // paksa tata letak selesai sekarang, bukan di tengah animasi
-    // dari geseran jari: tab baru masuk dari sisi yang ditarik (jarak lebih jauh, tanpa jeda), melanjutkan gerak jari;
-    // dari ketukan: geseran pendek seperti biasa
-    const swipe = !!drag && !sideNav();
-    const off = swipe ? dir * Math.round(Math.min(innerWidth * 0.32, 170)) : dir * travel();
-    anims.push(next.animate([{opacity: 0, transform: shift(off)}, {opacity: 1, offset: swipe ? 0.22 : 0.3}, {opacity: 1, transform: 'none'}],
-      {duration: swipe ? (lite() ? 520 : 760) : IN_MS(), delay: swipe ? 0 : (lite() ? 30 : 80), easing: EASE, fill: 'backwards'}));
+    const off = dir * travel();
+    anims.push(next.animate([{opacity: 0, transform: shift(off)}, {opacity: 1, offset: 0.6}, {opacity: 1, transform: 'none'}],
+      {duration: IN_MS(), delay: lite() ? 30 : 60, easing: EASE, fill: 'backwards'}));
     if (hold) { // tunggu geseran isi DAN pil selesai: pil (720ms) lebih lama dari geseran isi di HP (460ms), jadi dulu foto mulai
       // diunduh/decode/memudar tepat di sisa gerak pil -> pil patah di ujung
       const ia = document.querySelector('.tabbar .tab-ind')?._anim;
