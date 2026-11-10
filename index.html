@@ -29,7 +29,7 @@
 </style>
 </head>
 <body class="app">
-<div id="splash" role="status" aria-live="polite"><img src="icons/icon-192.png" width="88" height="88" alt=""><b>agaxx's Idoling Diary</b><span><i aria-hidden="true"></i>Memuat data…</span></div>
+<div id="splash" role="status" aria-live="polite"><b>agaxx's Idoling Diary</b><span>Memuat data</span><i aria-hidden="true"></i></div>
 <div class="wrap">
   <div class="head">
     <h1>agaxx's Idoling Diary</h1>
@@ -115,7 +115,7 @@ async function init() {
   let old = null;
   try { old = localStorage.getItem(CK); } catch (e) {}
   if (old) { // tampilkan salinan terakhir dulu sementara data terbaru dimuat
-    try { applyData(JSON.parse(old)); $('status').textContent = ''; renderChart(); } catch (e) { old = null; }
+    try { applyData(JSON.parse(old)); $('status').textContent = ''; renderChart(); } catch (e) { old = null; document.documentElement.classList.remove('has-cache'); } // salinan rusak: tampilkan layar muat lagi
   }
   try {
     const res = await fetch(DATA_URL + (DATA_URL.includes('?') ? '&' : '?') + 't=' + Date.now());
