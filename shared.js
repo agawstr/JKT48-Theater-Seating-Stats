@@ -676,7 +676,7 @@ function renderTimeline() {
         ${r.note ? `<div class="tl-n">“${esc(r.note)}”</div>` : ''}</div>
       <button type="button" class="seat-badge tl-s" data-seat="${esc(r.seat)}" aria-label="Lihat kursi ${esc(r.seat)}">${esc(r.seat)}</button></div>`;
   }
-  flipRender(el, '.tl-i', it => it.dataset.id, () => { el.innerHTML = html || `<div class="empty">${q ? 'Tidak ada show yang cocok' : 'Belum ada riwayat'}</div>`; });
+  flipRender(el, '.tl-i', it => it.dataset.id, () => { el.innerHTML = html || (q ? `<div class="empty">Tidak ada show yang cocok dengan “${esc($('tl-q').value.trim())}”<br><button type="button" class="btn-s" data-tlclear>Hapus pencarian</button></div>` : '<div class="empty">Belum ada riwayat</div>'); });
 }
 $('timeline')?.addEventListener('click', e => {
   const b = e.target.closest('[data-seat]'); // seluruh kartu bisa diketuk
@@ -685,6 +685,7 @@ $('timeline')?.addEventListener('click', e => {
 
 let tlT; // jeda singkat supaya tidak render ulang di setiap ketikan
 $('tl-q')?.addEventListener('input', () => { clearTimeout(tlT); tlT = setTimeout(renderTimeline, 150); });
+$('timeline')?.addEventListener('click', e => { if (e.target.closest('[data-tlclear]')) { const i = $('tl-q'); i.value = ''; i.dispatchEvent(new Event('input', {bubbles: true})); } });
 
 // ================= Putar ulang, sebaran baris, biaya, kartu per show =================
 const rupiah = n => 'Rp ' + Math.round(n).toLocaleString('id-ID');
