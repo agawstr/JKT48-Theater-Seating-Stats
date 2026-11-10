@@ -1,4 +1,4 @@
-/* sw.js — service worker untuk Theater Stats (PWA).
+/* sw.js — service worker untuk Idoling Diary (PWA).
    Strategi:
    - Shell (html/css/js/ikon): jaringan dulu, cadangan dari cache  -> kode baru langsung terpakai, tetap jalan offline
    - data.json: jaringan dulu (tanpa cache browser), cadangan dari cache -> data selalu segar, offline tetap tampil
