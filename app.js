@@ -78,7 +78,7 @@
     };
     const reset = () => {
       el.classList.add('back'); pull = 0; paint(0);
-      setTimeout(() => el.classList.remove('back', 'spin'), 320);
+      setTimeout(() => el.classList.remove('back', 'spin'), 540);
     };
     document.addEventListener('touchstart', e => {
       armed = mqMobile.matches && !busy && scrollY <= 0 && e.touches.length === 1 && !blocked(e.target);
@@ -192,7 +192,6 @@
     requestAnimationFrame(() => { if (typeof centerChart === 'function') centerChart(); if (typeof moveInd === 'function') moveInd(true); });
   }
   mqDesk.addEventListener('change', syncLayout);
-  document.querySelector('.tabbar')?.addEventListener('click', () => setTimeout(syncLayout, 0));
   syncLayout();
   mqMobile.addEventListener('change', () => { updBar(); if (typeof moveInd === 'function') moveInd(true); });
 
@@ -230,64 +229,167 @@
     }
   });
 
-  /* ---------- ganti tab: arah geser isi + pil "cair" ---------- */
-  document.addEventListener('click', e => { // capture: jalan sebelum handler tab di index.html mengganti tab
-    const b = e.target.closest('.tabbar .tab');
-    if (!b) return;
-    const list = tabs(), from = list.findIndex(t => t.classList.contains('on')), to = list.indexOf(b);
-    if (from < 0 || to === from) return;
-    const dir = to > from ? 1 : -1;
-    const root = document.documentElement.style, still = calm();
-    // HP/tablet: isi meluncur ke samping. Laptop (tab di sidebar kiri, tersusun ke bawah): isi naik/turun mengikuti arah tab.
-    root.setProperty('--tabx', mqDesk.matches || still ? '0px' : dir * 26 + 'px');
-    root.setProperty('--taby', mqDesk.matches && !still ? dir * 20 + 'px' : '0px');
-  }, true);
-  document.addEventListener('click', e => { // tandai "sedang ganti tab" sampai handler tab selesai
-    if (!e.target.closest('.tabbar .tab')) return;
-    switching = true; setTimeout(() => { switching = false; }, 60);
-  }, true);
+  /* ---------- ganti tab: geser + pudar ala iOS, pil cair, dan geser mengikuti jari ----------
+     Urutannya sengaja begini supaya mulus (dan tidak "kadang ada kadang tidak"):
+       1. tab lama dijadikan "hantu" (fixed, di posisi persis seperti tadi) supaya bisa memudar keluar,
+       2. tab baru dibuka + digambar + diukur SEKARANG (kerja berat selesai dulu),
+       3. baru setelah itu semua animasi dimulai pada frame yang sama (hanya transform & opacity). */
+  const VIEW_IDS = ['main', 'gal', 'tl', 'ev'];
+  const EASE = 'cubic-bezier(.32,.72,0,1)';
+  const IN_MS = 820, OUT_MS = 460;
+  const viewOf = k => $('view-' + k);
+  let run = null; // transisi yang sedang berjalan: {anims, done}
 
-  // Saat ganti tab cukup isinya yang meluncur. Animasi item bertingkat (.enter) hanya untuk pemuatan pertama,
-  // kalau tidak, geseran + kaskade item jalan bersamaan dan terasa kasar.
-  let switching = false;
+  const travel = () => mqDesk.matches ? 28 : Math.round(Math.min(104, Math.max(48, innerWidth * 0.18)));
+  const shift = d => mqDesk.matches ? `translate3d(0,${d}px,0)` : `translate3d(${d}px,0,0)`;
+
+  function settle() { // selesaikan seketika transisi sebelumnya (mis. tab diketuk beruntun)
+    if (!run) return;
+    const r = run; run = null;
+    r.anims.forEach(a => { try { a.cancel(); } catch (e) {} });
+    r.done();
+  }
+
+  // item yang sedang terlihat di layar masuk bertahap (naik pelan), bukan muncul tiba-tiba
+  const CASCADE = {
+    main: '#story, #last .last-c, #stats .stat, #cover',
+    tl: '#tl-bar, .tl-yh, .tl-mh, .tl-i',
+    gal: '.gk-bar, #gallery-bar, #gallery .gi',
+    ev: '#view-ev > h2, #lot .lot-cards .stat, #lot .sec2, #lot .lot-r, #ev-up, #ev-cats, #ev-bar'
+  };
+  function cascade(view, base = 120) {
+    const sel = CASCADE[view.id.replace('view-', '')];
+    if (!sel || calm()) return [];
+    const els = [];
+    for (const el of view.querySelectorAll(sel)) {
+      const r = el.getBoundingClientRect();
+      if (!r.height || r.bottom < 0 || r.top > innerHeight) continue;
+      els.push(el);
+      if (els.length >= 9) break;
+    }
+    const base0 = els.map(el => { const t = getComputedStyle(el).transform; return t && t !== 'none' ? ' ' + t : ''; }); // jaga kemiringan polaroid
+    return els.map((el, i) => el.animate([{opacity: 0, transform: 'translate3d(0,22px,0)' + base0[i]}, {opacity: 1, transform: base0[i] ? base0[i].trim() : 'none'}],
+      {duration: 900, delay: base + i * 75, easing: EASE, fill: 'backwards'}));
+  }
+
+  // playEnter (dipakai shared.js saat data pertama tampil) memakai sistem yang sama
   if (typeof playEnter === 'function') {
     const baseEnter = playEnter;
     playEnter = function (el) {
-      if (switching && el && /^view-/.test(el.id)) { if (typeof watchReveal === 'function') watchReveal(el); return; }
-      return baseEnter(el);
+      baseEnter(el);
+      const anims = el && /^view-/.test(el.id) ? cascade(el) : [];
+      if (run) run.anims.push(...anims);
+      return anims;
     };
   }
 
-  // Pil tab "cair": tepi depan melaju duluan, tepi belakang menyusul (memanjang lalu memendek), tanpa memantul
+  function makeGhost(prev) { // tab lama tetap terlihat persis di tempatnya, lepas dari alur halaman
+    const r = prev.getBoundingClientRect();
+    if (!r.width || !r.height) return null;
+    const top = Math.max(0, r.top);
+    prev.classList.add('ghost');
+    prev.style.cssText = `top:${top}px;left:${r.left}px;width:${r.width}px;height:${Math.max(0, innerHeight - top)}px`;
+    return {el: prev, off: Math.max(0, -r.top)};
+  }
+
+  function switchTab(name, drag) {
+    const list = tabs(), from = list.findIndex(t => t.classList.contains('on')), to = list.findIndex(t => t.dataset.tab === name);
+    if (to < 0 || to === from) return;
+    settle();
+    const dir = to > from ? 1 : -1, still = calm();
+    const prev = viewOf(list[from].dataset.tab), next = viewOf(name);
+    const dragO = drag && drag.opacity != null ? drag.opacity : 1;
+
+    list.forEach((t, i) => { t.classList.toggle('on', i === to); t.setAttribute('aria-selected', i === to); });
+    moveInd(); // pil meluncur (mulai dari posisi sekarang, jadi tetap mulus walau ketukan beruntun)
+
+    const ghost = !still && prev && !prev.hidden ? makeGhost(prev) : null;
+    if (!ghost && prev) { prev.style.transform = ''; prev.style.opacity = ''; }
+    VIEW_IDS.forEach(k => { viewOf(k).hidden = k !== name; });
+    flushLazy('view-' + name); // kalau masih usang, gambar sekarang (sebelum animasi dimulai)
+
+    const hd = document.querySelector('.head'), top = hd.getBoundingClientRect().bottom + scrollY - 8; // isi baru mulai dari bawah header
+    if (scrollY > top) scrollTo({top, behavior: 'instant'});
+    syncLayout();
+    if (name === 'main' && typeof centerChart === 'function') centerChart(); // ukur peta hanya saat tab peta dibuka
+    syncFbar();
+    if (ghost) ghost.el.scrollTop = ghost.off;
+
+    const anims = [];
+    const clean = () => {
+      if (ghost) { ghost.el.classList.remove('ghost'); ghost.el.style.cssText = ''; }
+      anims.forEach(a => { try { a.cancel(); } catch (e) {} }); // fill:'forwards' tidak boleh tersisa di tab yang nanti dibuka lagi
+    };
+    const r = {anims, done: clean};
+    run = r;
+    if (still) { playEnter(next); settle(); return; }
+
+    void next.offsetHeight; // paksa tata letak selesai sekarang, bukan di tengah animasi
+    const off = dir * travel();
+    anims.push(next.animate([{opacity: 0, transform: shift(off)}, {opacity: 1, transform: 'none'}],
+      {duration: IN_MS, delay: 80, easing: EASE, fill: 'backwards'}));
+    if (ghost) {
+      const ga = ghost.el.animate([{opacity: dragO, transform: 'none'}, {opacity: 0, transform: shift(-off * 0.6)}],
+        {duration: OUT_MS, easing: 'cubic-bezier(.3,.6,.3,1)', fill: 'forwards'});
+      ga.finished.then(() => { if (run === r) { ghost.el.classList.remove('ghost'); ghost.el.style.cssText = ''; ga.cancel(); } }, () => {});
+      anims.push(ga);
+    }
+    playEnter(next); // .enter + reveal + item bertahap (masuk ke run.anims lewat override di atas)
+    Promise.allSettled(anims.map(a => a.finished)).then(() => { if (run === r) { run = null; r.done(); } });
+  }
+  window.switchTab = switchTab;
+  document.querySelectorAll('.tabbar .tab').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+
+  /* geser kiri/kanan (layar sentuh): isi mengikuti jari dengan sedikit tahanan, pil ikut meluncur.
+     Dilepas melewati ambang (jarak atau kecepatan) -> pindah tab, kalau tidak -> kembali pelan. */
   (() => {
-    const lead = k => 1 - Math.pow(1 - k, 4);
-    const trail = k => 1 - Math.pow(1 - Math.max(0, (k - 0.1) / 0.9), 3);
-    const axis = (p0, s0, p1, s1, k) => {
-      const fwd = p1 >= p0, ea = fwd ? trail(k) : lead(k), eb = fwd ? lead(k) : trail(k);
-      const a = p0 + (p1 - p0) * ea, b = (p0 + s0) + ((p1 + s1) - (p0 + s0)) * eb;
-      return [a, Math.max(b - a, 0)];
+    let st = null;
+    const skip = el => el.closest('#seating-wrapper, #cal, #zoomctl, select, input, textarea, .overlay, #fbar, .ev-d, .actions-m, .tabbar, #appbar');
+    const reset = (v, fromPx, fromO) => {
+      v.style.transform = ''; v.style.opacity = '';
+      if (calm() || (!fromPx && fromO === 1)) return;
+      v.animate([{transform: `translate3d(${fromPx}px,0,0)`, opacity: fromO}, {transform: 'none', opacity: 1}], {duration: 620, easing: EASE});
     };
-    window.moveInd = function (instant) {
-      if (typeof setStick === 'function') setStick();
-      const bar = document.querySelector('.tabbar'), on = bar && bar.querySelector('.tab.on');
-      if (!on) return;
-      let ind = bar.querySelector('.tab-ind');
-      if (!ind) { ind = document.createElement('i'); ind.className = 'tab-ind'; bar.prepend(ind); instant = true; }
-      cancelAnimationFrame(ind._raf);
-      const to = {x: on.offsetLeft, y: on.offsetTop, w: on.offsetWidth, h: on.offsetHeight};
-      const paint = r => { ind.style.width = r.w + 'px'; ind.style.height = r.h + 'px'; ind.style.transform = `translate3d(${r.x}px,${r.y}px,0)`; };
-      const from = ind._cur || to;
-      if (instant || calm() || (from.x === to.x && from.y === to.y && from.w === to.w && from.h === to.h)) { ind._cur = to; paint(to); return; }
-      const f = {...from}, t0 = performance.now(), D = 460;
-      const step = now => {
-        const k = Math.min(1, (now - t0) / D);
-        const [x, w] = axis(f.x, f.w, to.x, to.w, k), [y, h] = axis(f.y, f.h, to.y, to.h, k);
-        ind._cur = k < 1 ? {x, y, w, h} : to;
-        paint(ind._cur);
-        if (k < 1) ind._raf = requestAnimationFrame(step);
-      };
-      ind._raf = requestAnimationFrame(step);
+    document.addEventListener('touchstart', e => {
+      st = null;
+      if (mqDesk.matches || e.touches.length !== 1 || skip(e.target) || document.querySelector('.overlay.open')) return;
+      const t = e.touches[0];
+      st = {x0: t.clientX, y0: t.clientY, lock: '', px: t.clientX, pt: performance.now(), v: 0, dx: 0};
+    }, {passive: true});
+    document.addEventListener('touchmove', e => {
+      if (!st) return;
+      if (e.touches.length !== 1) { if (st.lock) { reset(st.view, st.shown, st.opa); moveInd(); } st = null; return; }
+      const t = e.touches[0], dx = t.clientX - st.x0, dy = t.clientY - st.y0;
+      if (!st.lock) {
+        if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+        if (Math.abs(dx) > Math.abs(dy) * 1.6 && e.cancelable) { // jelas horizontal: kunci
+          settle();
+          const list = tabs(), i = list.findIndex(b => b.classList.contains('on'));
+          if (i < 0) { st = null; return; }
+          Object.assign(st, {lock: 'x', list, i, view: viewOf(list[i].dataset.tab), shown: 0, opa: 1});
+        } else { st = null; return; } // vertikal / ragu: biarkan halaman menggulir
+      }
+      e.preventDefault();
+      const now = performance.now();
+      st.v = (t.clientX - st.px) / Math.max(1, now - st.pt); st.px = t.clientX; st.pt = now;
+      st.dx = dx;
+      const j = st.i + (dx < 0 ? 1 : -1), has = j >= 0 && j < st.list.length;
+      const px = dx * (has ? 0.5 : 0.2);
+      st.shown = px; st.opa = 1 - Math.min(0.55, Math.abs(px) / innerWidth * 1.2);
+      st.view.style.transform = `translate3d(${px}px,0,0)`;
+      st.view.style.opacity = st.opa.toFixed(3);
+      if (has) indFollow(st.list[st.i], st.list[j], Math.abs(dx) / (innerWidth * 0.42));
+    }, {passive: false});
+    const end = () => {
+      const s = st; st = null;
+      if (!s || s.lock !== 'x') return;
+      const j = s.i + (s.dx < 0 ? 1 : -1), has = j >= 0 && j < s.list.length;
+      const go = has && (Math.abs(s.dx) > innerWidth * 0.22 || (Math.abs(s.v) > 0.5 && Math.abs(s.dx) > 30 && Math.sign(s.v) === Math.sign(s.dx)));
+      if (go) switchTab(s.list[j].dataset.tab, {px: s.shown, opacity: s.opa}); // transform inline sengaja dibiarkan: dipakai untuk mengukur posisi awal tab lama
+      else { reset(s.view, s.shown, s.opa); moveInd(); }
     };
+    document.addEventListener('touchend', end, {passive: true});
+    document.addEventListener('touchcancel', end, {passive: true});
   })();
 
   /* ---------- "Sorot yang belum" / "Tampilkan semua": kursi berubah bergelombang, bukan tiba-tiba ---------- */
