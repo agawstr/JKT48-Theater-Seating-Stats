@@ -184,3 +184,26 @@ body.app #legend{justify-content:center}
   #toast,#ptr,#appbar{transition:none}
   #ptr.spin svg{animation-duration:1.6s}
 }
+
+/* =====================================================================
+   Terasa seperti aplikasi: elemen antarmuka tidak bisa diblok / disalin / disimpan lewat tekan lama.
+   Teks yang memang berguna disalin (catatan, setlist di riwayat, ringkasan) tetap bisa dipilih.
+   Hanya layar sentuh (hover:none): di laptop pilih-teks tetap normal.
+   ===================================================================== */
+@media(hover:none){
+  body.app .tabbar,body.app .tab,body.app #appbar,body.app #toast,body.app #fbar,body.app #ptr,
+  body.app button,body.app .seat,body.app .seat-badge,body.app #seating-wrapper,body.app #zoomctl,
+  body.app .stat,body.app .gk,body.app .gi,body.app .head,body.app .badge,body.app .tl-d,body.app .tl-s,
+  body.app .last-c,body.app .sheet-grip,body.app .overlay .x{
+    -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+  /* foto: tidak bisa diseret / ditahan untuk menu simpan gambar (ketukan tetap membuka pratinjau) */
+  body.app img{-webkit-user-drag:none;user-drag:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+}
+
+/* ---------- layar sentuh: tekan lama tidak menyeleksi teks / memunculkan menu salin (rasa "app") ----------
+   Hanya perangkat tanpa hover (HP/tablet). Laptop dengan mouse tetap bisa menyeleksi teks. */
+@media(hover:none){
+  body.app{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+  body.app input,body.app textarea,body.app select,body.app [contenteditable]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+  body.app img{-webkit-user-drag:none;user-drag:none}
+}
