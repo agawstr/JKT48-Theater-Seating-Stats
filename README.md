@@ -1,6 +1,6 @@
-# JKT48 Theater Seating Stats
+# agaxx's Idoling Diary
 
-Web untuk mencatat kursi teater JKT48 yang pernah kamu tempati, lengkap dengan statistik, riwayat, dan galeri foto 2-Shot/Chekicha.
+Catatan pribadi nge-idol JKT48: peta kursi teater yang pernah ditempati, statistik, riwayat show, galeri foto 2-Shot/Chekicha, serta tiket, lotre, dan event.
 
 Tanpa backend dan tanpa proses build: cukup file statis yang bisa di-hosting di GitHub Pages. Satu-satunya sumber luar adalah Google Fonts (Inter dan Caveat); kalau gagal dimuat, tampilan otomatis memakai font sistem.
 
