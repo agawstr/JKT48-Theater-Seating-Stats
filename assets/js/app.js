@@ -632,3 +632,25 @@
   addEventListener('offline', () => say('Offline: menampilkan data tersimpan'));
   addEventListener('online', () => say('Kembali online'));
 })();
+
+
+/* liquid.js — kilau kaca yang mengikuti kursor (hanya perangkat dengan mouse, dan bukan "kurangi gerakan").
+   Hanya mengisi variabel CSS --mx/--my; tampilannya diatur di liquid.css. */
+(() => {
+  'use strict';
+  if (!matchMedia('(hover:hover) and (pointer:fine)').matches || matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  const SEL = '.stat,.last-c,.tl-i,.ev-g,.ev-c,.btn-s,.badge,.gk,.tabbar,.modal';
+  let raf = 0, ev = null;
+  addEventListener('pointermove', e => {
+    ev = e;
+    if (raf) return;
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      const el = ev.target.closest && ev.target.closest(SEL);
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      el.style.setProperty('--mx', (ev.clientX - r.left) + 'px');
+      el.style.setProperty('--my', (ev.clientY - r.top) + 'px');
+    });
+  }, {passive: true});
+})();
