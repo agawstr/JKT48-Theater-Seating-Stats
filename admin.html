@@ -735,6 +735,45 @@ const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTod
   const viewOf = k => document.getElementById('view-' + k);
   let anim = null;
 
+  // pegas "pop" ala iOS (sama dengan index); browser yang belum dukung linear() jatuh ke kurva biasa
+  const POP = (() => {
+    try { if (!CSS.supports('transition-timing-function', 'linear(0,1)')) return EASE; } catch (e) { return EASE; }
+    return 'linear(0,0.0515 3.6%,0.1763 7.1%,0.3369 10.7%,0.5052 14.3%,0.6625 17.9%,0.7974 21.4%,0.9048 25.0%,0.9839 28.6%,1.037 32.1%,1.068 35.7%,1.0817 39.3%,1.0827 42.9%,1.0754 46.4%,1.0634 50.0%,1.0495 53.6%,1.0357 57.1%,1.0233 60.7%,1.0129 64.3%,1.0049 67.9%,0.9993 71.4%,0.9956 75.0%,0.9937 78.6%,0.993 82.1%,0.9933 85.7%,0.9941 89.3%,0.9952 92.9%,0.9964 96.4%,1)';
+  })();
+  const CASCADE = { // blok yang ikut masuk bertahap di tiap tab (hanya yang terlihat di layar)
+    peta: '#seating-wrapper',
+    tiket: '#tt > *',
+    solo: '#tsev > *, #solo > *',
+    biaya: '.ex-sub, #ex > *, #away > *, #misc > *',
+    crud: '.crud > .card'
+  };
+  /* Item masuk PER BARIS dari atas ke bawah, dalam satu baris dari kiri ke kanan (urutan mengikuti posisi nyata di layar).
+     Hanya opacity + transform. Dikembalikan: daftar animasi supaya bisa dibatalkan kalau tab diketuk beruntun. */
+  function cascade(view) {
+    const sel = CASCADE[view.id.replace('view-', '')];
+    if (!sel) return [];
+    let items = [];
+    for (const el of view.querySelectorAll(sel)) {
+      const r = el.getBoundingClientRect();
+      if (!r.height || r.bottom < 0 || r.top > innerHeight) continue;
+      items.push({el, top: r.top, left: r.left});
+      if (items.length >= 28) break;
+    }
+    const set = new Set(items.map(it => it.el)); // elemen di dalam elemen yang sudah dianimasikan tidak perlu dobel
+    items = items.filter(it => { for (let p = it.el.parentElement; p && p !== view; p = p.parentElement) if (set.has(p)) return false; return true; });
+    items.sort((a, b) => a.top - b.top || a.left - b.left);
+    const rows = [];
+    items.forEach(it => { const l = rows[rows.length - 1]; if (l && Math.abs(it.top - l.top) < 14) l.items.push(it); else rows.push({top: it.top, items: [it]}); });
+    const rowStep = Math.min(85, 680 / Math.max(1, rows.length)), out = [];
+    const base0 = new Map(items.map(it => { const t = getComputedStyle(it.el).transform; return [it.el, t && t !== 'none' ? ' ' + t : '']; }));
+    rows.forEach((row, ri) => row.items.sort((a, b) => a.left - b.left).forEach((it, ci) => {
+      const b = base0.get(it.el);
+      out.push(it.el.animate([{opacity: 0, transform: 'translate3d(0,22px,0) scale(.94)' + b}, {opacity: 1, transform: b ? b.trim() : 'none'}],
+        {duration: 720, delay: 80 + ri * rowStep + ci * 50, easing: POP, fill: 'backwards'}));
+    }));
+    return out;
+  }
+
   function afterSwitch(name) { // render yang dulu ada di switchTab
     if (name === 'peta') requestAnimationFrame(centerChart);
     if (name === 'tiket') renderTotals();
@@ -753,12 +792,20 @@ const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTod
     const hd = document.querySelector('.head'), top = hd.getBoundingClientRect().bottom + scrollY - 8; // isi baru mulai dari bawah header
     if (scrollY > top && !mqDesk.matches) scrollTo({top, behavior: 'instant'});
     const next = viewOf(name);
-    if (to === from || from < 0 || still() || !next) return;
+    if (to === from || from < 0 || !next) return;
+    const track = list => { // satu "pegangan" untuk semua animasi tab ini, supaya ketukan beruntun / geser jari bisa membatalkannya
+      const h = {cancel() { list.forEach(x => { try { x.cancel(); } catch (e) {} }); }, finished: Promise.allSettled(list.map(x => x.finished))};
+      anim = h; h.finished.then(() => { if (anim === h) anim = null; });
+    };
+    if (still()) { // "Kurangi Gerakan" aktif: tanpa geser/skala, tapi tetap pudar lembut (seperti iOS), bukan tiba-tiba muncul
+      track([next.animate([{opacity: 0}, {opacity: 1}], {duration: 240, easing: 'ease-out', fill: 'backwards'})]);
+      return;
+    }
     const dir = to > from ? 1 : -1, off = mqDesk.matches ? 28 : mqMobile.matches ? 34 : 60;
-    const a = next.animate([{opacity: 0, transform: mqDesk.matches ? `translate3d(0,${dir * off}px,0)` : `translate3d(${dir * off}px,0,0)`}, {opacity: 1, transform: 'none'}],
-      {duration: 700, easing: EASE, fill: 'backwards'});
-    anim = a;
-    a.finished.then(() => { if (anim === a) anim = null; }, () => {});
+    const items = cascade(next); // diukur sebelum animasi view dibuat
+    const a = next.animate([{opacity: 0, transform: mqDesk.matches ? `translate3d(0,${dir * off}px,0)` : `translate3d(${dir * off}px,0,0)`}, {opacity: 1, offset: .35}, {opacity: 1, transform: 'none'}],
+      {duration: 640, delay: 60, easing: EASE, fill: 'backwards'});
+    track([a, ...items]);
   }
   window.switchTab = switchTab;
   tabs().forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
