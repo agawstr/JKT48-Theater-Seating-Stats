@@ -324,7 +324,7 @@ function openLightbox(im) { // foto kecil langsung tampil & membesar dari posisi
       const s = from.width / to.width, dx = from.left + from.width / 2 - (to.left + to.width / 2), dy = from.top + from.height / 2 - (to.top + to.height / 2);
       lb.style.animation = 'none'; // gerak ini diatur di sini; jangan tumpang tindih dengan animasi CSS bawaan
       lb.animate([{transform: `translate3d(${dx}px,${dy}px,0) scale(${s})`, opacity: .6}, {transform: 'none', opacity: 1}], {duration: 560, easing: lbEase});
-      im.style.visibility = 'hidden';
+      // thumbnail asal tetap terlihat di bawah foto yang terbang, jadi tempatnya tidak pernah kosong (terutama saat foto kembali)
     }
   }
   if (full !== lb.src) {
