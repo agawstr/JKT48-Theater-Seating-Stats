@@ -188,10 +188,11 @@
     if (on) { side.prepend(seatOv); seatOv.classList.add('docked'); m.setAttribute('aria-modal', 'false'); m.setAttribute('role', 'region'); }
     else { document.body.appendChild(seatOv); seatOv.classList.remove('docked'); m.setAttribute('aria-modal', 'true'); m.setAttribute('role', 'dialog'); }
   }
-  function syncLayout() {
+  function syncLayout(noMeasure) { // noMeasure === true: dipanggil dari switchTab, jangan ukur ulang tab bar / peta di tengah animasi
     if (!view || !seatOv) return;
     if (mqDesk.matches) { toSplit(); dock(!view.hidden); } // panel hanya menempel saat tab Peta aktif; tab lain tetap pakai modal
     else { dock(false); toFlat(); }
+    if (noMeasure === true) return;
     requestAnimationFrame(() => { if (typeof centerChart === 'function') centerChart(); if (typeof moveInd === 'function') moveInd(true); });
   }
   mqDesk.addEventListener('change', syncLayout);
@@ -301,11 +302,11 @@
       const r = el.getBoundingClientRect();
       if (!r.height || r.bottom < 0 || r.top > innerHeight) continue;
       els.push(el);
-      if (els.length >= (lite() ? 5 : 9)) break;
+      if (els.length >= (lite() ? 12 : 16)) break;
     }
     const base0 = els.map(el => { const t = getComputedStyle(el).transform; return t && t !== 'none' ? ' ' + t : ''; }); // jaga kemiringan polaroid
     return els.map((el, i) => el.animate([{opacity: 0, transform: 'translate3d(0,22px,0)' + base0[i]}, {opacity: 1, transform: base0[i] ? base0[i].trim() : 'none'}],
-      {duration: lite() ? 600 : 900, delay: (lite() ? 40 : base) + i * (lite() ? 45 : 75), easing: EASE, fill: 'backwards'}));
+      {duration: lite() ? 520 : 800, delay: (lite() ? 60 : base) + i * (lite() ? 38 : 55), easing: EASE, fill: 'backwards'}));
   }
 
   // playEnter (dipakai shared.js saat data pertama tampil) memakai sistem yang sama
@@ -332,8 +333,8 @@
      langsung mengunduh + decode + memudar masuk tepat saat pil dan isi tab sedang bergerak -> patah-patah.
      Selama transisi, src ditahan di data-src; tempat foto tetap ada (aspect-ratio), jadi layout tidak bergeser. */
   let hold = false;
-  const stashImgs = () => document.querySelectorAll('#gallery img[src]').forEach(im => {
-    if (im.naturalWidth) return; // sudah termuat: aman
+  const stashImgs = () => document.querySelectorAll('#gallery img[src]').forEach((im, i) => {
+    if (i < 12 || im.naturalWidth) return; // 12 pertama (dimuat eager) & yang sudah termuat: aman
     im.dataset.src = im.getAttribute('src'); im.removeAttribute('src');
   });
   const releaseImgs = () => { // dilepas bertahap (6 foto per frame), bukan puluhan sekaligus
@@ -390,6 +391,11 @@
     const baseGal = renderGallery;
     renderGallery = function () {
       baseGal();
+      document.querySelectorAll('#gallery .gi img').forEach((im, i) => { // foto yang muncul pertama sudah siap SEBELUM tab dibuka
+        if (i >= 12) return;
+        im.loading = 'eager';
+        if (im.decode) im.decode().catch(() => {});
+      });
       if (hold) stashImgs();
       idle(warm);
     };
@@ -430,7 +436,7 @@
 
     const hd = document.querySelector('.head'), top = hd.getBoundingClientRect().bottom + scrollY - 8; // isi baru mulai dari bawah header
     if (scrollY > top) scrollTo({top, behavior: 'instant'});
-    syncLayout();
+    syncLayout(true);
     if (name === 'main' && typeof centerChart === 'function') centerChart(); // ukur peta hanya saat tab peta dibuka
     syncFbar();
     if (ghost) ghost.el.scrollTop = ghost.off;
@@ -447,7 +453,7 @@
 
     void next.offsetHeight; // paksa tata letak selesai sekarang, bukan di tengah animasi
     const off = dir * travel();
-    anims.push(next.animate([{opacity: 0, transform: shift(off)}, {opacity: 1, transform: 'none'}],
+    anims.push(next.animate([{opacity: 0, transform: shift(off)}, {opacity: 1, offset: 0.3}, {opacity: 1, transform: 'none'}],
       {duration: IN_MS(), delay: lite() ? 30 : 80, easing: EASE, fill: 'backwards'}));
     if (hold) { // tunggu geseran isi DAN pil selesai: pil (720ms) lebih lama dari geseran isi di HP (460ms), jadi dulu foto mulai
       // diunduh/decode/memudar tepat di sisa gerak pil -> pil patah di ujung
