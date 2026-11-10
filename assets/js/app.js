@@ -242,8 +242,10 @@
   let run = null; // transisi yang sedang berjalan: {anims, done}
 
   const lite = () => mqMobile.matches || mqTouch.matches; // HP & tablet sentuh: layer lebih sedikit supaya tetap 60fps
-  const travel = () => mqDesk.matches ? 28 : lite() ? 34 : Math.round(Math.min(104, Math.max(48, innerWidth * 0.18)));
-  const shift = d => mqDesk.matches ? `translate3d(0,${d}px,0)` : `translate3d(${d}px,0,0)`;
+  // sidebar vertikal hanya untuk laptop/mouse (>=1280px). iPad/tablet sentuh memakai dock bawah, jadi geraknya horizontal seperti di HP
+  const sideNav = () => mqDesk.matches && !mqTouch.matches;
+  const travel = () => sideNav() ? 28 : lite() ? 34 : Math.round(Math.min(104, Math.max(48, innerWidth * 0.18)));
+  const shift = d => sideNav() ? `translate3d(0,${d}px,0)` : `translate3d(${d}px,0,0)`;
 
   function settle() { // selesaikan seketika transisi sebelumnya (mis. tab diketuk beruntun)
     if (!run) return;
@@ -401,7 +403,7 @@
     };
     document.addEventListener('touchstart', e => {
       st = null;
-      if (mqDesk.matches || e.touches.length !== 1 || skip(e.target) || document.querySelector('.overlay.open')) return;
+      if (sideNav() || e.touches.length !== 1 || skip(e.target) || document.querySelector('.overlay.open')) return;
       const t = e.touches[0];
       st = {x0: t.clientX, y0: t.clientY, lock: '', px: t.clientX, pt: performance.now(), v: 0, dx: 0};
     }, {passive: true});
@@ -513,7 +515,7 @@
     };
 
     bar.addEventListener('pointerdown', e => {
-      if (e.pointerType === 'mouse' || !e.isPrimary || !(mqMobile.matches || (mqTouch.matches && !mqDesk.matches)) || !e.target.closest('.tab')) return;
+      if (e.pointerType === 'mouse' || !e.isPrimary || !(mqMobile.matches || mqTouch.matches) || !e.target.closest('.tab')) return;
       d = {id: e.pointerId, x0: e.clientX, x: e.clientX, drag: false, list: tabs(), hot: -1};
     });
     bar.addEventListener('pointermove', e => {
