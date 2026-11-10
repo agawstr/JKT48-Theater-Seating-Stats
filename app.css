@@ -112,7 +112,7 @@ body.app #legend{justify-content:center}
 /* =====================================================================
    Laptop
    ===================================================================== */
-@media(min-width:1100px){
+@media(min-width:1280px){
   body.app .wrap{max-width:none;align-items:stretch;padding:28px 32px 56px 252px}
 
   /* sidebar kiri */
@@ -175,7 +175,7 @@ body.app #legend{justify-content:center}
 }
 
 /* tablet & layar di antara: tab bar bawaan tetap, tapi menu Aksi + ikon tetap rapi */
-@media(min-width:769px) and (max-width:1099px){
+@media(min-width:769px) and (max-width:1279px){
   body.app .tab{display:inline-flex;align-items:center;gap:8px}
   body.app .tab::before{width:18px;height:18px}
 }
