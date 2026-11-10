@@ -430,6 +430,39 @@
     };
   })();
 
+  /* ---------- foto: kartu "terakhir nonton" memudar masuk + tampilan saat gagal dimuat ---------- */
+  (() => {
+    const box = im => im.closest('.last-ph,.gi-ph,.hi-ph');
+    addEventListener('load', e => {
+      const im = e.target; if (!im || im.tagName !== 'IMG') return;
+      const b = box(im); if (!b) return;
+      b.classList.remove('bad');
+      if (b.classList.contains('last-ph')) { im.classList.add('ld'); b.classList.add('ld'); } // galeri & modal sudah ditangani shared.js
+    }, true);
+    addEventListener('error', e => {
+      const im = e.target; if (!im || im.tagName !== 'IMG') return;
+      const b = box(im); if (!b) return;
+      if (im.dataset.full && im.getAttribute('src') !== im.dataset.full) return; // thumbnail gagal: foto penuh masih dicoba
+      b.classList.add('bad'); b.classList.remove('ld');
+    }, true);
+  })();
+
+  /* ---------- getar halus saat ketuk kursi / pindah tab (Android; iOS Safari tidak mendukung API ini, jadi diabaikan) ---------- */
+  (() => {
+    if (typeof navigator.vibrate !== 'function') return;
+    let last = 0;
+    const buzz = ms => {
+      const t = performance.now();
+      if (calm() || t - last < 60) return;
+      last = t;
+      try { navigator.vibrate(ms); } catch (e) { /* diabaikan */ }
+    };
+    document.addEventListener('click', e => {
+      if (e.target.closest('.seat')) buzz(10);
+      else if (e.target.closest('.tabbar .tab')) buzz(8);
+    }, true);
+  })();
+
   /* ---------- PWA: service worker ---------- */
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
     addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
