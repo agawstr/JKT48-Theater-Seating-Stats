@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>JKT48 Theater Seating Stats</title>
 <meta name="theme-color" content="#0d090d">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23ff2a5f%27/%3E%3Cpath d=%27M14 38h36M14 28h36M14 48h36%27 stroke=%27%23fff%27 stroke-width=%275%27 stroke-linecap=%27round%27 opacity=%27.9%27/%3E%3Cpath d=%27M12 20q20-12 40 0%27 stroke=%27%23ffd23f%27 stroke-width=%275%27 fill=%27none%27 stroke-linecap=%27round%27/%3E%3C/svg%3E">
@@ -11,10 +11,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
 <style>
-.tabs{display:flex;justify-content:center;gap:12px;margin-bottom:20px}
-.tab-btn{padding:10px 28px;border-radius:9999px;border:1px solid #332128;background:#1a1014;color:#a1a1aa;font-size:15px;font-weight:600;cursor:pointer;transition:.25s}
-.tab-btn:hover{border-color:#ff2a5f;color:#fff}
-.tab-btn.active{background:#881337;border-color:#f43f5e;color:#fff;box-shadow:0 0 15px rgba(244,63,94,.3)}
 .view{display:none;width:100%}
 .view.active{display:flex;flex-direction:column;align-items:center}
 .crud{width:100%;max-width:1200px;display:grid;grid-template-columns:340px 1fr;gap:24px;align-items:start;margin-top:20px}
@@ -53,7 +49,6 @@ td .seat-badge{font-size:12px}
 #backup-note{font-size:12px;color:#a1a1aa;margin:0 0 10px}
 #backup-note.warn{color:#fbbf24}
 #pager{display:flex;gap:12px;align-items:center;justify-content:center;margin-top:12px;font-size:13px;color:#a1a1aa}
-@media(max-width:768px){.tab-btn{padding:8px 18px;font-size:13px}}
 .modal.wide{max-width:680px;max-height:90vh;overflow-y:auto}
 .jk-help{color:#a1a1aa;font-size:13px;margin:0 0 10px;line-height:1.5}
 #jk-in,#jk-code{font-family:monospace;font-size:12px;margin:8px 0}
@@ -193,21 +188,16 @@ button.tt-c{font:inherit;color:inherit;text-align:left;cursor:pointer}
 #solo{display:flex;flex-direction:column;gap:18px}
 @media(max-width:600px){.so-row{grid-template-columns:56px 1fr auto}.so-row .aw-b{grid-column:1/-1;justify-content:flex-end}}
 </style>
+<link rel="stylesheet" href="admin-app.css">
 </head>
-<body>
+<body class="adm">
 <div class="wrap">
   <div class="head">
     <h1>JKT48 Theater Seating Stats</h1>
     <p class="sub">Catatan kursi teater yang pernah kamu tempatin</p>
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="peta">Peta Kursi</button>
-      <button class="tab-btn" data-tab="crud">Tambah &amp; Kelola Data</button>
-      <button class="tab-btn" data-tab="tiket">Total Tiket</button>
-      <button class="tab-btn" data-tab="solo">Sesi Lepas</button>
-      <button class="tab-btn" data-tab="biaya">Pengeluaran</button>
-    </div>
     <div class="badge">Total Riwayat Show: <span id="total">0</span></div>
   </div>
+  <div class="tabbar" role="tablist"><button type="button" class="tab on" data-tab="peta" data-short="Peta" role="tab" aria-selected="true">Peta Kursi</button><button type="button" class="tab" data-tab="crud" data-short="Data" role="tab" aria-selected="false">Tambah &amp; Kelola</button><button type="button" class="tab" data-tab="tiket" data-short="Tiket" role="tab" aria-selected="false">Total Tiket</button><button type="button" class="tab" data-tab="solo" data-short="Sesi" role="tab" aria-selected="false">Sesi Lepas</button><button type="button" class="tab" data-tab="biaya" data-short="Biaya" role="tab" aria-selected="false">Pengeluaran</button></div>
 
   <div id="view-peta" class="view active">
     <div id="seating-wrapper">
@@ -590,16 +580,116 @@ function renderLists() {
 }
 const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTodo(); renderTotals(); renderExpense(); renderAway(); renderSolo(); renderTsEv(); };
 
-// ---------- Tab ----------
-function switchTab(name) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
-  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
-  if (name === 'peta') requestAnimationFrame(centerChart);
-  if (name === 'tiket') renderTotals();
-  if (name === 'biaya') { renderExpense(); renderAway(); }
-  if (name === 'solo') { renderSolo(); renderTsEv(); }
-}
-document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+// ---------- Tab (gaya app: pil meluncur, geser tab, panah keyboard) ----------
+(() => {
+  const mqMobile = matchMedia('(max-width:768px)'), mqDesk = matchMedia('(min-width:1280px)');
+  const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const EASE = 'cubic-bezier(.32,.72,0,1)';
+  const tabs = () => [...document.querySelectorAll('.tabbar .tab')];
+  const viewOf = k => document.getElementById('view-' + k);
+  let anim = null;
+
+  function afterSwitch(name) { // render yang dulu ada di switchTab
+    if (name === 'peta') requestAnimationFrame(centerChart);
+    if (name === 'tiket') renderTotals();
+    if (name === 'biaya') { renderExpense(); renderAway(); }
+    if (name === 'solo') { renderSolo(); renderTsEv(); }
+  }
+
+  function switchTab(name, drag) {
+    const list = tabs(), from = list.findIndex(t => t.classList.contains('on')), to = list.findIndex(t => t.dataset.tab === name);
+    if (to < 0) return;
+    if (anim) { try { anim.cancel(); } catch (e) {} anim = null; }
+    list.forEach((t, i) => { t.classList.toggle('on', i === to); t.setAttribute('aria-selected', i === to); });
+    if (typeof moveInd === 'function') moveInd(); // pil meluncur ke tab baru
+    document.querySelectorAll('.view').forEach(v => { v.classList.toggle('active', v.id === 'view-' + name); if (v.id !== 'view-' + name) { v.style.transform = ''; v.style.opacity = ''; } });
+    afterSwitch(name);
+    const hd = document.querySelector('.head'), top = hd.getBoundingClientRect().bottom + scrollY - 8; // isi baru mulai dari bawah header
+    if (scrollY > top && !mqDesk.matches) scrollTo({top, behavior: 'instant'});
+    const next = viewOf(name);
+    if (to === from || from < 0 || still() || !next) return;
+    const dir = to > from ? 1 : -1, off = mqDesk.matches ? 28 : mqMobile.matches ? 34 : 60;
+    const a = next.animate([{opacity: 0, transform: mqDesk.matches ? `translate3d(0,${dir * off}px,0)` : `translate3d(${dir * off}px,0,0)`}, {opacity: 1, transform: 'none'}],
+      {duration: 700, easing: EASE, fill: 'backwards'});
+    anim = a;
+    a.finished.then(() => { if (anim === a) anim = null; }, () => {});
+  }
+  window.switchTab = switchTab;
+  tabs().forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+
+  /* merek + hint keyboard di sidebar (hanya tampil di laptop) */
+  const tb = document.querySelector('.tabbar');
+  const ico = document.querySelector('link[rel=icon]')?.href || '';
+  tb.insertAdjacentHTML('afterbegin', `<div class="sb-brand" aria-hidden="true"><img src="${ico}" alt=""><b>Theater<br>Admin</b></div>`);
+  tb.insertAdjacentHTML('beforeend', '<div class="sb-keys" aria-hidden="true"><div><kbd>←</kbd><kbd>→</kbd>ganti tab</div><div><kbd>Esc</kbd>tutup</div></div>');
+
+  /* keyboard: ← → ganti tab */
+  const typing = t => !!t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
+  document.addEventListener('keydown', e => {
+    if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    if (typing(e.target) || document.querySelector('.overlay.open') || e.target.id === 'seating-wrapper') return;
+    const list = tabs(), i = list.findIndex(b => b.classList.contains('on')), n = list[i + (e.key === 'ArrowRight' ? 1 : -1)];
+    if (n) { e.preventDefault(); n.click(); }
+  });
+
+  /* geser kiri/kanan (layar sentuh): isi mengikuti jari; lepas melewati ambang -> pindah tab, kalau tidak -> kembali pelan */
+  (() => {
+    let st = null;
+    const hScroll = el => { // di dalam area yang memang bisa digulir ke samping (tabel, peta): geser itu milik area tersebut
+      for (let p = el; p && p !== document.body; p = p.parentElement) {
+        const o = getComputedStyle(p).overflowX;
+        if ((o === 'auto' || o === 'scroll') && p.scrollWidth > p.clientWidth + 1) return true;
+      }
+      return false;
+    };
+    const skip = el => el.closest('#seating-wrapper, #zoomctl, select, input, textarea, .overlay, .tabbar, details[open]') || hScroll(el);
+    const back = (v, px, o) => {
+      v.style.transform = ''; v.style.opacity = '';
+      if (still() || (!px && o === 1)) return;
+      v.animate([{transform: `translate3d(${px}px,0,0)`, opacity: o}, {transform: 'none', opacity: 1}], {duration: 620, easing: EASE});
+    };
+    document.addEventListener('touchstart', e => {
+      st = null;
+      if (mqDesk.matches || e.touches.length !== 1 || skip(e.target) || document.querySelector('.overlay.open')) return;
+      const t = e.touches[0];
+      st = {x0: t.clientX, y0: t.clientY, lock: '', px: t.clientX, pt: performance.now(), v: 0, dx: 0};
+    }, {passive: true});
+    document.addEventListener('touchmove', e => {
+      if (!st) return;
+      if (e.touches.length !== 1) { if (st.lock) back(st.view, st.shown, st.opa); st = null; return; }
+      const t = e.touches[0], dx = t.clientX - st.x0, dy = t.clientY - st.y0;
+      if (!st.lock) {
+        if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+        if (Math.abs(dx) > Math.abs(dy) * 1.6 && e.cancelable) {
+          const list = tabs(), i = list.findIndex(b => b.classList.contains('on'));
+          if (i < 0) { st = null; return; }
+          if (anim) { try { anim.cancel(); } catch (e2) {} anim = null; }
+          Object.assign(st, {lock: 'x', list, i, view: viewOf(list[i].dataset.tab), shown: 0, opa: 1});
+        } else { st = null; return; } // vertikal / ragu: biarkan halaman menggulir
+      }
+      e.preventDefault();
+      const now = performance.now();
+      st.v = (t.clientX - st.px) / Math.max(1, now - st.pt); st.px = t.clientX; st.pt = now; st.dx = dx;
+      const j = st.i + (dx < 0 ? 1 : -1), has = j >= 0 && j < st.list.length;
+      const px = dx * (has ? 0.5 : 0.2);
+      st.shown = px; st.opa = 1 - Math.min(0.55, Math.abs(px) / innerWidth * 1.2);
+      st.view.style.transform = `translate3d(${px}px,0,0)`;
+      st.view.style.opacity = st.opa.toFixed(3);
+      if (has && typeof indFollow === 'function') indFollow(st.list[st.i], st.list[j], Math.abs(dx) / (innerWidth * 0.42));
+    }, {passive: false});
+    const end = () => {
+      const s = st; st = null;
+      if (!s || s.lock !== 'x') return;
+      const j = s.i + (s.dx < 0 ? 1 : -1), has = j >= 0 && j < s.list.length;
+      const go = has && (Math.abs(s.dx) > innerWidth * 0.22 || (Math.abs(s.v) > 0.5 && Math.abs(s.dx) > 30 && Math.sign(s.v) === Math.sign(s.dx)));
+      if (go) { s.view.style.transform = ''; s.view.style.opacity = ''; switchTab(s.list[j].dataset.tab, {px: s.shown}); }
+      else { back(s.view, s.shown, s.opa); if (typeof moveInd === 'function') moveInd(); }
+    };
+    document.addEventListener('touchend', end, {passive: true});
+    document.addEventListener('touchcancel', end, {passive: true});
+  })();
+})();
 
 // ---------- Form ----------
 const setMsg = t => { const m = $('msg'); m.textContent = t || ''; m.classList.remove('pulse'); if (t) { void m.offsetWidth; m.classList.add('pulse'); } };
