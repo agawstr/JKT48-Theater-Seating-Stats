@@ -6,7 +6,7 @@
    - Google Fonts: pakai cache dulu, diperbarui di belakang
    - admin.html & request non-GET: tidak disentuh
    Naikkan VERSION kalau daftar SHELL berubah. */
-const VERSION = 'v3';
+const VERSION = 'v4';
 const SHELL_CACHE = 'shell-' + VERSION;
 const PHOTO_CACHE = 'photos-' + VERSION;
 const FONT_CACHE = 'fonts-' + VERSION;
@@ -16,7 +16,7 @@ const MAX_PHOTOS = 400; // thumbnail + foto penuh; 150 hampir penuh (134 thumbna
 
 const SHELL = [
   './', 'index.html',
-  'assets/css/shared.css', 'assets/css/app.css', 'assets/js/shared.js', 'assets/js/app.js',
+  'assets/css/shared.css', 'assets/css/app.css', 'assets/css/liquid.css', 'assets/js/shared.js', 'assets/js/app.js', 'assets/js/liquid.js',
   'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png',
   'icons/apple-touch-icon.png'
 ];
