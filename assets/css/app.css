@@ -318,7 +318,8 @@ h1{font-size:clamp(30px,5vw,40px);font-weight:700;letter-spacing:-.03em;color:#f
 .modal{border-radius:34px;background-color:rgba(34,28,32,.5)}
 #pop{background-color:rgba(34,28,32,.55)}
 .overlay{background:rgba(0,0,0,.32);-webkit-backdrop-filter:blur(10px) saturate(150%);backdrop-filter:blur(10px) saturate(150%)}
-.stage,.catwalk{border-radius:18px}
+.stage{border-radius:18px 18px 0 0;border-bottom:0}
+.catwalk{border-radius:0 0 18px 18px;border-top:0}
 
 /* kursi: kapsul kaca kecil; kursi yang pernah ditempati tetap berwarna heatmap (inline dari JS) */
 .seat{border-radius:11px;transition:transform .45s var(--spring-b),background .25s,border-color .25s,box-shadow .25s,color .25s}
