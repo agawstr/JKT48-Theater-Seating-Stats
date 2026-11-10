@@ -289,7 +289,7 @@
 
   // item yang sedang terlihat di layar masuk bertahap (naik pelan), bukan muncul tiba-tiba
   const CASCADE = {
-    main: '#story, #last .last-c, #stats .stat, #cover',
+    main: '#filters, #seating-wrapper, #legend, #story, #last .last-c, #stats .stat, #cover',
     tl: '#tl-bar, .tl-yh, .tl-mh, .tl-i',
     gal: '.gk-bar, #gallery-bar, #gallery .gi',
     ev: '#view-ev > h2, #lot .lot-cards .stat, #lot .sec2, #lot .lot-r, #ev-up, #ev-cats, #ev-bar'
@@ -305,8 +305,8 @@
       if (els.length >= (lite() ? 12 : 16)) break;
     }
     const base0 = els.map(el => { const t = getComputedStyle(el).transform; return t && t !== 'none' ? ' ' + t : ''; }); // jaga kemiringan polaroid
-    return els.map((el, i) => el.animate([{opacity: 0, transform: 'translate3d(0,14px,0)' + base0[i]}, {opacity: 1, transform: base0[i] ? base0[i].trim() : 'none'}],
-      {duration: lite() ? 520 : 680, delay: (lite() ? 60 : base) + i * (lite() ? 38 : 48), easing: EASE, fill: 'backwards'}));
+    return els.map((el, i) => el.animate([{opacity: 0, transform: 'translate3d(0,20px,0)' + base0[i]}, {opacity: 1, transform: base0[i] ? base0[i].trim() : 'none'}],
+      {duration: lite() ? 560 : 700, delay: (lite() ? 50 : base) + i * (lite() ? 48 : 58), easing: EASE, fill: 'backwards'}));
   }
 
   // playEnter (dipakai shared.js saat data pertama tampil) memakai sistem yang sama
@@ -453,7 +453,7 @@
 
     void next.offsetHeight; // paksa tata letak selesai sekarang, bukan di tengah animasi
     const off = dir * travel();
-    anims.push(next.animate([{opacity: 0, transform: shift(off)}, {opacity: 1, offset: 0.6}, {opacity: 1, transform: 'none'}],
+    anims.push(next.animate([{opacity: 0, transform: shift(off)}, {opacity: 1, offset: 0.35}, {opacity: 1, transform: 'none'}],
       {duration: IN_MS(), delay: lite() ? 30 : 60, easing: EASE, fill: 'backwards'}));
     if (hold) { // tunggu geseran isi DAN pil selesai: pil (720ms) lebih lama dari geseran isi di HP (460ms), jadi dulu foto mulai
       // diunduh/decode/memudar tepat di sisa gerak pil -> pil patah di ujung
