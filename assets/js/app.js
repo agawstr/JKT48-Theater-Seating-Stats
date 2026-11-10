@@ -304,9 +304,14 @@
     if (im.naturalWidth) return; // sudah termuat: aman
     im.dataset.src = im.getAttribute('src'); im.removeAttribute('src');
   });
-  const releaseImgs = () => {
+  const releaseImgs = () => { // dilepas bertahap (6 foto per frame), bukan puluhan sekaligus
     hold = false;
-    document.querySelectorAll('#gallery img[data-src]').forEach(im => { im.src = im.dataset.src; im.removeAttribute('data-src'); });
+    const q = [...document.querySelectorAll('#gallery img[data-src]')];
+    const step = () => {
+      q.splice(0, 6).forEach(im => { if (im.dataset.src) { im.src = im.dataset.src; im.removeAttribute('data-src'); } });
+      if (q.length) requestAnimationFrame(step);
+    };
+    step();
   };
   // saat browser menganggur, unduh ~12 thumbnail pertama ke cache supaya muncul seketika begitu galeri dibuka
   const warmed = new Set();
@@ -365,7 +370,11 @@
     const off = dir * travel();
     anims.push(next.animate([{opacity: 0, transform: shift(off)}, {opacity: 1, transform: 'none'}],
       {duration: IN_MS(), delay: lite() ? 30 : 80, easing: EASE, fill: 'backwards'}));
-    if (hold) { const main = anims[0]; main.finished.then(() => { if (run === r) releaseImgs(); }, () => {}); } // geseran utama selesai -> mulai muat foto
+    if (hold) { // tunggu geseran isi DAN pil selesai: pil (720ms) lebih lama dari geseran isi di HP (460ms), jadi dulu foto mulai
+      // diunduh/decode/memudar tepat di sisa gerak pil -> pil patah di ujung
+      const ia = document.querySelector('.tabbar .tab-ind')?._anim;
+      Promise.allSettled([anims[0].finished, ia ? ia.finished : null]).then(() => { if (run === r) requestAnimationFrame(releaseImgs); });
+    }
     if (ghost) {
       const ga = ghost.el.animate([{opacity: dragO, transform: 'none'}, {opacity: 0, transform: shift(-off * 0.6)}],
         {duration: OUT_MS(), easing: 'cubic-bezier(.3,.6,.3,1)', fill: 'forwards'});
