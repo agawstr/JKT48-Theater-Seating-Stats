@@ -430,6 +430,60 @@
     };
   })();
 
+  /* ---------- tab bar bawah (HP): tahan lalu geser pil ke tab lain, lepas untuk pindah. Ketukan biasa tetap jalan seperti biasa ---------- */
+  (() => {
+    const bar = document.querySelector('.tabbar');
+    if (!bar) return;
+    let d = null, raf = 0, swallow = false;
+    const nearest = (cs, x) => cs.reduce((b, c, i) => Math.abs(c - x) < Math.abs(cs[b] - x) ? i : b, 0);
+    const buzz = () => { if (typeof navigator.vibrate === 'function' && !calm()) { try { navigator.vibrate(6); } catch (e) {} } };
+    const centers = () => d.list.map(b => { const r = b.getBoundingClientRect(); return r.left + r.width / 2; });
+
+    const follow = () => { // pil mengikuti jari di antara dua tab terdekat
+      raf = 0;
+      if (!d || !d.drag) return;
+      const cs = centers(), n = cs.length, x = d.x;
+      let i = 0, p = 0;
+      if (x >= cs[n - 1]) { i = n - 2; p = 1; }
+      else if (x > cs[0]) { i = cs.findIndex((c, k) => k < n - 1 && x >= c && x < cs[k + 1]); p = (x - cs[i]) / (cs[i + 1] - cs[i]); }
+      indFollow(d.list[i], d.list[i + 1], p);
+      const hot = nearest(cs, x);
+      if (hot !== d.hot) { d.hot = hot; d.list.forEach((b, k) => b.classList.toggle('hot', k === hot)); buzz(); }
+    };
+    const finish = commit => {
+      if (!d) return;
+      const s = d; d = null;
+      cancelAnimationFrame(raf); raf = 0;
+      bar.classList.remove('dragging');
+      s.list.forEach(b => b.classList.remove('hot'));
+      if (!s.drag) return;
+      swallow = true; setTimeout(() => { swallow = false; }, 80); // klik susulan setelah geser tidak boleh ikut memicu tab
+      const cur = s.list.findIndex(b => b.classList.contains('on'));
+      if (commit && s.hot >= 0 && s.hot !== cur) switchTab(s.list[s.hot].dataset.tab);
+      else moveInd(); // tidak pindah: pil kembali pelan ke tab aktif
+    };
+
+    bar.addEventListener('pointerdown', e => {
+      if (e.pointerType === 'mouse' || !e.isPrimary || !mqMobile.matches || !e.target.closest('.tab')) return;
+      d = {id: e.pointerId, x0: e.clientX, x: e.clientX, drag: false, list: tabs(), hot: -1};
+    });
+    bar.addEventListener('pointermove', e => {
+      if (!d || e.pointerId !== d.id) return;
+      d.x = e.clientX;
+      if (!d.drag) {
+        if (Math.abs(d.x - d.x0) < 8) return; // di bawah ambang = masih ketukan
+        d.drag = true;
+        try { bar.setPointerCapture(d.id); } catch (err) {}
+        bar.classList.add('dragging');
+        buzz();
+      }
+      if (!raf) raf = requestAnimationFrame(follow);
+    });
+    bar.addEventListener('pointerup', e => { if (d && e.pointerId === d.id) finish(true); });
+    bar.addEventListener('pointercancel', e => { if (d && e.pointerId === d.id) finish(false); });
+    bar.addEventListener('click', e => { if (swallow) { e.stopPropagation(); e.preventDefault(); } }, true);
+  })();
+
   /* ---------- foto: kartu "terakhir nonton" memudar masuk + tampilan saat gagal dimuat ---------- */
   (() => {
     const box = im => im.closest('.last-ph,.gi-ph,.hi-ph');
