@@ -287,26 +287,56 @@
     r.done();
   }
 
-  // item yang sedang terlihat di layar masuk bertahap (naik pelan), bukan muncul tiba-tiba
+  /* Item yang terlihat masuk PER BARIS dari atas ke bawah; di dalam satu baris (kartu statistik, foto galeri) dari kiri ke kanan.
+     Baris ditentukan dari posisi nyata di layar, jadi urutannya selalu mengikuti tampilan (HP satu kolom, laptop dua kolom).
+     Hanya opacity + transform (jalan di compositor). */
   const CASCADE = {
-    main: '#filters, #seating-wrapper, #legend, #story, #last .last-c, #stats .stat, #cover',
+    main: '#story, #last .last-c, #stats .stat, #cover, #filters, #seating-wrapper, #legend',
     tl: '#tl-bar, .tl-yh, .tl-mh, .tl-i',
     gal: '.gk-bar, #gallery-bar, #gallery .gi',
-    ev: '#view-ev > h2, #lot .lot-cards .stat, #lot .sec2, #lot .lot-r, #ev-up, #ev-cats, #ev-bar'
+    ev: '#view-ev > h2, #lot .lot-cards .stat, #lot .sec2, #lot .lot-r, #ev-up, #ev-cats, #ev-bar, #ev-rank, #ev-list .ev-g, #ev-list .ev-c'
   };
-  function cascade(view, base = 90) {
+  function cascade(view, base = 80) {
     const sel = CASCADE[view.id.replace('view-', '')];
     if (!sel || calm()) return [];
-    const els = [];
+    let items = [];
     for (const el of view.querySelectorAll(sel)) {
       const r = el.getBoundingClientRect();
       if (!r.height || r.bottom < 0 || r.top > innerHeight) continue;
-      els.push(el);
-      if (els.length >= (lite() ? 12 : 16)) break;
+      items.push({el, top: r.top, left: r.left});
+      if (items.length >= (lite() ? 28 : 40)) break;
     }
-    const base0 = els.map(el => { const t = getComputedStyle(el).transform; return t && t !== 'none' ? ' ' + t : ''; }); // jaga kemiringan polaroid
-    return els.map((el, i) => el.animate([{opacity: 0, transform: 'translate3d(0,20px,0)' + base0[i]}, {opacity: 1, transform: base0[i] ? base0[i].trim() : 'none'}],
-      {duration: lite() ? 560 : 700, delay: (lite() ? 50 : base) + i * (lite() ? 48 : 58), easing: EASE, fill: 'backwards'}));
+    const set = new Set(items.map(it => it.el)); // elemen di dalam elemen lain yang ikut dianimasikan tidak perlu dianimasikan lagi
+    items = items.filter(it => { for (let p = it.el.parentElement; p && p !== view; p = p.parentElement) if (set.has(p)) return false; return true; });
+    items.sort((a, b) => a.top - b.top || a.left - b.left);
+    const rows = [];
+    items.forEach(it => {
+      const last = rows[rows.length - 1];
+      if (last && Math.abs(it.top - last.top) < 14) last.items.push(it); else rows.push({top: it.top, items: [it]});
+    });
+    const L = lite(), start = L ? 40 : base;
+    const rowStep = Math.min(L ? 70 : 85, (L ? 520 : 680) / Math.max(1, rows.length)); // total waktu bertahap dibatasi
+    const colStep = L ? 40 : 50;
+    const base0 = new Map(items.map(it => { const t = getComputedStyle(it.el).transform; return [it.el, t && t !== 'none' ? ' ' + t : '']; })); // jaga kemiringan polaroid
+    const dur = L ? 520 : 640, anims = [];
+    let lastDelay = 0;
+    rows.forEach((row, ri) => {
+      row.items.sort((a, b) => a.left - b.left).forEach((it, ci) => {
+        const delay = start + ri * rowStep + ci * colStep, b = base0.get(it.el);
+        lastDelay = Math.max(lastDelay, delay);
+        anims.push(it.el.animate([{opacity: 0, transform: 'translate3d(0,18px,0)' + b}, {opacity: 1, transform: b ? b.trim() : 'none'}],
+          {duration: dur, delay, easing: EASE, fill: 'backwards'}));
+      });
+    });
+    // garis timeline tumbuh dari atas bersamaan dengan kartu yang muncul (bukan sudah ada duluan)
+    const tl = view.id === 'view-tl' ? $('timeline') : null;
+    if (tl && anims.length) {
+      try {
+        anims.push(tl.animate([{transform: 'scaleY(0)'}, {transform: 'scaleY(1)'}],
+          {duration: lastDelay - start + dur * 0.7, delay: start, easing: 'cubic-bezier(.3,.6,.3,1)', fill: 'backwards', pseudoElement: '::before'}));
+      } catch (e) { /* browser lama tanpa animasi pseudo-elemen: garis tampil biasa */ }
+    }
+    return anims;
   }
 
   // playEnter (dipakai shared.js saat data pertama tampil) memakai sistem yang sama
