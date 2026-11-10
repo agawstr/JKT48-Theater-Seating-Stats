@@ -235,7 +235,7 @@ body.app #legend{justify-content:center}
 }
 
 /* ---------- tab bar HP: tahan & geser pil ---------- */
-@media(max-width:1279px){ /* HP + iPad: bar horizontal */
+@media(max-width:1279px),(hover:none) and (pointer:coarse){ /* HP + iPad: bar horizontal */
   body.app .tabbar{touch-action:none} /* geser horizontal di bar tidak boleh dianggap scroll / gesture browser */
   body.app .tabbar.dragging .tab-ind{box-shadow:0 8px 22px rgba(255,42,95,.5),inset 0 1px 0 rgba(255,255,255,.55)}
   body.app .tabbar.dragging .tab.on:not(.hot){color:rgba(255,255,255,.7)}
@@ -248,4 +248,31 @@ body.app #legend{justify-content:center}
 @media(hover:none) and (pointer:coarse){
   body.app .seat{transition:none}
   body.app .seat.visited{box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 -6px 10px rgba(0,0,0,.12)}
+}
+
+/* =====================================================================
+   Dock iPad / tablet (layar sentuh, lebar > 768px, portrait maupun landscape)
+   Tab bar jadi dock mengambang di bawah, di tengah, seperti di HP tapi lebih ramping.
+   Laptop dengan mouse (hover:hover) tidak tersentuh: sidebar kiri tetap.
+   HP (<=768px) juga tidak berubah.
+   ===================================================================== */
+@media(min-width:769px) and (hover:none) and (pointer:coarse){
+  :root{--stick:calc(env(safe-area-inset-top,0px) + 16px)!important} /* header bulan Riwayat menempel di atas layar, bukan di bawah tab bar */
+  body.app .wrap{padding-bottom:calc(116px + env(safe-area-inset-bottom,0px))}
+  body.app .tabbar{position:fixed;top:auto;bottom:calc(14px + env(safe-area-inset-bottom,0px));left:0;right:0;margin:0 auto;width:min(540px,calc(100% - 32px));
+    display:grid;grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:0;align-items:stretch;justify-content:normal;flex-direction:row;
+    padding:7px;border-radius:30px;z-index:40;box-sizing:border-box;
+    box-shadow:0 14px 34px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,170,190,.22)}
+  body.app .sb-brand,body.app .sb-keys{display:none}
+  body.app .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:9px 4px 8px;border-radius:22px;
+    font-size:0!important;line-height:0;text-align:center;white-space:nowrap;min-width:0}
+  body.app .tab::before{width:24px;height:24px}
+  body.app .tab::after{content:attr(data-short);font-size:11.5px;font-weight:600;line-height:1.1;letter-spacing:.01em}
+  body.app .tab-ind{border-radius:23px}
+  body.app #fbar{left:50%;bottom:calc(98px + env(safe-area-inset-bottom,0px))}
+  body.app .tl-mh{top:var(--stick)}
+}
+/* iPad Pro 12.9" landscape (>=1280px): tetap dua kolom peta + statistik, tapi tanpa ruang sidebar di kiri */
+@media(min-width:1280px) and (hover:none) and (pointer:coarse){
+  body.app .wrap{padding:28px 32px calc(116px + env(safe-area-inset-bottom,0px)) 32px}
 }
