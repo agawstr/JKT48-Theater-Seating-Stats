@@ -51,7 +51,7 @@ const closeEl = id => {
   const el = $(id);
   if (!el.classList.contains('open') || el.classList.contains('closing')) return;
   el.classList.add('closing'); // animasi tutup dulu, baru disembunyikan
-  timers[id] = setTimeout(() => { el.classList.remove('open', 'closing'); lastFocus[id]?.focus?.(); }, 420);
+  timers[id] = setTimeout(() => { el.classList.remove('open', 'closing'); try { lastFocus[id]?.focus?.({preventScroll: true}); } catch (e) {} }, 420);
 };
 
 // ---------- Layout kursi: jumlah kursi per blok (b1..b4) di tiap baris ----------
@@ -303,9 +303,14 @@ document.addEventListener('click', e => {
   const im = e.target.closest('img[data-photo]');
   if (im) openLightbox(im);
 });
-let lbTok = 0;
+let lbTok = 0, lbSrc = null, lbDrag = {dy: 0, sc: 1}, lbMoved = false;
+const lbRoot = $('lightbox'), lbEase = 'cubic-bezier(.32,.72,0,1)';
+const lbShowSrc = () => { if (lbSrc) lbSrc.style.visibility = ''; }; // thumbnail asal disembunyikan selama foto terbuka (seperti Foto di iOS)
 function openLightbox(im) { // foto kecil langsung tampil & membesar dari posisinya, foto penuh dimuat di belakang lalu ditukar tanpa kedip
   const lb = $('lb-img'), full = im.dataset.full || im.src, from = im.getBoundingClientRect(), tok = ++lbTok;
+  lb.getAnimations().forEach(a => a.cancel()); // bersihkan sisa animasi tutup sebelumnya
+  lb.style.animation = ''; lb.style.transform = ''; lbRoot.style.opacity = ''; lbDrag = {dy: 0, sc: 1};
+  lbShowSrc(); lbSrc = im;
   // ukuran tampil dikunci dari rasio thumbnail (rasio foto penuh sama): thumbnail 360px lalu foto penuh ~720px
   // sebelumnya tampil di ukuran aslinya masing-masing, jadi saat ditukar foto melompat ~2x lebih besar
   const ar = im.naturalWidth && im.naturalHeight ? im.naturalWidth / im.naturalHeight : 0;
@@ -313,25 +318,89 @@ function openLightbox(im) { // foto kecil langsung tampil & membesar dari posisi
   lb.classList.toggle('fit', !!ar);
   lb.src = im.currentSrc || im.src;
   openEl('lightbox');
-  if (!calm() && from.width) requestAnimationFrame(() => {
-    const to = lb.getBoundingClientRect();
-    if (!to.width || tok !== lbTok) return;
-    const s = from.width / to.width, dx = from.left + from.width / 2 - (to.left + to.width / 2), dy = from.top + from.height / 2 - (to.top + to.height / 2);
-    lb.animate([{transform: `translate(${dx}px,${dy}px) scale(${s})`, opacity: .6}, {transform: 'none', opacity: 1}], {duration: 640, easing: 'cubic-bezier(.32,.72,0,1)'});
-  });
+  if (!calm() && from.width) {
+    const to = lb.getBoundingClientRect(); // layout dipaksa sekarang juga (overlay sudah tampil), jadi tidak ada frame "loncat"
+    if (to.width) {
+      const s = from.width / to.width, dx = from.left + from.width / 2 - (to.left + to.width / 2), dy = from.top + from.height / 2 - (to.top + to.height / 2);
+      lb.style.animation = 'none'; // gerak ini diatur di sini; jangan tumpang tindih dengan animasi CSS bawaan
+      lb.animate([{transform: `translate3d(${dx}px,${dy}px,0) scale(${s})`, opacity: .6}, {transform: 'none', opacity: 1}], {duration: 560, easing: lbEase});
+      im.style.visibility = 'hidden';
+    }
+  }
   if (full !== lb.src) {
     const pre = new Image(); pre.src = full;
-    (pre.decode ? pre.decode() : Promise.resolve()).catch(() => {}).then(() => { if (tok === lbTok && $('lightbox').classList.contains('open')) lb.src = full; });
+    (pre.decode ? pre.decode() : Promise.resolve()).catch(() => {}).then(() => { if (tok === lbTok && lbRoot.classList.contains('open')) lb.src = full; });
   }
 }
-$('lightbox').addEventListener('click', () => closeEl('lightbox'));
+function closeLightbox() { // foto "terbang" kembali ke thumbnail asalnya; kalau thumbnail tak terlihat: mengecil + memudar
+  if (!lbRoot.classList.contains('open') || lbRoot.classList.contains('closing')) return;
+  const lb = $('lb-img'), src = lbSrc, tok = ++lbTok;
+  const r = src && src.isConnected ? src.getBoundingClientRect() : null;
+  const vis = r && r.width > 4 && r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth;
+  const cur = lb.getBoundingClientRect(); // posisi sekarang, termasuk geseran jari
+  closeEl('lightbox'); // latar memudar lewat kelas .closing
+  if (calm() || !cur.width) { lbShowSrc(); return; }
+  const fromT = `translate3d(0,${lbDrag.dy}px,0) scale(${lbDrag.sc})`;
+  lb.getAnimations().forEach(a => a.cancel());
+  lb.style.animation = 'none'; lb.style.transform = '';
+  let anim;
+  if (vis) {
+    const bw = cur.width / lbDrag.sc, bcx = cur.left + cur.width / 2, bcy = cur.top + cur.height / 2 - lbDrag.dy;
+    const dx = r.left + r.width / 2 - bcx, dy = r.top + r.height / 2 - bcy, s = r.width / bw;
+    anim = lb.animate([{transform: fromT, opacity: 1}, {transform: `translate3d(${dx}px,${dy}px,0) scale(${s})`, opacity: 1}], {duration: 380, easing: lbEase, fill: 'forwards'});
+    anim.onfinish = () => { if (tok === lbTok) lbShowSrc(); };
+  } else {
+    anim = lb.animate([{transform: fromT, opacity: 1}, {transform: `translate3d(0,${lbDrag.dy + 28}px,0) scale(${lbDrag.sc * .92})`, opacity: 0}], {duration: 280, easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards'});
+    lbShowSrc();
+  }
+}
+lbRoot.addEventListener('click', () => { if (lbMoved) { lbMoved = false; return; } closeLightbox(); });
+(() => { // geser foto ke atas/bawah untuk menutup (HP): foto + latar mengikuti jari, lepas jauh/cepat = tutup, kalau tidak = kembali memantul
+  const lb = $('lb-img');
+  let id = null, x0 = 0, y0 = 0, lastY = 0, lastT = 0, vy = 0, drag = false;
+  lbRoot.addEventListener('pointerdown', e => {
+    lbMoved = false;
+    if (e.pointerType === 'mouse' || !e.isPrimary || lbRoot.classList.contains('closing')) return;
+    id = e.pointerId; x0 = e.clientX; y0 = lastY = e.clientY; lastT = e.timeStamp; vy = 0; drag = false;
+  });
+  lbRoot.addEventListener('pointermove', e => {
+    if (e.pointerId !== id) return;
+    const dy = e.clientY - y0, dx = e.clientX - x0;
+    if (!drag) {
+      if (Math.abs(dy) < 8 || Math.abs(dy) < Math.abs(dx)) return;
+      drag = true; lbMoved = true;
+      try { lbRoot.setPointerCapture(id); } catch (err) {}
+      lb.getAnimations().forEach(a => a.cancel()); lb.style.animation = 'none';
+    }
+    const dt = e.timeStamp - lastT;
+    if (dt > 0) vy = (e.clientY - lastY) / dt;
+    lastY = e.clientY; lastT = e.timeStamp;
+    const p = Math.min(Math.abs(dy) / 320, 1), sc = 1 - .16 * p;
+    lbDrag = {dy, sc};
+    lb.style.transform = `translate3d(0,${dy}px,0) scale(${sc})`;
+    lbRoot.style.opacity = String(1 - .75 * p);
+  });
+  const end = e => {
+    if (e.pointerId !== id) return;
+    id = null;
+    if (!drag) return;
+    drag = false;
+    if (Math.abs(lbDrag.dy) > 110 || Math.abs(vy) > .6) { closeLightbox(); return; }
+    const t = lb.style.transform, o = lbRoot.style.opacity || '1';
+    lb.style.transform = ''; lbRoot.style.opacity = ''; lbDrag = {dy: 0, sc: 1};
+    lb.animate([{transform: t}, {transform: 'none'}], {duration: 420, easing: lbEase});
+    lbRoot.animate([{opacity: o}, {opacity: 1}], {duration: 420, easing: lbEase});
+  };
+  lbRoot.addEventListener('pointerup', end);
+  lbRoot.addEventListener('pointercancel', end);
+})();
 
 // Escape: lightbox dulu, lalu hook halaman (mis. dialog konfirmasi admin), terakhir modal kursi
 const escHooks = [];
 document.addEventListener('keydown', e => {
   if (e.key === 'Tab') return trapTab(e);
   if (e.key !== 'Escape') return;
-  if ($('lightbox').classList.contains('open')) closeEl('lightbox');
+  if ($('lightbox').classList.contains('open')) closeLightbox();
   else if (!escHooks.some(h => h())) closeEl('seat-modal');
 });
 
