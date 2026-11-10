@@ -1,0 +1,425 @@
+/* app.css — tampilan "seperti app" untuk index.html (admin.html tidak memuat file ini).
+   Semua aturan dibatasi ke body.app dan dimuat SETELAH shared.css.
+   HP  : max-width 768px  (tab bar bawah, header mengecil, tarik-untuk-muat-ulang)
+   Laptop: min-width 1280px (sidebar kiri, dua kolom, panel kursi di kanan) */
+
+/* ---------- elemen baru (tersembunyi sampai dipakai) ---------- */
+#appbar,#ptr,.sb-brand,.sb-keys{display:none}
+#toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:60;transform:translate(-50%,12px);opacity:0;pointer-events:none;
+  padding:10px 16px;border-radius:99px;background:rgba(36,20,27,.96);border:1px solid rgba(255,255,255,.16);color:#fff;font-size:13px;font-weight:600;
+  max-width:calc(100vw - 32px);text-align:center;transition:transform .55s var(--ease-out),opacity .4s}
+#toast.on{transform:translate(-50%,0);opacity:1}
+
+/* ---------- gerak ala iOS ---------- */
+body.app{--ios:var(--ease-out);--spring:var(--ease-out);-webkit-tap-highlight-color:transparent} /* --spring sengaja sama dengan --ios: tanpa efek memantul */
+body.app .wrap{overflow-x:clip} /* geser tab tidak memunculkan scrollbar samping (clip tidak mematikan sticky) */
+body.app button,body.app .tl-i,body.app .gi,body.app .stat,body.app .last-c,body.app .seat{touch-action:manipulation}
+/* ganti tab: isi tab baru meluncur dari arah tab yang dituju (--tabx diisi app.js) */
+@keyframes tabin{from{opacity:0;transform:translate3d(var(--tabx,0px),var(--taby,0px),0)}}
+body.app #view-main,body.app #view-gal,body.app #view-tl,body.app #view-ev{animation-duration:.42s;animation-timing-function:var(--ios)}
+/* animasi item: jarak kecil, tanpa putar/skala, jeda antar item singkat */
+@keyframes rise{from{opacity:0;transform:translate3d(0,10px,0)}}
+@keyframes drop-pol{from{opacity:0;transform:translate3d(0,10px,0)}}
+body.app .enter .tl-i.a,body.app .enter .ev-g:nth-child(-n+8),body.app .enter .ev-c{animation-duration:.45s;animation-delay:calc(var(--i,0) * 28ms)}
+body.app #gallery .gi.a{animation-duration:.45s;animation-delay:calc(min(var(--i,0),8) * 32ms)}
+body.app .overlay.open .hi{animation-duration:.42s;animation-delay:calc(var(--i,0) * 36ms + 70ms)}
+/* pil tab digerakkan app.js (tepi depan melaju duluan, tepi belakang menyusul): tanpa transition CSS */
+body.app .tab-ind{transition:none!important;will-change:transform}
+/* ditekan: mengecil cepat, lepas: kembali pelan */
+body.app .tl-i,body.app .gi,body.app .last-c,body.app .stat:not(.sk){transition:transform .6s var(--ios),border-color .35s,background .35s,box-shadow .4s}
+body.app .tl-i:active,body.app .last-c:active{transform:scale(.985);transition-duration:.2s;transition-delay:.09s}
+body.app .tab:active{transform:scale(.93)}
+body.app .btn-s:active,body.app .gk:active{transform:scale(.94)}
+body.app #chart.morph .seat{transition:none!important}
+@media(prefers-reduced-motion:reduce){body.app .tl-i:active,body.app .last-c:active{transform:none}}
+
+/* ---------- ikon tab (mask SVG, ikut warna teks) ---------- */
+body.app .tab{--ic:none}
+body.app .tab[data-tab=main]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z'/%3E%3Cpath d='M9 4v14M15 6v14'/%3E%3C/svg%3E")}
+body.app .tab[data-tab=tl]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l3 2'/%3E%3C/svg%3E")}
+body.app .tab[data-tab=gal]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='3'/%3E%3Ccircle cx='9' cy='9' r='1.5'/%3E%3Cpath d='M21 15l-5-5L5 21'/%3E%3C/svg%3E")}
+body.app .tab[data-tab=ev]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 7h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4z'/%3E%3Cpath d='M14 7v10' stroke-dasharray='2 2'/%3E%3C/svg%3E")}
+body.app .tab::before{content:'';flex:none;width:22px;height:22px;background:currentColor;
+  -webkit-mask:var(--ic) center/contain no-repeat;mask:var(--ic) center/contain no-repeat}
+
+/* ---------- menu "Aksi" (semua ukuran layar) ---------- */
+.actions{position:relative;display:inline-block}
+.actions-t{display:inline-flex;align-items:center;gap:6px}
+.actions-t::after{content:'';width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .2s}
+.actions-t[aria-expanded=true]::after{transform:translateY(1px) rotate(-135deg)}
+.actions-m{position:absolute;right:0;top:calc(100% + 8px);z-index:20;min-width:210px;padding:6px;border-radius:18px;
+  background:#1d1318;border:1px solid rgba(255,255,255,.14);box-shadow:0 18px 40px rgba(0,0,0,.55);
+  display:none;flex-direction:column;gap:2px}
+.actions.open .actions-m{display:flex;animation:fade .15s ease-out}
+.actions-m .btn-s{display:block;width:100%;text-align:left;border:none;background:transparent;border-radius:12px;padding:12px 14px;font-size:14px;min-height:0;box-shadow:none}
+.actions-m .btn-s:hover,.actions-m .btn-s:focus-visible{background:rgba(255,255,255,.09)}
+body.app #legend{justify-content:center}
+
+/* =====================================================================
+   HP
+   ===================================================================== */
+@media(max-width:768px){
+  html.app{overscroll-behavior-y:contain}
+  body.app .wrap{padding:calc(env(safe-area-inset-top,0px) + 18px) 12px calc(108px + env(safe-area-inset-bottom,0px))}
+  :root{--stick:calc(env(safe-area-inset-top,0px) + 50px)!important}
+
+  /* judul besar: hanya di paling atas */
+  body.app .head{align-items:center;text-align:center;margin-bottom:16px;padding:0 6px}
+  body.app .head h1{font-size:30px;line-height:1.1;letter-spacing:-.02em;margin:0 0 8px;text-wrap:balance}
+  body.app .head .sub{font-size:13px;line-height:1.45;margin:0 0 14px;max-width:30ch;text-wrap:balance}
+  body.app .head .badge{padding:7px 18px;font-size:14px}
+
+  /* header kecil: muncul pelan-pelan saat judul besar sudah lewat (--p 0..1 dari app.js) */
+  #appbar{display:grid;grid-template-columns:1fr auto 1fr;position:fixed;top:0;left:0;right:0;z-index:35;align-items:end;gap:10px;
+    padding:calc(env(safe-area-inset-top,0px) + 8px) 16px 10px;box-sizing:border-box;
+    background:rgba(13,9,13,.94);border-bottom:1px solid rgba(255,255,255,.08);
+    opacity:var(--p,0);transform:translateY(calc((1 - var(--p,0)) * -10px));pointer-events:none;will-change:opacity,transform}
+  #appbar::before{content:'';grid-column:1}
+  #appbar b{grid-column:2;font-size:16px;font-weight:700;white-space:nowrap;text-align:center}
+  #appbar span{grid-column:3;justify-self:end;font-size:12px;font-weight:600;color:#a1a1aa;white-space:nowrap}
+  #appbar em{font-style:normal;color:#ff2a5f;font-weight:800}
+
+  /* tab bar melayang di bawah */
+  body.app .tabbar{position:fixed;top:auto;bottom:calc(10px + env(safe-area-inset-bottom,0px));left:12px;right:12px;width:auto;margin:0;
+    display:grid;grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:0;padding:6px;border-radius:28px;z-index:40;box-sizing:border-box;
+    box-shadow:0 14px 34px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,170,190,.22)}
+  body.app .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 2px 7px;
+    font-size:0!important;line-height:0;text-align:center;min-width:0}
+  body.app .tab::after{content:attr(data-short);font-size:10.5px;font-weight:600;line-height:1.1;letter-spacing:.01em}
+  body.app .tab-ind{border-radius:22px}
+
+  body.app #fbar{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
+  body.app .tl-mh{top:var(--stick)}
+
+  /* tarik untuk memuat ulang */
+  #ptr{display:grid;place-items:center;position:fixed;top:calc(env(safe-area-inset-top,0px) + 6px);left:50%;width:40px;height:40px;margin-left:-20px;z-index:50;
+    border-radius:50%;background:#24141b;border:1px solid rgba(255,255,255,.16);box-shadow:0 8px 22px rgba(0,0,0,.5);
+    opacity:var(--ptr-o,0);transform:translateY(calc(var(--ptr,0px) - 58px)) scale(calc(.6 + var(--ptr-o,0) * .4));pointer-events:none}
+  #ptr svg{width:20px;height:20px;transform:rotate(var(--ptr-r,0deg))}
+  #ptr.spin{opacity:1;--ptr-o:1;transform:translateY(14px) scale(1);transition:transform .5s var(--ease-out)}
+  #ptr.spin svg{animation:ptr-spin .8s linear infinite}
+  #ptr.back{transition:transform .5s var(--ease-out),opacity .4s}
+  @keyframes ptr-spin{to{transform:rotate(360deg)}}
+
+  /* transisi bersama kartu Riwayat -> detail kursi */
+  ::view-transition-group(seat-card){animation-duration:.65s;animation-timing-function:var(--ease-out);overflow:clip;border-radius:20px}
+  ::view-transition-old(seat-card),::view-transition-new(seat-card){height:100%;width:100%;object-fit:cover;object-position:top center}
+  #seat-modal[data-vt]:not(.closing),#seat-modal[data-vt]:not(.closing)>.modal,#seat-modal[data-vt] .hi{animation:none!important}
+  #seat-modal.vt .modal{transition:none!important}
+  html.vt-run::view-transition-old(root),html.vt-run::view-transition-new(root){animation-duration:.4s}
+}
+
+/* =====================================================================
+   Laptop
+   ===================================================================== */
+@media(min-width:1280px){
+  body.app .wrap{max-width:none;align-items:stretch;padding:28px 32px 56px 252px}
+
+  /* sidebar kiri */
+  body.app .tabbar{position:fixed;left:16px;top:16px;bottom:16px;width:208px;margin:0;display:flex;flex-direction:column;flex-wrap:nowrap;
+    align-items:stretch;justify-content:flex-start;gap:4px;padding:16px 10px;border-radius:26px;z-index:40;box-sizing:border-box;
+    box-shadow:0 18px 46px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,170,190,.2)}
+  body.app .sb-brand{display:flex;align-items:center;gap:10px;padding:2px 8px 16px;margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,.1);position:relative;z-index:1}
+  body.app .sb-brand img{width:34px;height:34px;border-radius:9px}
+  body.app .sb-brand b{font-size:14px;line-height:1.2;font-weight:700}
+  body.app .tab{display:flex;align-items:center;justify-content:flex-start;gap:12px;padding:12px 14px;border-radius:16px;font-size:14px;text-align:left;white-space:nowrap}
+  body.app .tab-ind{border-radius:16px}
+  body.app .sb-keys{display:block;margin-top:auto;padding:12px 8px 2px;border-top:1px solid rgba(255,255,255,.1);font-size:11.5px;line-height:1.9;color:#a1a1aa;position:relative;z-index:1}
+  body.app .sb-keys kbd{display:inline-block;min-width:20px;padding:0 6px;margin-right:4px;border-radius:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);
+    font:600 11px/18px Inter,system-ui,sans-serif;text-align:center;color:#e4e4e7}
+  body.app #fbar{left:calc(50% + 120px)}
+
+  body.app .head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:20px;text-align:left;margin-bottom:22px}
+  body.app .head h1{grid-column:1;font-size:30px;margin:0 0 4px;letter-spacing:-.01em}
+  body.app .head .sub{grid-column:1;margin:0}
+  body.app .head .badge{grid-column:2;grid-row:1/3;align-self:center}
+  body.app .tl-mh{top:16px}
+
+  /* dua kolom: peta kiri, statistik / detail kursi kanan */
+  #split{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:24px;width:100%;align-items:start}
+  .col-map{position:sticky;top:16px;min-width:0;max-height:calc(100vh - 32px);overflow-y:auto;overflow-x:hidden;scrollbar-width:none;
+    display:flex;flex-direction:column;align-items:center}
+  .col-map::-webkit-scrollbar{display:none}
+  .col-side{min-width:0;display:flex;flex-direction:column;align-items:stretch}
+  body.app .col-map #filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+  body.app .col-map #filters #flt-reset{grid-column:1/-1;min-height:40px}
+  body.app .col-map #legend{margin-bottom:8px}
+  body.app .col-side .sec:first-of-type{margin-top:8px}
+
+  /* panel detail kursi (menggantikan modal di tab Peta) */
+  #seat-modal.docked{display:block;position:static;inset:auto;z-index:auto;padding:0;margin:0 0 18px;width:100%;background:none;
+    -webkit-backdrop-filter:none;backdrop-filter:none;animation:none!important;box-sizing:border-box}
+  #seat-modal.docked .modal{display:none}
+  #seat-modal.docked.open .modal{display:block;position:relative;width:100%;max-width:none;box-sizing:border-box;animation:none!important;transform:none!important;transition:none}
+  #seat-modal.docked .sheet-grip{display:none}
+  #seat-modal.docked .hist{max-height:min(48vh,440px)}
+  #seat-modal.docked:not(.open)::before{content:'Klik kursi di peta untuk melihat riwayat dan fotonya di sini.';display:block;padding:20px 22px;border-radius:20px;
+    border:1px dashed rgba(255,255,255,.2);color:#a1a1aa;font-size:13.5px;line-height:1.5;text-align:center}
+
+  /* galeri: 4 kolom, "meja foto" yang lebih longgar */
+  body.app #gallery{grid-template-columns:repeat(4,minmax(0,1fr));gap:56px 38px;padding:52px 44px 64px;border-radius:30px;margin-top:6px;
+    background:radial-gradient(120% 80% at 50% 0%,rgba(255,205,160,.11),transparent 62%),
+      repeating-linear-gradient(92deg,rgba(255,255,255,.02) 0 2px,transparent 2px 9px),
+      linear-gradient(180deg,#2b1d20,#1a1115);
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.06),inset 0 -30px 60px rgba(0,0,0,.35),0 20px 50px rgba(0,0,0,.4)}
+  body.app #gallery .gi{box-shadow:0 14px 30px rgba(0,0,0,.6),0 2px 4px rgba(0,0,0,.5)}
+  body.app #gallery .gi:nth-child(5n+2){--rot:2.4deg}
+  body.app #gallery .gi:nth-child(5n+4){--rot:-1.4deg}
+  body.app #gallery .gi:nth-child(7n+3){--rot:.9deg}
+  body.app #view-gal #gallery-bar,body.app #view-gal .gk-bar{max-width:1100px}
+}
+@media(min-width:1500px){
+  #split{grid-template-columns:minmax(0,1fr) 420px;gap:32px}
+  body.app #gallery{grid-template-columns:repeat(5,minmax(0,1fr));gap:60px 40px}
+  body.app .wrap{padding-right:48px}
+}
+
+/* tablet & layar di antara: tab bar bawaan tetap, tapi menu Aksi + ikon tetap rapi */
+@media(min-width:769px) and (max-width:1279px){
+  body.app .tab{display:inline-flex;align-items:center;gap:8px}
+  body.app .tab::before{width:18px;height:18px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  #toast,#ptr,#appbar{transition:none}
+  #ptr.spin svg{animation-duration:1.6s}
+}
+
+/* =====================================================================
+   Terasa seperti aplikasi: elemen antarmuka tidak bisa diblok / disalin / disimpan lewat tekan lama.
+   Teks yang memang berguna disalin (catatan, setlist di riwayat, ringkasan) tetap bisa dipilih.
+   Hanya layar sentuh (hover:none): di laptop pilih-teks tetap normal.
+   ===================================================================== */
+@media(hover:none){
+  body.app .tabbar,body.app .tab,body.app #appbar,body.app #toast,body.app #fbar,body.app #ptr,
+  body.app button,body.app .seat,body.app .seat-badge,body.app #seating-wrapper,body.app #zoomctl,
+  body.app .stat,body.app .gk,body.app .gi,body.app .head,body.app .badge,body.app .tl-d,body.app .tl-s,
+  body.app .last-c,body.app .sheet-grip,body.app .overlay .x{
+    -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+  /* foto: tidak bisa diseret / ditahan untuk menu simpan gambar (ketukan tetap membuka pratinjau) */
+  body.app img{-webkit-user-drag:none;user-drag:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+}
+
+/* ---------- layar sentuh: tekan lama tidak menyeleksi teks / memunculkan menu salin (rasa "app") ----------
+   Hanya perangkat tanpa hover (HP/tablet). Laptop dengan mouse tetap bisa menyeleksi teks. */
+@media(hover:none){
+  body.app{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+  body.app input,body.app textarea,body.app select,body.app [contenteditable]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+  body.app img{-webkit-user-drag:none;user-drag:none}
+}
+
+/* teks catatan/cerita tetap bisa dipilih & disalin di layar sentuh (aturan body di atas mematikan seleksi) */
+@media(hover:none){
+  body.app .hn,body.app .tl-n,body.app #story{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+}
+
+/* ---------- foto "terakhir nonton": tempat sudah dipesan, memudar masuk, tanpa teks alt ---------- */
+.last-ph{position:relative;width:64px;height:64px;border-radius:12px;flex-shrink:0;overflow:hidden;
+  background:linear-gradient(90deg,#2a1520 25%,#3a1d2b 50%,#2a1520 75%);background-size:200% 100%;animation:shimmer 1.3s linear infinite}
+.last-ph.ld,.last-ph.bad{animation:none;background:#2a1520}
+.last-ph img{display:block;width:100%;height:100%;opacity:0;transition:opacity .4s var(--ios,ease);color:transparent;font-size:0}
+.last-ph img.ld{opacity:1}
+.hi-ph.bad{animation:none;background:#1d1017}
+
+/* foto gagal dimuat (mis. offline & belum pernah dibuka): ikon gambar redup, bukan teks alt / kotak kosong */
+.last-ph.bad::before,.gi-ph.bad::before,.hi-ph.bad::before{content:'';position:absolute;inset:0;margin:auto;width:26px;height:26px;background:#fff;opacity:.4;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='3'/%3E%3Ccircle cx='9' cy='9' r='1.5'/%3E%3Cpath d='M21 15l-5-5L5 21'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='3'/%3E%3Ccircle cx='9' cy='9' r='1.5'/%3E%3Cpath d='M21 15l-5-5L5 21'/%3E%3C/svg%3E") center/contain no-repeat}
+@media(prefers-reduced-motion:reduce){.last-ph{animation:none}.last-ph img{transition:none}}
+
+/* ---------- layar sentuh: area ketuk kursi lebih luas tanpa mengubah tampilan / ukuran peta ----------
+   Jarak antar kursi 4px (horizontal) dan 8px (vertikal), jadi area tambahan tidak saling tumpang tindih. */
+@media(pointer:coarse){
+  body.app .seat{position:relative}
+  body.app .seat::after{content:'';position:absolute;inset:-3px -2px}
+}
+
+/* ---------- tab bar HP: tahan & geser pil ---------- */
+@media(max-width:1279px),(hover:none) and (pointer:coarse){ /* HP + iPad: bar horizontal */
+  body.app .tabbar{touch-action:none} /* geser horizontal di bar tidak boleh dianggap scroll / gesture browser */
+  body.app .tabbar.dragging .tab-ind{box-shadow:0 8px 22px rgba(255,42,95,.5),inset 0 1px 0 rgba(255,255,255,.55)}
+  body.app .tabbar.dragging .tab.on:not(.hot){color:rgba(255,255,255,.7)}
+  body.app .tab.hot{color:#fff}
+}
+
+/* ---------- layar sentuh (iPhone/iPad, semua orientasi): peta lebih ringan di-raster & dianimasikan ----------
+   Glow luar (blur 12-14px) di setiap kursi oranye dan transition semua-properti di ratusan tombol
+   membuat layer tab Peta mahal saat digeser/ditransisikan. Tampilan kaca (sorotan dalam) tetap dipertahankan. */
+@media(hover:none) and (pointer:coarse){
+  body.app .seat{transition:none}
+  body.app .seat.visited{box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 -6px 10px rgba(0,0,0,.12)}
+}
+
+/* =====================================================================
+   Dock iPad / tablet (layar sentuh, lebar > 768px, portrait maupun landscape)
+   Tab bar jadi dock mengambang di bawah, di tengah, seperti di HP tapi lebih ramping.
+   Laptop dengan mouse (hover:hover) tidak tersentuh: sidebar kiri tetap.
+   HP (<=768px) juga tidak berubah.
+   ===================================================================== */
+@media(min-width:769px) and (hover:none) and (pointer:coarse){
+  :root{--stick:calc(env(safe-area-inset-top,0px) + 16px)!important} /* header bulan Riwayat menempel di atas layar, bukan di bawah tab bar */
+  body.app .wrap{padding-bottom:calc(116px + env(safe-area-inset-bottom,0px))}
+  body.app .tabbar{position:fixed;top:auto;bottom:calc(14px + env(safe-area-inset-bottom,0px));left:0;right:0;margin:0 auto;width:min(540px,calc(100% - 32px));
+    display:grid;grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:0;align-items:stretch;justify-content:normal;flex-direction:row;
+    padding:7px;border-radius:30px;z-index:40;box-sizing:border-box;
+    box-shadow:0 14px 34px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,170,190,.22)}
+  body.app .sb-brand,body.app .sb-keys{display:none}
+  body.app .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:9px 4px 8px;border-radius:22px;
+    font-size:0!important;line-height:0;text-align:center;white-space:nowrap;min-width:0}
+  body.app .tab::before{width:24px;height:24px}
+  body.app .tab::after{content:attr(data-short);font-size:11.5px;font-weight:600;line-height:1.1;letter-spacing:.01em}
+  body.app .tab-ind{border-radius:23px}
+  body.app #fbar{left:50%;bottom:calc(98px + env(safe-area-inset-bottom,0px))}
+  body.app .tl-mh{top:var(--stick)}
+}
+/* iPad Pro 12.9" landscape (>=1280px): tetap dua kolom peta + statistik, tapi tanpa ruang sidebar di kiri */
+@media(min-width:1280px) and (hover:none) and (pointer:coarse){
+  body.app .wrap{padding:28px 32px calc(116px + env(safe-area-inset-bottom,0px)) 32px}
+}
+
+
+/* liquid.css — gaya Liquid Glass (iOS / iPadOS / macOS 26).
+   Muat PALING AKHIR (setelah shared.css dan app.css). Menimpa tampilan saja, tidak mengubah layout. */
+
+/* ---------- Token: font SF, kurva pegas, material kaca ---------- */
+:root{
+  --font-ui:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Inter",system-ui,"Segoe UI",Roboto,sans-serif;
+  --spring:var(--ease-out);      /* cadangan: kurva iOS */
+  --spring-b:cubic-bezier(.34,1.4,.64,1);  /* cadangan: pegas sedikit memantul */
+  --accent:#ff375f; --accent-soft:#ff7a98;
+
+  --g-bg:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.045));
+  --g-bg-hi:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.07));
+  --g-line:rgba(255,255,255,.13);
+  --g-blur:blur(20px) saturate(185%);
+  --g-shadow:
+    0 12px 32px -8px rgba(0,0,0,.5),0 2px 6px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.42),        /* kilau tepi atas */
+    inset 0 0 0 .5px rgba(255,255,255,.1),
+    inset 0 -1px 0 rgba(255,255,255,.05),
+    inset 0 14px 22px -16px rgba(255,255,255,.28); /* pantulan cahaya di dalam kaca */
+  --ease:var(--spring);
+}
+@supports (transition-timing-function:linear(0,1)){
+  :root{
+    --spring:linear(0,0.0296 3.6%,0.1024 7.1%,0.1995 10.7%,0.3069 14.3%,0.4152 17.9%,0.518 21.4%,0.6116 25.0%,0.694 28.6%,0.7646 32.1%,0.8236 35.7%,0.8718 39.3%,0.9102 42.9%,0.9402 46.4%,0.9631 50.0%,0.98 53.6%,0.9921 57.1%,1.0005 60.7%,1.0059 64.3%,1.0091 67.9%,1.0107 71.4%,1.0111 75.0%,1.0108 78.6%,1.01 82.1%,1.0089 85.7%,1.0077 89.3%,1.0065 92.9%,1.0054 96.4%,1);
+    --spring-b:linear(0,0.0515 3.6%,0.1763 7.1%,0.3369 10.7%,0.5052 14.3%,0.6625 17.9%,0.7974 21.4%,0.9048 25.0%,0.9839 28.6%,1.037 32.1%,1.068 35.7%,1.0817 39.3%,1.0827 42.9%,1.0754 46.4%,1.0634 50.0%,1.0495 53.6%,1.0357 57.1%,1.0233 60.7%,1.0129 64.3%,1.0049 67.9%,0.9993 71.4%,0.9956 75.0%,0.9937 78.6%,0.993 82.1%,0.9933 85.7%,0.9941 89.3%,0.9952 92.9%,0.9964 96.4%,1);
+  }
+}
+
+/* ---------- Tipografi ---------- */
+body,button,input,select,textarea{font-family:var(--font-ui);-webkit-font-smoothing:antialiased}
+h1{font-size:clamp(30px,5vw,40px);font-weight:700;letter-spacing:-.03em;color:#fff;text-shadow:none}
+.sub{letter-spacing:-.01em}
+.sv,.badge span,.seat-count,.mc-n,.rc,.ls-c,.cd-live,.tl-d b{font-variant-numeric:tabular-nums}
+
+/* ---------- Kaca netral (bukan pink) ---------- */
+.stat,#cover,.last-c,.tl-i,.ev-i,.ev-g,.ev-c,.hi{border-radius:22px}
+.modal{border-radius:34px;background-color:rgba(34,28,32,.5)}
+#pop{background-color:rgba(34,28,32,.55)}
+.overlay{background:rgba(0,0,0,.32);-webkit-backdrop-filter:blur(10px) saturate(150%);backdrop-filter:blur(10px) saturate(150%)}
+.stage{border-radius:18px 18px 0 0}
+.catwalk{border-radius:0 0 18px 18px}
+
+/* kursi: kapsul kaca kecil; kursi yang pernah ditempati tetap berwarna heatmap (inline dari JS) */
+.seat{border-radius:11px;transition:transform .45s var(--spring-b),background .25s,border-color .25s,box-shadow .25s,color .25s}
+.seat:not(.visited):not(.want){background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1);color:rgba(255,255,255,.5);box-shadow:inset 0 1px 0 rgba(255,255,255,.14)}
+.seat.visited{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 4px 12px -4px rgba(0,0,0,.5)}
+
+/* ---------- Tab bar: indikator = lensa kaca bening ---------- */
+.tabbar:not(.dragging) .tab-ind{transition:transform .6s var(--spring-b),width .6s var(--spring-b)}
+.tab-ind{
+  background:linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,.12));border:none;
+  box-shadow:0 6px 16px -4px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.65),inset 0 0 0 .5px rgba(255,255,255,.3),inset 0 -1px 0 rgba(255,255,255,.12)}
+.tabbar.dragging .tab-ind,body.app .tabbar.dragging .tab-ind{box-shadow:0 12px 26px -6px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.75),inset 0 0 0 .5px rgba(255,255,255,.4)}
+.tabbar:not(.dragging) .tab.on{color:var(--accent-soft)}
+.tab{transition:color .3s,transform .45s var(--spring-b)}
+.tab:active{transform:scale(.94)}
+
+/* ---------- Tombol: kapsul + pegas saat dilepas ---------- */
+.btn-s,.gk,.btn,.info-btn,.todo-c{border-radius:9999px}
+.btn-s,.btn,.gk,.info-btn,.todo-c{transition:transform .5s var(--spring-b),background .25s,border-color .25s,color .25s,box-shadow .25s}
+.btn-s:active,.btn:active,.gk:active,.info-btn:active,.seat:active{transform:scale(.95);transition-duration:.12s}
+.gk.on{background:linear-gradient(180deg,rgba(255,55,95,.7),rgba(255,55,95,.45));border-color:rgba(255,255,255,.25);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 4px 14px -4px rgba(255,55,95,.6)}
+
+/* ---------- Modal / lightbox: muncul dengan pegas ---------- */
+@keyframes lg-in{from{opacity:0;transform:scale(.9) translateY(12px)}}
+@keyframes lg-img{from{opacity:0;transform:scale(.86)}}
+.overlay.open{animation:fade .3s ease-out}
+@media (hover:hover) and (pointer:fine){ /* di HP, bottom sheet milik app.js tetap dipakai */
+  .overlay.open>.modal{animation:lg-in .6s var(--spring-b)}
+}
+#lightbox.open>img{animation:lg-img .55s var(--spring)}
+#lb-img{border-radius:22px}
+
+/* ---------- Kilau yang mengikuti kursor (hanya mouse; posisi diisi liquid.js) ---------- */
+@media (hover:hover) and (pointer:fine){
+  .stat,.last-c,.tl-i,.ev-g,.ev-c,.btn-s,.badge,.gk,.tabbar{
+    background-image:radial-gradient(240px circle at var(--mx,50%) var(--my,-70%),rgba(255,255,255,.2),transparent 65%),var(--g-bg)}
+  .modal{background-image:radial-gradient(320px circle at var(--mx,50%) var(--my,-40%),rgba(255,255,255,.18),transparent 65%),var(--g-bg-hi)}
+  .seat:hover{transform:scale(1.14)}
+}
+
+/* ---------- Tepi atas lembut saat dipasang sebagai app (seperti scroll-edge iOS) ---------- */
+@media (display-mode:standalone){
+  body.app::after{content:"";position:fixed;left:0;right:0;top:0;height:calc(env(safe-area-inset-top,0px) + 6px);z-index:20;pointer-events:none;
+    -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+    -webkit-mask:linear-gradient(#000 55%,transparent);mask:linear-gradient(#000 55%,transparent)}
+}
+
+/* ---------- Aksesibilitas ---------- */
+@media (prefers-reduced-motion:reduce){:root{--spring:ease;--spring-b:ease}}
+
+
+/* ---------- layar muat (kunjungan pertama, sebelum data siap): teks saja, tanpa kotak/peta ---------- */
+#splash{position:fixed;inset:0;z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;box-sizing:border-box;text-align:center;
+  background:radial-gradient(40% 35% at 15% 10%,rgba(255,42,95,.45),transparent 70%),radial-gradient(35% 35% at 90% 25%,rgba(255,140,0,.32),transparent 70%),radial-gradient(45% 40% at 70% 95%,rgba(136,19,55,.55),transparent 70%),#0d090d;
+  transition:opacity .55s var(--spring),transform .55s var(--spring),visibility 0s .55s;
+  animation:sp-failsafe .3s 10s forwards}
+#splash.done{opacity:0;transform:scale(1.02);visibility:hidden;pointer-events:none}
+.has-cache #splash{display:none}
+#splash b{font-size:clamp(26px,6vw,38px);font-weight:700;letter-spacing:-.03em;line-height:1.15;text-wrap:balance;animation:sp-up .8s var(--spring) both}
+#splash span{font-size:12px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55);animation:sp-up .8s var(--spring) .12s both}
+#splash i{position:relative;display:block;width:96px;height:3px;margin-top:10px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden;animation:sp-up .8s var(--spring) .22s both}
+#splash i::after{content:"";position:absolute;top:0;left:0;height:100%;width:40%;border-radius:3px;background:linear-gradient(90deg,transparent,#ff375f,#ff9f0a);animation:sp-sweep 1.3s var(--ease-std) infinite}
+@keyframes sp-up{from{opacity:0;transform:translateY(10px)}}
+@keyframes sp-sweep{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
+@keyframes sp-failsafe{to{opacity:0;visibility:hidden}} /* cadangan kalau JS gagal: hilang sendiri setelah 10 detik */
+@media(prefers-reduced-motion:reduce){#splash b,#splash span,#splash i{animation:none}#splash i::after{animation:none;left:30%}}
+
+
+/* ---------- Animasi TUTUP modal / lightbox ----------
+   Penyebab "tiba-tiba hilang": .overlay.open{animation:fade} di atas (dimuat setelah shared.css, kekhususan sama)
+   mengalahkan .overlay.closing yang masih membawa kelas .open, jadi animasi tutup tidak pernah jalan.
+   Selektor di bawah lebih spesifik (open+closing sekaligus). Lembar bawah HP (#seat-modal.closing) tetap pakai aturannya sendiri. */
+@keyframes ov-out{to{opacity:0}}
+@keyframes modal-out{to{opacity:0;transform:scale(.92) translate3d(0,8px,0)}}
+body.app .overlay.open.closing:not(.docked){animation:ov-out .3s var(--ios) forwards}
+body.app .overlay.open.closing:not(.docked)>.modal{transform-origin:var(--ox,50%) var(--oy,50%);animation:modal-out .3s var(--ios) forwards}
+body.app #lightbox.open.closing>img{animation:none} /* gerak tutupnya (terbang ke thumbnail) diatur closeLightbox() */
+@media(prefers-reduced-motion:reduce){body.app .overlay.open.closing:not(.docked),body.app .overlay.open.closing:not(.docked)>.modal{animation:none}}
+
+/* lightbox: geser untuk menutup tidak boleh ikut menggulung halaman di belakangnya */
+#lightbox{touch-action:none;overscroll-behavior:contain;-webkit-user-select:none;user-select:none}
+#lb-img{-webkit-user-drag:none;-webkit-touch-callout:none;backface-visibility:hidden}
+
+
+/* ---------- Pegas asli (linear()) untuk gerak yang memantul: tombol, tab, kursi, modal desktop ----------
+   Redam ringan (overshoot ~4%), bukan memantul berlebihan. Browser tanpa linear() tetap memakai kurva lama. */
+@supports (transition-timing-function:linear(0,1)){
+  body.app{--spring-b:linear(0, 0.022, 0.08, 0.161, 0.256, 0.357, 0.459, 0.556, 0.646, 0.727, 0.797, 0.858, 0.908, 0.949, 0.981, 1.005, 1.023, 1.034, 1.042, 1.045, 1.046, 1.044, 1.042, 1.038, 1.033, 1.028, 1.024, 1.019, 1.015, 1.012, 1.009, 1.006, 1.004, 1.002, 1.001, 1, 0.999, 0.998, 0.998, 0.998, 1)}
+}
+@media(prefers-reduced-motion:reduce){body.app{--spring-b:ease}}
+
+/* ---------- Foto ditekan: pembungkusnya mengecil cepat, lepas pelan (bukan <img>, supaya hitungan terbang ke lightbox tetap akurat) ---------- */
+body.app .gi-ph,body.app .hi-ph,body.app .last-ph{transition:transform .4s var(--ease-out)}
+body.app .gi-ph:active,body.app .hi-ph:active,body.app .last-ph:active{transform:scale(.97);transition-duration:.12s}
+@media(prefers-reduced-motion:reduce){body.app .gi-ph,body.app .hi-ph,body.app .last-ph{transition:none}body.app .gi-ph:active,body.app .hi-ph:active,body.app .last-ph:active{transform:none}}
+
+/* ---------- Blur layar penuh: hanya laptop (mouse, layar lebar, kaca aktif, perangkat kuat) ----------
+   shared.css sengaja mematikan blur .overlay ("blur layar penuh = hal paling mahal di GPU"), tetapi aturan
+   .overlay{blur} di bagian atas file ini dimuat belakangan dan menghidupkannya lagi di semua perangkat, termasuk HP. */
+.overlay{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(8,3,6,.6)}
+@media (hover:hover) and (pointer:fine) and (min-width:1024px){
+  html[data-glass=on][data-perf=full] .overlay:not(#lightbox):not(.docked){background:rgba(0,0,0,.32);-webkit-backdrop-filter:blur(10px) saturate(150%);backdrop-filter:blur(10px) saturate(150%)}
+}
