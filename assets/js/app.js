@@ -27,7 +27,9 @@
     raf = 0;
     if (!mqMobile.matches || !h1) { document.documentElement.style.removeProperty('--p'); return; }
     const hBar = bar.offsetHeight || 56, x = h1.getBoundingClientRect().bottom;
-    const p = Math.max(0, Math.min(1, (hBar + 28 - x) / 28)); // 0 = judul besar terlihat, 1 = sudah lewat
+    // awal zona muncul tidak boleh lebih tinggi dari posisi judul saat belum di-scroll (judul 1 baris jauh lebih pendek dari 2 baris)
+    const start = Math.min(hBar + 28, x + scrollY - 2);
+    const p = Math.max(0, Math.min(1, (start - x) / 28)); // 0 = judul besar terlihat, 1 = sudah lewat
     bar.style.setProperty('--p', p.toFixed(3));
   }
   addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(updBar); }, {passive: true});
