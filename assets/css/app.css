@@ -233,3 +233,11 @@ body.app #legend{justify-content:center}
   body.app .seat{position:relative}
   body.app .seat::after{content:'';position:absolute;inset:-3px -2px}
 }
+
+/* ---------- tab bar HP: tahan & geser pil ---------- */
+@media(max-width:768px){
+  body.app .tabbar{touch-action:none} /* geser horizontal di bar tidak boleh dianggap scroll / gesture browser */
+  body.app .tabbar.dragging .tab-ind{box-shadow:0 8px 22px rgba(255,42,95,.5),inset 0 1px 0 rgba(255,255,255,.55)}
+  body.app .tabbar.dragging .tab.on:not(.hot){color:rgba(255,255,255,.7)}
+  body.app .tab.hot{color:#fff}
+}
