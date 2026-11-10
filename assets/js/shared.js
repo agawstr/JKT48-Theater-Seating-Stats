@@ -306,6 +306,11 @@ document.addEventListener('click', e => {
 let lbTok = 0;
 function openLightbox(im) { // foto kecil langsung tampil & membesar dari posisinya, foto penuh dimuat di belakang lalu ditukar tanpa kedip
   const lb = $('lb-img'), full = im.dataset.full || im.src, from = im.getBoundingClientRect(), tok = ++lbTok;
+  // ukuran tampil dikunci dari rasio thumbnail (rasio foto penuh sama): thumbnail 360px lalu foto penuh ~720px
+  // sebelumnya tampil di ukuran aslinya masing-masing, jadi saat ditukar foto melompat ~2x lebih besar
+  const ar = im.naturalWidth && im.naturalHeight ? im.naturalWidth / im.naturalHeight : 0;
+  if (ar) lb.style.setProperty('--ar', ar.toFixed(4)); else lb.style.removeProperty('--ar');
+  lb.classList.toggle('fit', !!ar);
   lb.src = im.currentSrc || im.src;
   openEl('lightbox');
   if (!calm() && from.width) requestAnimationFrame(() => {
