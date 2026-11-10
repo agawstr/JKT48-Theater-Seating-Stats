@@ -3,10 +3,10 @@
   "short_name": "Theater Stats",
   "description": "Riwayat kursi teater JKT48: peta kursi, statistik, riwayat, dan galeri.",
   "lang": "id",
+  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#0d090d",
   "theme_color": "#0d090d",
   "icons": [
