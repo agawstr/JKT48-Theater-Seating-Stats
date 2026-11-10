@@ -1,7 +1,7 @@
 {
-  "name": "agaxx's Theater Seating Stats",
-  "short_name": "Theater Stats",
-  "description": "Riwayat kursi teater JKT48: peta kursi, statistik, riwayat, dan galeri.",
+  "name": "agaxx's Idoling Diary",
+  "short_name": "Idoling Diary",
+  "description": "Catatan ngidol JKT48: peta kursi, riwayat show, galeri, tiket, dan event.",
   "lang": "id",
   "id": "./",
   "start_url": "./",
