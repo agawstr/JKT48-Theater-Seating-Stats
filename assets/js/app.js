@@ -433,13 +433,14 @@
   /* ---------- foto: kartu "terakhir nonton" memudar masuk + tampilan saat gagal dimuat ---------- */
   (() => {
     const box = im => im.closest('.last-ph,.gi-ph,.hi-ph');
-    addEventListener('load', e => {
+    // load pada <img> tidak diteruskan ke window (aturan browser): pasang di document dengan capture
+    document.addEventListener('load', e => {
       const im = e.target; if (!im || im.tagName !== 'IMG') return;
       const b = box(im); if (!b) return;
       b.classList.remove('bad');
       if (b.classList.contains('last-ph')) { im.classList.add('ld'); b.classList.add('ld'); } // galeri & modal sudah ditangani shared.js
     }, true);
-    addEventListener('error', e => {
+    document.addEventListener('error', e => {
       const im = e.target; if (!im || im.tagName !== 'IMG') return;
       const b = box(im); if (!b) return;
       if (im.dataset.full && im.getAttribute('src') !== im.dataset.full) return; // thumbnail gagal: foto penuh masih dicoba
