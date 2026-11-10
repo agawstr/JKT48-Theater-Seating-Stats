@@ -4,23 +4,41 @@
 const $ = id => document.getElementById(id);
 const lastFocus = {}, timers = {};
 
-// ---------- Tingkat performa: SATU penentu "lite" / "full" untuk CSS (html[data-perf]) dan JS (perf.lite()) ----------
-// lite = HP, tablet sentuh, hemat data, atau perangkat lemah (RAM/CPU kecil). Uji manual: tambahkan ?perf=lite atau ?perf=full di URL.
+// ---------- Tingkat performa: SATU penentu untuk CSS (html[data-perf], html[data-glass]) dan JS (perf.*) ----------
+// data-perf  = "lite" (HP, tablet sentuh, hemat data, perangkat lemah) / "full": berapa berat animasi & lapisan
+// data-glass = "on" / "off": efek kaca (backdrop-filter). Mati otomatis di perangkat lemah, hemat data, reduced-transparency,
+//              atau kalau perf.degrade() dipanggil (pengaman: pindah tab berkali-kali patah). Disimpan di perangkat ini.
+// Uji manual: ?perf=lite|full  dan  ?glass=on|off  (glass=on juga menghapus status "dimatikan otomatis")
 const perf = (() => {
   const root = document.documentElement;
-  const mqs = [matchMedia('(max-width:768px)'), matchMedia('(hover:none) and (pointer:coarse)')];
-  const force = new URLSearchParams(location.search).get('perf');
-  const compute = () => {
-    if (force === 'lite' || force === 'full') return force;
+  const q = new URLSearchParams(location.search), force = q.get('perf'), forceGlass = q.get('glass');
+  const mqs = [matchMedia('(max-width:768px)'), matchMedia('(hover:none) and (pointer:coarse)'), matchMedia('(prefers-reduced-transparency: reduce)')];
+  const lsGet = () => { try { return localStorage.getItem('jkt48_glass'); } catch (e) { return null; } };
+  const lsSet = v => { try { if (v) localStorage.setItem('jkt48_glass', v); else localStorage.removeItem('jkt48_glass'); } catch (e) {} };
+  if (forceGlass === 'on') lsSet(null); else if (forceGlass === 'off') lsSet('off');
+  const weak = () => {
     const c = navigator.connection || {};
-    const weak = !!c.saveData || (navigator.deviceMemory && navigator.deviceMemory <= 2) || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2);
-    return weak || mqs.some(m => m.matches) ? 'lite' : 'full';
+    return !!c.saveData || (navigator.deviceMemory && navigator.deviceMemory <= 2) || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2);
   };
-  const apply = () => { const t = compute(); if (root.dataset.perf !== t) root.dataset.perf = t; };
+  const tier = () => (force === 'lite' || force === 'full') ? force : (weak() || mqs[0].matches || mqs[1].matches ? 'lite' : 'full');
+  const glass = () => {
+    if (forceGlass === 'on') return 'on';
+    if (!(CSS.supports('backdrop-filter', 'blur(1px)') || CSS.supports('-webkit-backdrop-filter', 'blur(1px)'))) return 'off';
+    return weak() || mqs[2].matches || lsGet() === 'off' ? 'off' : 'on';
+  };
+  const apply = () => {
+    const t = tier(), g = glass();
+    if (root.dataset.perf !== t) root.dataset.perf = t;
+    if (root.dataset.glass !== g) root.dataset.glass = g;
+  };
   apply();
   mqs.forEach(m => m.addEventListener('change', apply));
   if (navigator.connection && navigator.connection.addEventListener) navigator.connection.addEventListener('change', apply);
-  return {lite: () => root.dataset.perf === 'lite'};
+  return {
+    lite: () => root.dataset.perf === 'lite',
+    glassOn: () => root.dataset.glass === 'on',
+    degrade() { if (root.dataset.glass !== 'on') return false; lsSet('off'); apply(); return true; }
+  };
 })();
 const openEl = id => {
   const el = $(id);
