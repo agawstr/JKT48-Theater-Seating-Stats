@@ -555,6 +555,11 @@ function renderGallery() {
   if ($('g-kinds')) $('g-kinds').innerHTML = [['', 'Semua'], ['ts', '2-Shot'], ['ev', '2-Shot Event'], ['ck', 'Chekicha']].map(([k, l]) => `<button type="button" class="gk${k === galKind ? ' on' : ''}" data-gk="${k}">${l} <b>${items.filter(x => !k || x.k === k).length}</b></button>`).join('');
   $('g-info').textContent = `${list.length} foto`;
   if ($('g-tab') && dataLoaded) $('g-tab').textContent = `Galeri (${items.length})`;
+  // isi galeri tidak bergantung pada filter peta: kalau daftarnya sama persis, jangan bangun ulang.
+  // (membangun ulang = <img> baru = foto memudar ulang + diunduh/decode ulang tepat saat tab dibuka)
+  const sig = galKind + '|' + cur + '|' + list.map(x => [x.photo, x.k, x.member, x.label, x.r.setlist, x.r.date, x.r.id].join('~')).join('|');
+  if (sig === renderGallery.sig && g.firstElementChild) return;
+  renderGallery.sig = sig;
   g.innerHTML = list.length ? list.map((x, i) => `<figure class="gi${i < 8 ? ' a' : ''}" data-k="${esc(x.k)}" style="--i:${Math.min(i, 9)};--t:${(i * 37 % 9) - 4}deg"><div class="gi-ph"><img src="${esc(thumbOf(x.photo))}" data-full="${esc(x.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="${esc(x.label)} dengan ${esc(x.member)}" loading="lazy" decoding="async"></div>
     <figcaption><b class="gi-n">${esc(x.member) || '-'}</b><span class="gi-tag">${esc(x.label)}</span><span class="gi-m">${esc(x.r.setlist)}</span><time class="gi-d">${esc(fmtDate(x.r.date))}</time>${x.solo ? '<span class="gi-x">di luar show</span>' : ''}</figcaption></figure>`).join('')
     : '<div class="empty">Belum ada foto</div>';
