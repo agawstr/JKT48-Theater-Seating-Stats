@@ -1322,7 +1322,7 @@ function setStick() { // tinggi tab bar -> posisi header bulan yang menempel
    - moveInd(true)  -> ukur ulang saja (ukuran layar / label berubah). Kalau pil sedang meluncur, hanya target yang diperbarui,
                        jadi gerakannya tidak pernah dipotong atau dilempar ke posisi akhir.
    - indFollow()    -> mengikuti jari saat menggeser tab */
-const IND_MS = 720;
+const IND_MS_FULL = 560, IND_MS_LITE = 460; // sebelumnya 720: lebih lama dari isi tab, jadi pil terasa tertinggal
 const indLead = k => 1 - Math.pow(1 - k, 3);
 const indTrail = k => { k = Math.min(1, Math.max(0, (k - 0.14) / 0.86)); return 1 - Math.pow(1 - k, 2.4); };
 const indRectOf = el => ({x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight});
@@ -1392,7 +1392,7 @@ function moveInd(remeasure) {
   }
   if (ind._anim && indSame(ind._aTo, to)) return; // sudah meluncur ke tab ini
   if (!ind._anim && indSame(cur, to)) return;
-  indGlide(ind, cur, to, IND_MS);
+  indGlide(ind, cur, to, perf.lite() ? IND_MS_LITE : IND_MS_FULL);
 }
 function indFollow(fromTab, toTab, p) { // p 0..1: pil mengikuti jari di antara dua tab
   const ind = indEl(true);
