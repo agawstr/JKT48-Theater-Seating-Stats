@@ -998,8 +998,27 @@ img,canvas{max-width:100%}
 /* pil tab: ukuran dasar tetap, peregangan lewat scale dari pojok kiri atas */
 .tab-ind{transform-origin:0 0}
 
-/* galeri ringan di HP / layar sentuh: bayangan polaroid lebih kecil (blur besar x puluhan kartu = mahal di GPU) */
-@media(max-width:768px),(hover:none){
-  .gi{box-shadow:0 1px 1px rgba(0,0,0,.25),0 5px 10px -4px rgba(0,0,0,.5)}
-  .gi::before{box-shadow:none}
-}
+/* =====================================================================
+   Tingkat performa: html[data-perf="lite"] (ditentukan shared.js: HP, tablet sentuh, hemat data, perangkat lemah)
+   ===================================================================== */
+html[data-perf=lite] .tabbar{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(30,10,20,.94)}
+html[data-perf=lite] .overlay{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(8,3,6,.82)}
+html[data-perf=lite] .modal,html[data-perf=lite] #pop{-webkit-backdrop-filter:none;backdrop-filter:none;background:#21101a}
+html[data-perf=lite] #fbar{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(30,12,22,.97)}
+html[data-perf=lite] #stage-container::after{display:none}
+/* polaroid: bayangan blur besar x puluhan kartu mahal di GPU */
+html[data-perf=lite] .gi,html[data-perf=lite] body.app #gallery .gi{box-shadow:0 1px 1px rgba(0,0,0,.25),0 5px 10px -4px rgba(0,0,0,.5)}
+html[data-perf=lite] .gi::before{box-shadow:none}
+
+/* =====================================================================
+   Galeri: placeholder sebelum foto muncul (JS menambah .ok di .gi-ph saat foto selesai dimuat, .bad kalau gagal)
+   Kilau hanya di 12 kartu pertama (yang terlihat saat tab dibuka) dan hanya transform: tidak ada puluhan animasi tak berujung
+   ===================================================================== */
+.gi-ph:not(.ok){background:linear-gradient(135deg,#2a1a1f,#3a252c)}
+@keyframes gi-shimmer{to{transform:translateX(100%)}}
+.gi:nth-child(-n+12) .gi-ph:not(.ok):not(.bad)::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.11) 50%,transparent 70%);
+  transform:translateX(-100%);animation:gi-shimmer 1.4s linear infinite}
+html[data-perf=lite] .gi .gi-ph:not(.ok):not(.bad)::before,
+.gi:nth-child(n+13) .gi-ph:not(.ok):not(.bad)::before{animation:none}
+@media(prefers-reduced-motion:reduce){.gi .gi-ph:not(.ok):not(.bad)::before{animation:none}}
