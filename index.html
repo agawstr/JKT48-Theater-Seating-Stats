@@ -134,40 +134,7 @@ async function refreshData() {
   renderChart();
   try { localStorage.setItem(CK, text); } catch (e) { /* penyimpanan penuh: abaikan */ }
 }
-let tabTimer = 0;
-const VIEWS = ['main', 'gal', 'tl', 'ev'];
-document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => {
-  const tl = [...document.querySelectorAll('.tab')], from = tl.findIndex(t => t.classList.contains('on')), to = tl.indexOf(b);
-  if (to === from) return;
-  const dir = to > from ? 1 : -1, still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const prev = VIEWS.map(k => $('view-' + k)).find(v => !v.hidden), next = $('view-' + b.dataset.tab);
-  tl.forEach(t => { t.classList.toggle('on', t === b); t.setAttribute('aria-selected', t === b); });
-  const show = () => {
-    VIEWS.forEach(k => $('view-' + k).hidden = b.dataset.tab !== k);
-    flushLazy('view-' + b.dataset.tab); // kalau masih usang (jarang), gambar sekarang
-    const hd = document.querySelector('.head'), top = hd.getBoundingClientRect().bottom + scrollY - 8; // posisi tab bar sebelum menempel
-    if (scrollY > top) scrollTo({top, behavior: 'instant'}); // isi baru mulai dari bawah tab bar
-    if (b.dataset.tab === 'main') centerChart(); // ukur peta hanya saat tab peta dibuka
-    playEnter(next);
-  };
-  clearTimeout(tabTimer);
-  show(); // langsung ganti (tanpa jeda); geraknya ada di item yang masuk
-}));
-// geser kiri/kanan untuk pindah tab (layar sentuh)
-(() => {
-  let x0 = 0, y0 = 0, ok = false;
-  const skip = el => el.closest('#seating-wrapper, #cal, select, input, .overlay, #fbar, .ev-d');
-  document.addEventListener('touchstart', e => { ok = e.touches.length === 1 && !skip(e.target); x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, {passive: true});
-  document.addEventListener('touchend', e => {
-    if (!ok) return;
-    ok = false;
-    const t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0;
-    if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 2) return;
-    const tabs = [...document.querySelectorAll('.tab')].filter(b => !b.hidden), i = tabs.findIndex(b => b.classList.contains('on'));
-    const n = tabs[i + (dx < 0 ? 1 : -1)];
-    if (n) n.click();
-  }, {passive: true});
-})();
+// pindah tab (klik, geser jari, keyboard) ditangani switchTab() di app.js
 init();
 </script>
 </body>
