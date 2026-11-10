@@ -3,6 +3,25 @@
    #seat-modal (+ #seat-close, #modal-seat, #modal-hist), #lightbox (+ #lb-img) */
 const $ = id => document.getElementById(id);
 const lastFocus = {}, timers = {};
+
+// ---------- Tingkat performa: SATU penentu "lite" / "full" untuk CSS (html[data-perf]) dan JS (perf.lite()) ----------
+// lite = HP, tablet sentuh, hemat data, atau perangkat lemah (RAM/CPU kecil). Uji manual: tambahkan ?perf=lite atau ?perf=full di URL.
+const perf = (() => {
+  const root = document.documentElement;
+  const mqs = [matchMedia('(max-width:768px)'), matchMedia('(hover:none) and (pointer:coarse)')];
+  const force = new URLSearchParams(location.search).get('perf');
+  const compute = () => {
+    if (force === 'lite' || force === 'full') return force;
+    const c = navigator.connection || {};
+    const weak = !!c.saveData || (navigator.deviceMemory && navigator.deviceMemory <= 2) || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2);
+    return weak || mqs.some(m => m.matches) ? 'lite' : 'full';
+  };
+  const apply = () => { const t = compute(); if (root.dataset.perf !== t) root.dataset.perf = t; };
+  apply();
+  mqs.forEach(m => m.addEventListener('change', apply));
+  if (navigator.connection && navigator.connection.addEventListener) navigator.connection.addEventListener('change', apply);
+  return {lite: () => root.dataset.perf === 'lite'};
+})();
 const openEl = id => {
   const el = $(id);
   clearTimeout(timers[id]);
@@ -565,7 +584,7 @@ function renderGallery() {
     : '<div class="empty">Belum ada foto</div>';
 }
 $('g-member')?.addEventListener('change', renderGallery);
-$('gallery')?.addEventListener('load', e => { if (e.target.tagName === 'IMG') e.target.classList.add('ld'); }, true); // foto memudar masuk setelah selesai dimuat
+$('gallery')?.addEventListener('load', e => { if (e.target.tagName !== 'IMG') return; e.target.classList.add('ld'); e.target.closest('.gi-ph')?.classList.add('ok'); }, true); // foto memudar masuk setelah selesai dimuat; .ok mematikan placeholder
 
 // peta mini di canvas: counts = kode->jumlah (warna heatmap), hl = kursi yang disorot (opsional)
 function drawMiniMap(c, cx, y0, cw, g, counts, hl) {
