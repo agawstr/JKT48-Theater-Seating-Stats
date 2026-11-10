@@ -139,12 +139,27 @@ function renderChartRaw() {
 }
 
 let mapScale = 1, mapAuto = true; // zoom peta di HP (cubit dua jari / tombol); mapAuto = otomatis pas lebar layar
-function fitChart() {
+let fitKey = ''; // ukuran saat terakhir diukur: kalau sama, peta tidak perlu diukur ulang (hemat 250 kursi x 2 tata letak)
+function fitChart(force) {
   const w = $('seating-wrapper'), c = $('stage-container');
-  c.style.zoom = '';
+  const key = w.clientWidth + ':' + innerWidth + ':' + (mapAuto ? 'a' : mapScale) + ':' + records.length;
+  if (!force && key === fitKey && w.clientWidth) return;
+  fitKey = key;
+  c.style.zoom = ''; c.style.transform = ''; c.style.marginLeft = c.style.marginBottom = ''; w.style.overflowX = '';
   if (!w.clientWidth) return; // tab tersembunyi
   const fit = Math.min(1, w.clientWidth / c.scrollWidth);
-  if (window.innerWidth > 768) { mapScale = 1; if (fit < 1) c.style.zoom = fit.toFixed(3); return; }
+  if (window.innerWidth > 768) {
+    mapScale = 1;
+    if (fit < 1) { // transform: kotak DAN teks mengecil bersama di semua browser; margin menyesuaikan ruang yang dipakai
+      const nw = c.offsetWidth, nh = c.offsetHeight;
+      c.style.transformOrigin = '0 0';
+      c.style.transform = `scale(${fit.toFixed(4)})`;
+      c.style.marginLeft = Math.max(0, (w.clientWidth - nw * fit) / 2) + 'px';
+      c.style.marginBottom = -(nh * (1 - fit)) + 'px';
+      w.style.overflowX = 'hidden'; // sudah pasti muat; lebar tata letak aslinya tidak boleh menjadi area gulir
+    }
+    return;
+  }
   if (mapAuto) mapScale = fit; // HP: peta langsung muat selebar layar; cubit / tombol + untuk memperbesar
   else mapScale = Math.max(fit, mapScale);
   if (mapScale !== 1) c.style.zoom = mapScale.toFixed(3);
@@ -153,6 +168,7 @@ function centerChart() {
   fitChart();
   const w = $('seating-wrapper'), c = $('stage-container');
   if (window.innerWidth <= 768 && !mapAuto) return; // sedang di-zoom manual: jangan pindahkan posisi geser
+  if (c.style.transform) { w.scrollLeft = 0; return; } // peta diskalakan agar muat: tidak ada yang perlu digulir
   w.scrollLeft = (c.scrollWidth - w.clientWidth) / 2;
 }
 window.addEventListener('resize', centerChart);
@@ -1188,10 +1204,11 @@ const IND_MS = 720;
 const indLead = k => 1 - Math.pow(1 - k, 3);
 const indTrail = k => { k = Math.min(1, Math.max(0, (k - 0.14) / 0.86)); return 1 - Math.pow(1 - k, 2.4); };
 const indRectOf = el => ({x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight});
-function indPaint(ind, r) {
+function indPaint(ind, r, base) { // base = ukuran dasar elemen; peregangan "cair" hanya lewat scale (tanpa memicu layout)
+  const b = base || r;
   ind._cur = r;
-  ind.style.width = r.w + 'px'; ind.style.height = r.h + 'px';
-  ind.style.transform = `translate3d(${r.x}px,${r.y}px,0)`;
+  if (ind._bw !== b.w || ind._bh !== b.h) { ind.style.width = b.w + 'px'; ind.style.height = b.h + 'px'; ind._bw = b.w; ind._bh = b.h; }
+  ind.style.transform = `translate3d(${r.x}px,${r.y}px,0) scale(${(r.w / b.w).toFixed(4)},${(r.h / b.h).toFixed(4)})`;
 }
 function indAxis(p0, s0, p1, s1, ea, eb) { // ea: easing tepi awal, eb: easing tepi akhir
   const a = p0 + (p1 - p0) * ea, b = (p0 + s0) + ((p1 + s1) - (p0 + s0)) * eb;
@@ -1227,7 +1244,7 @@ function moveInd(remeasure) {
   const step = now => {
     const k = Math.min(1, (now - t0) / IND_MS);
     if (k >= 1) { ind._raf = 0; indPaint(ind, ind._to); return; }
-    indPaint(ind, indBlend(from, ind._to, indLead(k), indTrail(k)));
+    indPaint(ind, indBlend(from, ind._to, indLead(k), indTrail(k)), ind._to);
     ind._raf = requestAnimationFrame(step);
   };
   ind._raf = requestAnimationFrame(step);
@@ -1237,7 +1254,8 @@ function indFollow(fromTab, toTab, p) { // p 0..1: pil mengikuti jari di antara 
   if (!ind || !fromTab || !toTab) return;
   cancelAnimationFrame(ind._raf); ind._raf = 0;
   p = Math.max(0, Math.min(1, p));
-  indPaint(ind, indBlend(indRectOf(fromTab), indRectOf(toTab), Math.pow(p, 0.85), Math.pow(p, 1.3)));
+  const f0 = indRectOf(fromTab);
+  indPaint(ind, indBlend(f0, indRectOf(toTab), Math.pow(p, 0.85), Math.pow(p, 1.3)), f0);
 }
 if (document.querySelector('.tabbar')) {
   const ro = new ResizeObserver(() => moveInd(true)); // lebar tab berubah saat angka jumlah muncul
