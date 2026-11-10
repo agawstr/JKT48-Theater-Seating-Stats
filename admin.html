@@ -318,6 +318,17 @@ body.adm tr.flash{animation:rowflash 2s ease-out}
   body.adm #form .actions{position:sticky;bottom:calc(86px + env(safe-area-inset-bottom,0px));z-index:5;margin:14px -8px 0;padding:18px 8px 8px;
     background:linear-gradient(to bottom,rgba(20,13,17,0),#140d11 38%)}
 }
+/* ---------- error per kolom, tombol lanjut, keadaan kosong ---------- */
+.fg.err input,.fg.err select,.fg.err textarea{border-color:#f87171;box-shadow:0 0 0 3px rgba(248,113,113,.16)}
+.ferr{color:#f87171;font-size:12.5px;line-height:1.35}
+@keyframes shake{20%{transform:translateX(-5px)}45%{transform:translateX(4px)}70%{transform:translateX(-2px)}}
+.fg.shake{animation:shake .34s}
+@media(prefers-reduced-motion:reduce){.fg.shake{animation:none}}
+#btn-again{flex:1}
+#tbody .empty{padding:28px 16px;border:1px dashed rgba(255,255,255,.16);border-radius:16px;color:#a1a1aa;line-height:1.5}
+#tbody .empty b{display:block;color:#fff;font-size:16px;margin-bottom:4px}
+.empty-act{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+@media(max-width:768px){body.adm tbody tr.none{display:block;padding:0;border:0;background:none}}
 </style>
 </head>
 <body class="adm">
@@ -377,6 +388,7 @@ body.adm tr.flash{animation:rowflash 2s ease-out}
           <div id="msg" role="alert"></div>
           <div class="actions">
             <button type="submit" class="btn main" id="btn-submit">+ Simpan Data</button>
+            <button type="button" class="btn" id="btn-again">Simpan &amp; lanjut</button>
             <button type="button" class="btn" id="btn-cancel">Batal</button>
           </div>
         </form>
@@ -700,7 +712,9 @@ function renderTable() {
         <button class="act del" data-act="del" data-id="${r.id}">Hapus</button>
       </td>
     </tr>`).join('')
-    : '<tr><td colspan="7" style="text-align:center;color:#71717a">Data tidak ditemukan</td></tr>';
+    : `<tr class="none"><td colspan="7"><div class="empty">${!records.length
+        ? '<b>Belum ada riwayat</b>Catat show pertama Anda, atau pulihkan dari file backup.<div class="empty-act"><button type="button" class="btn main" data-empty="add">Tambah data pertama</button><button type="button" class="btn" data-empty="restore">Restore backup</button></div>'
+        : `<b>Tidak ada yang cocok</b>${q ? 'Pencarian “' + esc($('search').value.trim()) + '” tidak menemukan data.' : 'Tidak ada data pada filter ini.'}<div class="empty-act"><button type="button" class="btn" data-empty="clear">Hapus pencarian &amp; filter</button></div>`}</div></td></tr>`;
   focusId = 0; // sorotan hanya untuk satu kali gambar
 }
 
@@ -904,20 +918,45 @@ const exCell = r => {
                   : '<span class="ts-no">-</span>';
 };
 
-function resetForm() {
+function resetForm(keep) { // keep === true: kosongkan kursi & keterangan saja, tanggal/setlist/sesi/harga/jenis tiket dipertahankan
+  const k = keep === true ? ['f-setlist', 'f-date', 'f-sesi', 'f-harga', 'f-tiket'].map(id => [id, $(id).value]) : null;
+  clearErrs();
   $('form').reset();
   $('f-id').value = '';
   $('form-title').textContent = 'Tambah Riwayat Show';
   $('btn-submit').textContent = '+ Simpan Data';
   $('btn-cancel').style.display = 'none';
+  $('btn-again').style.display = '';
   setMsg('');
   toggleAll();
+  if (k) k.forEach(([id, v]) => { $(id).value = v; });
 }
+
+// error per kolom: garis merah + pesan di bawah kolom yang salah, lalu kolomnya difokuskan
+function clearErrs() {
+  document.querySelectorAll('#form .fg.err').forEach(g => { g.classList.remove('err', 'shake'); g.querySelector('.ferr')?.remove(); g.querySelector('[aria-invalid]')?.removeAttribute('aria-invalid'); });
+}
+function fieldErr(id, msg) {
+  const el = $(id), g = el.closest('.fg');
+  clearErrs();
+  g.classList.add('err'); el.setAttribute('aria-invalid', 'true');
+  g.appendChild(Object.assign(document.createElement('small'), {className: 'ferr', textContent: msg}));
+  el.scrollIntoView({block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
+  el.focus({preventScroll: true});
+  void g.offsetWidth; g.classList.add('shake');
+}
+$('form').addEventListener('input', e => { // mulai mengetik = error kolom itu hilang
+  const g = e.target.closest('.fg');
+  if (g && g.classList.contains('err')) { g.classList.remove('err', 'shake'); g.querySelector('.ferr')?.remove(); e.target.removeAttribute('aria-invalid'); }
+});
+let keepNext = false;
+$('btn-again').addEventListener('click', () => { keepNext = true; $('btn-submit').click(); });
 $('btn-cancel').addEventListener('click', resetForm);
 
 $('form').addEventListener('submit', async e => {
   e.preventDefault();
-  setMsg('');
+  const keep = keepNext; keepNext = false;
+  setMsg(''); clearErrs();
   const id = Number($('f-id').value) || 0;
   const seat = normSeat($('f-seat').value);
   const setlist = $('f-setlist').value.trim();
@@ -934,10 +973,10 @@ $('form').addEventListener('submit', async e => {
     ex[K.p] = on ? cur[K.k] : '';
   }
 
-  if (!SEATS.has(seat)) return setMsg('Kursi tidak valid / tidak ada di peta. Contoh: A-19, B-7, J-23.');
-  if (!setlist) return setMsg('Setlist wajib diisi.');
-  if (!date) return setMsg('Tanggal wajib diisi.');
-  for (const K of KINDS) if (ex[K.f] === 'Ya' && !ex[K.m]) return setMsg(`Nama member ${K.name} wajib diisi.`);
+  if (!SEATS.has(seat)) return fieldErr('f-seat', 'Kursi tidak valid / tidak ada di peta. Contoh: A-19, B-7, J-23.');
+  if (!setlist) return fieldErr('f-setlist', 'Setlist wajib diisi.');
+  if (!date) return fieldErr('f-date', 'Tanggal wajib diisi.');
+  for (const K of KINDS) if (ex[K.f] === 'Ya' && !ex[K.m]) return fieldErr('m-' + K.k, `Nama member ${K.name} wajib diisi.`);
 
   const dup = records.some(r => r.id !== id && r.seat === seat && r.date === date &&
     r.setlist.toLowerCase() === setlist.toLowerCase() && r.sesi === sesi);
@@ -950,7 +989,8 @@ $('form').addEventListener('submit', async e => {
   } else records.push(rec);
 
   save();
-  resetForm();
+  resetForm(keep && !id);
+  if (keep && !id) $('f-seat').focus();
   focusId = rec.id; // baris ini menyala sebentar & halamannya dibuka
   renderAll();
   toast((id ? 'Diperbarui: ' : 'Tersimpan: ') + rec.seat + ' · ' + rec.setlist,
@@ -986,6 +1026,7 @@ $('tbody').addEventListener('click', async e => {
     $('form-title').textContent = 'Edit Data Riwayat';
     $('btn-submit').textContent = 'Update Data';
     $('btn-cancel').style.display = 'block';
+    $('btn-again').style.display = 'none';
     setMsg('');
     $('form').scrollIntoView({ behavior: 'smooth' });
   } else {
@@ -996,6 +1037,14 @@ $('tbody').addEventListener('click', async e => {
     renderAll();
     undoToast(rec.seat + ' · ' + rec.setlist, () => { if (!records.some(r => r.id === id)) records.splice(Math.min(at, records.length), 0, rec); save(); renderAll(); });
   }
+});
+
+$('tbody').addEventListener('click', e => {
+  const b = e.target.closest('[data-empty]');
+  if (!b) return;
+  if (b.dataset.empty === 'add') { $('f-seat').scrollIntoView({behavior: 'smooth', block: 'center'}); $('f-seat').focus({preventScroll: true}); }
+  else if (b.dataset.empty === 'restore') $('btn-import').click();
+  else { $('search').value = ''; if (typeof taskF !== 'undefined') taskF = ''; page = 1; renderTable(); if (typeof renderTodo === 'function') renderTodo(); }
 });
 
 let searchT;
