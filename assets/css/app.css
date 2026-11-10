@@ -369,3 +369,22 @@ h1{font-size:clamp(30px,5vw,40px);font-weight:700;letter-spacing:-.03em;color:#f
 
 /* ---------- Aksesibilitas ---------- */
 @media (prefers-reduced-motion:reduce){:root{--spring:ease;--spring-b:ease}}
+
+
+/* ---------- layar muat (kunjungan pertama, sebelum data siap) ---------- */
+#splash{position:fixed;inset:0;z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;box-sizing:border-box;text-align:center;
+  background:radial-gradient(40% 35% at 15% 10%,rgba(255,42,95,.45),transparent 70%),radial-gradient(35% 35% at 90% 25%,rgba(255,140,0,.32),transparent 70%),radial-gradient(45% 40% at 70% 95%,rgba(136,19,55,.55),transparent 70%),#0d090d;
+  transition:opacity .5s var(--spring),transform .5s var(--spring),visibility 0s .5s;
+  animation:sp-failsafe .3s 10s forwards}
+#splash.done{opacity:0;transform:scale(1.03);visibility:hidden;pointer-events:none}
+.has-cache #splash{display:none}
+#splash img{width:88px;height:88px;border-radius:22.5%;box-shadow:0 18px 40px -10px rgba(0,0,0,.7),0 0 0 .5px rgba(255,255,255,.25),0 0 60px rgba(255,42,95,.35);animation:sp-in .8s var(--spring-b) both,sp-float 3s ease-in-out .8s infinite}
+#splash b{font-size:20px;font-weight:700;letter-spacing:-.02em;animation:sp-up .7s var(--spring) .1s both}
+#splash span{display:flex;align-items:center;gap:8px;font-size:13px;color:#a1a1aa;animation:sp-up .7s var(--spring) .2s both}
+#splash i{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.2);border-top-color:#ff375f;animation:sp-spin .8s linear infinite}
+@keyframes sp-in{from{opacity:0;transform:scale(.7)}}
+@keyframes sp-up{from{opacity:0;transform:translateY(8px)}}
+@keyframes sp-float{50%{transform:translateY(-4px)}}
+@keyframes sp-spin{to{transform:rotate(360deg)}}
+@keyframes sp-failsafe{to{opacity:0;visibility:hidden}} /* cadangan kalau JS gagal: hilang sendiri setelah 10 detik */
+@media(prefers-reduced-motion:reduce){#splash img,#splash b,#splash span{animation:none}#splash i{animation-duration:2s}}
