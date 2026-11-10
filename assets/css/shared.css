@@ -46,7 +46,6 @@ h1{font-size:42px;font-weight:900;color:#ff2a5f;margin:0 0 8px;letter-spacing:-.
 
 /* animasi saat modal / lightbox dibuka */
 @keyframes fade{from{opacity:0}}
-@keyframes pop-in{from{opacity:0;transform:translateY(14px) scale(.96)}}
 .overlay.open{animation:fade .18s ease-out}
 .overlay.open>.modal,#lightbox.open>img{animation:pop-in .22s cubic-bezier(.2,.8,.2,1)}
 .seat:active{transform:scale(.94)}
@@ -70,8 +69,6 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 .stage{font-size:12px;letter-spacing:3px}}
 
 /* animasi tutup */
-@keyframes fade-out{to{opacity:0}}
-@keyframes pop-out{to{opacity:0;transform:translateY(8px) scale(.97)}}
 .overlay.closing{animation:fade-out .15s ease-in forwards}
 .overlay.closing>.modal,#lightbox.closing>img{animation:pop-out .15s ease-in forwards}
 @media(prefers-reduced-motion:reduce){.overlay.closing,.overlay.closing>.modal,#lightbox.closing>img{animation:none}}
@@ -114,7 +111,6 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 .row-labels .seat-row{justify-content:center;color:#9a9aa4;font-size:12px;font-weight:800}
 
 /* animasi masuk & skeleton */
-@keyframes rise{from{opacity:0;transform:translateY(10px)}}
 @keyframes shimmer{to{background-position:-200% 0}}
 .intro .seat-row{animation:rise .45s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--r) * 45ms)}
 .sk{background:linear-gradient(90deg,#181115 25%,#2a1a22 50%,#181115 75%);background-size:200% 100%;animation:shimmer 1.2s linear infinite;border-radius:12px}
@@ -271,7 +267,6 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 @media(max-width:600px){#ev-cats{grid-template-columns:repeat(2,1fr)}}
 
 /* animasi tab & isi tab (item/bar hanya beranimasi saat tab dibuka, lewat kelas .enter) */
-@keyframes tabin{from{opacity:0;transform:translate(var(--tabx,0),8px)}}
 @keyframes growx{from{transform:scaleX(0)}}
 @keyframes growy{from{transform:scaleY(0)}}
 @keyframes pop{from{opacity:0;transform:scale(.3)}}
@@ -304,14 +299,11 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 .cd[role=button]:active{transform:scale(.7)}
 .sl-row:active,.rk:active,.ev-c:active{transform:scale(.98)}
 .tab:active,.btn-s:active{transform:scale(.96)}
-@keyframes seatflash{0%{transform:scale(1.22);box-shadow:0 0 0 0 rgba(255,210,63,.8)}100%{transform:scale(1);box-shadow:0 0 0 16px rgba(255,210,63,0)}}
 .flash .seat.visited{animation:seatflash .8s ease-out .35s}
 @media(prefers-reduced-motion:reduce){.sl-bar i,.mc-b i{transition:none}.flash .seat.visited{animation:none}
 .mc[role=button]:active .mc-b,.cd[role=button]:active,.sl-row:active,.rk:active,.ev-c:active,.tab:active,.btn-s:active{transform:none}}
 
 /* animasi klik & perubahan data */
-@keyframes seatpop{0%{transform:scale(.7);opacity:.4}60%{transform:scale(1.12)}100%{transform:none;opacity:1}}
-@keyframes selpulse{0%{box-shadow:0 0 0 0 rgba(255,42,95,.55)}100%{box-shadow:0 0 0 12px rgba(255,42,95,0)}}
 .refresh .seat.visited{animation:seatpop .45s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--r,0) * 28ms)}
 .mc.on .mc-b,.rk.on,.sl-row.on,.ev-c.on,.cd.sel{animation:selpulse .6s ease-out}
 .mc[role=button]:active,.sl-row:active,.rk:active,.ev-c:active,.tab:active{transform:scale(.97)}
@@ -394,7 +386,6 @@ h1,.sec,.sec2{text-wrap:balance}
 /* ===== penghalusan & animasi tambahan (index + admin) ===== */
 :root{--ease:cubic-bezier(.2,.8,.2,1)}
 @keyframes drop{from{opacity:0;transform:translateY(-10px)}}
-@keyframes tabout{to{opacity:0;transform:translate(calc(var(--tabx,0px) * -.5),-4px)}}
 @keyframes popin{from{opacity:0;transform:translateY(4px) scale(.96)}}
 html{scroll-behavior:smooth}
 .head h1{animation:drop .7s var(--ease) both}
@@ -553,8 +544,6 @@ body::before{content:'';position:fixed;inset:-10%;z-index:-1;pointer-events:none
 
 /* animasi lebih halus: easing & durasi lebih lembut, pegas ala iOS */
 :root{--ease:cubic-bezier(.22,1,.36,1);--spring:cubic-bezier(.34,1.45,.64,1)}
-@keyframes rise{from{opacity:0;transform:translateY(16px) scale(.985)}}
-@keyframes tabin{from{opacity:0;transform:translate(var(--tabx,0),12px) scale(.99)}}
 @keyframes pop-in{from{opacity:0;transform:translateY(22px) scale(.93)}}
 .enter .tl-i,.enter .gi,.enter .ev-g,.enter .ev-c,.shown .sl-row,.shown .rk,.enter #story,.enter .last-c,.enter #cover,.enter #filters,.enter #stats .stat{animation-duration:.7s;animation-timing-function:var(--ease)}
 .intro .seat-row{animation-duration:.75s;animation-timing-function:var(--ease)}
@@ -862,9 +851,6 @@ img,canvas{max-width:100%}
 .tab-ind{transition:transform .5s var(--ios),width .5s var(--ios)}
 
 /* ---- modal & lightbox: masuk dengan kurva iOS ---- */
-@keyframes ov-in{from{opacity:0}}
-@keyframes modal-in{from{opacity:0;transform:translate3d(0,22px,0) scale(.96)}}
-@keyframes sheet-in{from{transform:translate3d(0,100%,0)}}
 .overlay.open{animation:ov-in .35s var(--ios)}
 .overlay.open>.modal{animation:modal-in .5s var(--ios)}
 #lightbox.open>img{animation:none}
@@ -873,7 +859,6 @@ img,canvas{max-width:100%}
 .overlay.closing>.modal,#lightbox.closing>img{animation:pop-out .24s cubic-bezier(.4,0,1,1) forwards}
 
 /* kartu di dalam modal muncul bertahap */
-@keyframes hi-in{from{opacity:0;transform:translate3d(0,14px,0)}}
 .overlay.open .hi{animation:hi-in .55s var(--ios) both;animation-delay:calc(var(--i,0) * 55ms + 120ms)}
 
 /* foto di modal: tempat sudah dipesan + skeleton, lalu memudar masuk */
@@ -1085,3 +1070,6 @@ html[data-perf=lite] .gi .gi-ph:not(.ok):not(.bad)::before,
 /* lightbox: ukuran tetap sejak thumbnail sampai foto penuh (tidak melompat saat ditukar) */
 #lb-img.fit{width:min(calc(100vw - 30px),calc(90vh * var(--ar)),720px);height:auto;aspect-ratio:var(--ar);max-width:none;max-height:none;object-fit:contain}
 @supports(height:1dvh){#lb-img.fit{width:min(calc(100vw - 30px),calc(90dvh * var(--ar)),720px)}}
+
+/* peta: tata letak kursi diisolasi supaya hover/render ulang satu kursi tidak memicu layout halaman (tanpa contain:paint agar glow kursi tidak terpotong) */
+#chart{contain:layout style}
