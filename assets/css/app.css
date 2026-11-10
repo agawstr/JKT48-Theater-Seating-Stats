@@ -276,3 +276,95 @@ body.app #legend{justify-content:center}
 @media(min-width:1280px) and (hover:none) and (pointer:coarse){
   body.app .wrap{padding:28px 32px calc(116px + env(safe-area-inset-bottom,0px)) 32px}
 }
+
+
+/* liquid.css — gaya Liquid Glass (iOS / iPadOS / macOS 26).
+   Muat PALING AKHIR (setelah shared.css dan app.css). Menimpa tampilan saja, tidak mengubah layout. */
+
+/* ---------- Token: font SF, kurva pegas, material kaca ---------- */
+:root{
+  --font-ui:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Inter",system-ui,"Segoe UI",Roboto,sans-serif;
+  --spring:cubic-bezier(.32,.72,0,1);      /* cadangan: kurva iOS */
+  --spring-b:cubic-bezier(.34,1.4,.64,1);  /* cadangan: pegas sedikit memantul */
+  --accent:#ff375f; --accent-soft:#ff7a98;
+
+  --g-bg:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.045));
+  --g-bg-hi:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.07));
+  --g-line:rgba(255,255,255,.13);
+  --g-blur:blur(20px) saturate(185%);
+  --g-shadow:
+    0 12px 32px -8px rgba(0,0,0,.5),0 2px 6px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.42),        /* kilau tepi atas */
+    inset 0 0 0 .5px rgba(255,255,255,.1),
+    inset 0 -1px 0 rgba(255,255,255,.05),
+    inset 0 14px 22px -16px rgba(255,255,255,.28); /* pantulan cahaya di dalam kaca */
+  --ease:var(--spring);
+}
+@supports (transition-timing-function:linear(0,1)){
+  :root{
+    --spring:linear(0,0.0296 3.6%,0.1024 7.1%,0.1995 10.7%,0.3069 14.3%,0.4152 17.9%,0.518 21.4%,0.6116 25.0%,0.694 28.6%,0.7646 32.1%,0.8236 35.7%,0.8718 39.3%,0.9102 42.9%,0.9402 46.4%,0.9631 50.0%,0.98 53.6%,0.9921 57.1%,1.0005 60.7%,1.0059 64.3%,1.0091 67.9%,1.0107 71.4%,1.0111 75.0%,1.0108 78.6%,1.01 82.1%,1.0089 85.7%,1.0077 89.3%,1.0065 92.9%,1.0054 96.4%,1);
+    --spring-b:linear(0,0.0515 3.6%,0.1763 7.1%,0.3369 10.7%,0.5052 14.3%,0.6625 17.9%,0.7974 21.4%,0.9048 25.0%,0.9839 28.6%,1.037 32.1%,1.068 35.7%,1.0817 39.3%,1.0827 42.9%,1.0754 46.4%,1.0634 50.0%,1.0495 53.6%,1.0357 57.1%,1.0233 60.7%,1.0129 64.3%,1.0049 67.9%,0.9993 71.4%,0.9956 75.0%,0.9937 78.6%,0.993 82.1%,0.9933 85.7%,0.9941 89.3%,0.9952 92.9%,0.9964 96.4%,1);
+  }
+}
+
+/* ---------- Tipografi ---------- */
+body,button,input,select,textarea{font-family:var(--font-ui);-webkit-font-smoothing:antialiased}
+h1{font-size:clamp(30px,5vw,40px);font-weight:700;letter-spacing:-.03em;color:#fff;text-shadow:none}
+.sub{letter-spacing:-.01em}
+.sv,.badge span,.seat-count,.mc-n,.rc,.ls-c,.cd-live,.tl-d b{font-variant-numeric:tabular-nums}
+
+/* ---------- Kaca netral (bukan pink) ---------- */
+.stat,#cover,.last-c,.tl-i,.ev-i,.ev-g,.ev-c,.hi{border-radius:22px}
+.modal{border-radius:34px;background-color:rgba(34,28,32,.5)}
+#pop{background-color:rgba(34,28,32,.55)}
+.overlay{background:rgba(0,0,0,.32);-webkit-backdrop-filter:blur(10px) saturate(150%);backdrop-filter:blur(10px) saturate(150%)}
+.stage,.catwalk{border-radius:18px}
+
+/* kursi: kapsul kaca kecil; kursi yang pernah ditempati tetap berwarna heatmap (inline dari JS) */
+.seat{border-radius:11px;transition:transform .45s var(--spring-b),background .25s,border-color .25s,box-shadow .25s,color .25s}
+.seat:not(.visited):not(.want){background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1);color:rgba(255,255,255,.5);box-shadow:inset 0 1px 0 rgba(255,255,255,.14)}
+.seat.visited{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 4px 12px -4px rgba(0,0,0,.5)}
+
+/* ---------- Tab bar: indikator = lensa kaca bening ---------- */
+.tabbar:not(.dragging) .tab-ind{transition:transform .6s var(--spring-b),width .6s var(--spring-b)}
+.tab-ind{
+  background:linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,.12));border:none;
+  box-shadow:0 6px 16px -4px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.65),inset 0 0 0 .5px rgba(255,255,255,.3),inset 0 -1px 0 rgba(255,255,255,.12)}
+.tabbar.dragging .tab-ind,body.app .tabbar.dragging .tab-ind{box-shadow:0 12px 26px -6px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.75),inset 0 0 0 .5px rgba(255,255,255,.4)}
+.tabbar:not(.dragging) .tab.on{color:var(--accent-soft)}
+.tab{transition:color .3s,transform .45s var(--spring-b)}
+.tab:active{transform:scale(.94)}
+
+/* ---------- Tombol: kapsul + pegas saat dilepas ---------- */
+.btn-s,.gk,.btn,.info-btn,.todo-c{border-radius:9999px}
+.btn-s,.btn,.gk,.info-btn,.todo-c{transition:transform .5s var(--spring-b),background .25s,border-color .25s,color .25s,box-shadow .25s}
+.btn-s:active,.btn:active,.gk:active,.info-btn:active,.seat:active{transform:scale(.95);transition-duration:.12s}
+.gk.on{background:linear-gradient(180deg,rgba(255,55,95,.7),rgba(255,55,95,.45));border-color:rgba(255,255,255,.25);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 4px 14px -4px rgba(255,55,95,.6)}
+
+/* ---------- Modal / lightbox: muncul dengan pegas ---------- */
+@keyframes lg-in{from{opacity:0;transform:scale(.9) translateY(12px)}}
+@keyframes lg-img{from{opacity:0;transform:scale(.86)}}
+.overlay.open{animation:fade .3s ease-out}
+@media (hover:hover) and (pointer:fine){ /* di HP, bottom sheet milik app.js tetap dipakai */
+  .overlay.open>.modal{animation:lg-in .6s var(--spring-b)}
+}
+#lightbox.open>img{animation:lg-img .55s var(--spring)}
+#lb-img{border-radius:22px}
+
+/* ---------- Kilau yang mengikuti kursor (hanya mouse; posisi diisi liquid.js) ---------- */
+@media (hover:hover) and (pointer:fine){
+  .stat,.last-c,.tl-i,.ev-g,.ev-c,.btn-s,.badge,.gk,.tabbar{
+    background-image:radial-gradient(240px circle at var(--mx,50%) var(--my,-70%),rgba(255,255,255,.2),transparent 65%),var(--g-bg)}
+  .modal{background-image:radial-gradient(320px circle at var(--mx,50%) var(--my,-40%),rgba(255,255,255,.18),transparent 65%),var(--g-bg-hi)}
+  .seat:hover{transform:scale(1.14)}
+}
+
+/* ---------- Tepi atas lembut saat dipasang sebagai app (seperti scroll-edge iOS) ---------- */
+@media (display-mode:standalone){
+  body.app::after{content:"";position:fixed;left:0;right:0;top:0;height:calc(env(safe-area-inset-top,0px) + 6px);z-index:20;pointer-events:none;
+    -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+    -webkit-mask:linear-gradient(#000 55%,transparent);mask:linear-gradient(#000 55%,transparent)}
+}
+
+/* ---------- Aksesibilitas ---------- */
+@media (prefers-reduced-motion:reduce){:root{--spring:ease;--spring-b:ease}}
