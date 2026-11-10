@@ -335,7 +335,7 @@ body.adm tr.flash{animation:rowflash 2s ease-out}
 <div class="wrap">
   <div class="head">
     <h1>agaxx's Idoling Diary</h1>
-    <p class="sub">Catatan kursi teater yang pernah kamu tempatin</p>
+    <p class="sub">Kelola catatan nge-idol: show, kursi, tiket, dan event</p>
     <div class="badge">Total Riwayat Show: <span id="total">0</span></div>
   </div>
   <div class="tabbar" role="tablist"><button type="button" class="tab on" data-tab="peta" data-short="Peta" role="tab" aria-selected="true">Peta Kursi</button><button type="button" class="tab" data-tab="crud" data-short="Data" role="tab" aria-selected="false">Tambah &amp; Kelola</button><button type="button" class="tab" data-tab="tiket" data-short="Tiket" role="tab" aria-selected="false">Total Tiket</button><button type="button" class="tab" data-tab="solo" data-short="Sesi" role="tab" aria-selected="false">Sesi Lepas</button><button type="button" class="tab" data-tab="biaya" data-short="Biaya" role="tab" aria-selected="false">Pengeluaran</button></div>
@@ -766,7 +766,7 @@ const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTod
   /* merek + hint keyboard di sidebar (hanya tampil di laptop) */
   const tb = document.querySelector('.tabbar');
   const ico = document.querySelector('link[rel=icon]')?.href || '';
-  tb.insertAdjacentHTML('afterbegin', `<div class="sb-brand" aria-hidden="true"><img src="${ico}" alt=""><b>Theater<br>Admin</b></div>`);
+  tb.insertAdjacentHTML('afterbegin', `<div class="sb-brand" aria-hidden="true"><img src="${ico}" alt=""><b>Idoling<br>Admin</b></div>`);
   tb.insertAdjacentHTML('beforeend', '<div class="sb-keys" aria-hidden="true"><div><kbd>←</kbd><kbd>→</kbd>ganti tab</div><div><kbd>Esc</kbd>tutup</div></div>');
 
   /* keyboard: ← → ganti tab */
