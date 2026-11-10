@@ -402,7 +402,7 @@
   }
 
   /* pengaman kaca: kalau pindah tab berkali-kali terasa patah (banyak frame > 40ms), efek kaca dimatikan di perangkat ini
-     (tersimpan; ?glass=on untuk menyalakan lagi). Satu frame lambat saat render pertama tidak dihitung: harus >30% frame dan 3 kali. */
+     (hanya untuk sesi ini; ?glass=on untuk menyalakan lagi). Satu frame lambat tidak dihitung: harus >50% frame dan 6 kali. */
   let strikes = 0;
   function watchFrames(ms) {
     if (!perf.glassOn() || document.hidden) return;
@@ -412,7 +412,7 @@
       if (last) { n++; if (t - last > 40) bad++; }
       last = t;
       if (t < end) { requestAnimationFrame(tick); return; }
-      if (n > 8 && bad / n > 0.3 && ++strikes >= 3 && perf.degrade()) say('Efek kaca dimatikan agar lebih lancar');
+      if (n > 8 && bad / n > 0.5 && ++strikes >= 6 && perf.degrade()) say('Efek kaca dimatikan agar lebih lancar');
     };
     requestAnimationFrame(tick);
   }
@@ -475,72 +475,6 @@
   }
   window.switchTab = switchTab;
   document.querySelectorAll('.tabbar .tab').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
-
-  /* geser kiri/kanan (layar sentuh): isi mengikuti jari dengan sedikit tahanan, pil ikut meluncur.
-     Dilepas melewati ambang (jarak atau kecepatan) -> pindah tab, kalau tidak -> kembali pelan. */
-  (() => {
-    let st = null;
-    const skip = el => el.closest('#seating-wrapper, #cal, #zoomctl, select, input, textarea, .overlay, #fbar, .ev-d, .actions-m, .tabbar, #appbar');
-    // tulis style sekali per frame (event sentuh iPad Pro bisa 120Hz), bukan tiap event
-    const paintDrag = s => {
-      s.raf = 0;
-      if (s.done) return;
-      s.view.style.transform = `translate3d(${s.shown}px,0,0)`;
-      if (s.opa !== 1) s.view.style.opacity = s.opa.toFixed(3);
-      if (s.j >= 0) indFollow(s.list[s.i], s.list[s.j], Math.abs(s.dx) / (innerWidth * 0.42));
-    };
-    const stopDrag = s => { // terapkan posisi terakhir yang tertunda, lalu lepas layer
-      if (s.raf) { cancelAnimationFrame(s.raf); paintDrag(s); }
-      s.done = true;
-      s.view.style.willChange = '';
-    };
-    const reset = (v, fromPx, fromO) => {
-      v.style.transform = ''; v.style.opacity = '';
-      if (calm() || (!fromPx && fromO === 1)) return;
-      v.animate([{transform: `translate3d(${fromPx}px,0,0)`, opacity: fromO}, {transform: 'none', opacity: 1}], {duration: 620, easing: EASE});
-    };
-    document.addEventListener('touchstart', e => {
-      st = null;
-      if (sideNav() || e.touches.length !== 1 || skip(e.target) || document.querySelector('.overlay.open')) return;
-      const t = e.touches[0];
-      st = {x0: t.clientX, y0: t.clientY, lock: '', px: t.clientX, pt: performance.now(), v: 0, dx: 0};
-    }, {passive: true});
-    document.addEventListener('touchmove', e => {
-      if (!st) return;
-      if (e.touches.length !== 1) { if (st.lock) { stopDrag(st); reset(st.view, st.shown, st.opa); moveInd(); } st = null; return; }
-      const t = e.touches[0], dx = t.clientX - st.x0, dy = t.clientY - st.y0;
-      if (!st.lock) {
-        if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
-        if (Math.abs(dx) > Math.abs(dy) * 1.6 && e.cancelable) { // jelas horizontal: kunci
-          settle();
-          const list = tabs(), i = list.findIndex(b => b.classList.contains('on'));
-          if (i < 0) { st = null; return; }
-          Object.assign(st, {lock: 'x', list, i, view: viewOf(list[i].dataset.tab), shown: 0, opa: 1, j: -1, raf: 0, done: false});
-          st.view.style.willChange = lite() ? 'transform' : 'transform, opacity';
-        } else { st = null; return; } // vertikal / ragu: biarkan halaman menggulir
-      }
-      e.preventDefault();
-      const now = performance.now();
-      st.v = (t.clientX - st.px) / Math.max(1, now - st.pt); st.px = t.clientX; st.pt = now;
-      st.dx = dx;
-      const j = st.i + (dx < 0 ? 1 : -1), has = j >= 0 && j < st.list.length;
-      const px = dx * (has ? 0.5 : 0.2);
-      st.shown = px; st.j = has ? j : -1;
-      st.opa = lite() ? 1 : 1 - Math.min(0.55, Math.abs(px) / innerWidth * 1.2); // fade seluruh tab itu mahal: dilewati di layar sentuh
-      if (!st.raf) { const cur = st; cur.raf = requestAnimationFrame(() => paintDrag(cur)); }
-    }, {passive: false});
-    const end = () => {
-      const s = st; st = null;
-      if (!s || s.lock !== 'x') return;
-      stopDrag(s);
-      const j = s.i + (s.dx < 0 ? 1 : -1), has = j >= 0 && j < s.list.length;
-      const go = has && (Math.abs(s.dx) > innerWidth * 0.22 || (Math.abs(s.v) > 0.5 && Math.abs(s.dx) > 30 && Math.sign(s.v) === Math.sign(s.dx)));
-      if (go) switchTab(s.list[j].dataset.tab, {px: s.shown, opacity: s.opa}); // transform inline sengaja dibiarkan: dipakai untuk mengukur posisi awal tab lama
-      else { reset(s.view, s.shown, s.opa); moveInd(); }
-    };
-    document.addEventListener('touchend', end, {passive: true});
-    document.addEventListener('touchcancel', end, {passive: true});
-  })();
 
   /* ---------- "Sorot yang belum" / "Tampilkan semua": kursi berubah bergelombang, bukan tiba-tiba ---------- */
   (() => {
