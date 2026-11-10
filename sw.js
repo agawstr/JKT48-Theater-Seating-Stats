@@ -12,7 +12,7 @@ const PHOTO_CACHE = 'photos-' + VERSION;
 const FONT_CACHE = 'fonts-' + VERSION;
 const DATA_CACHE = 'data-' + VERSION;
 const KEEP = [SHELL_CACHE, PHOTO_CACHE, FONT_CACHE, DATA_CACHE];
-const MAX_PHOTOS = 150;
+const MAX_PHOTOS = 400; // thumbnail + foto penuh; 150 hampir penuh (134 thumbnail saja) -> saling menggusur
 
 const SHELL = [
   './', 'index.html',
