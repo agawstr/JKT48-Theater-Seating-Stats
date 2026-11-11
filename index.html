@@ -27,6 +27,8 @@
 #status{color:#f87171;font-size:14px;margin:0 0 12px;text-align:center}
 #status:empty{display:none}
 #status.warn{color:#fbbf24}
+/* peta/filter kosong tidak boleh terlihat: isi halaman disembunyikan sampai data pertama siap (layar muat teks yang tampil) */
+html:not(.ready) .wrap{visibility:hidden}
 </style>
 </head>
 <body class="app">
@@ -102,6 +104,7 @@ function applyData(json) {
   tickets = (Array.isArray(json.tickets) ? json.tickets : []).map(sanitizeTicket).filter(t => t.date);
   solo = (Array.isArray(json.solo) ? json.solo : []).map(sanitizeSolo).filter(w => w.date);
   dataLoaded = true;
+  document.documentElement.classList.add('ready');
   $('foot').textContent = json.updated ? 'Data diperbarui: ' + fmtDate(json.updated) : '';
 }
 // layar muat: hanya tampil di kunjungan pertama (belum ada salinan data); menutup halaman sampai data siap
@@ -110,14 +113,13 @@ function hideSplash(delay = 0) {
   if (!s) return;
   setTimeout(() => { s.classList.add('done'); setTimeout(() => s.remove(), 700); }, delay);
 }
-setTimeout(hideSplash, 12000); // jaga-jaga kalau sesuatu macet
+setTimeout(() => { document.documentElement.classList.add('ready'); hideSplash(); }, 12000); // jaga-jaga kalau sesuatu macet
 async function init() {
   const t0 = performance.now();
-  renderChart(); skeleton(); // peta kosong dulu biar layout langsung muncul
   let old = null;
   try { old = localStorage.getItem(CK); } catch (e) {}
   if (old) { // tampilkan salinan terakhir dulu sementara data terbaru dimuat
-    try { applyData(JSON.parse(old)); $('status').textContent = ''; renderChart(); } catch (e) { old = null; document.documentElement.classList.remove('has-cache'); } // salinan rusak: tampilkan layar muat lagi
+    try { applyData(JSON.parse(old)); $('status').textContent = ''; renderChart(); } catch (e) { old = null; document.documentElement.classList.remove('has-cache'); renderChart(); skeleton(); } // salinan rusak: tampilkan layar muat lagi
   }
   try {
     const res = await fetch(DATA_URL + (DATA_URL.includes('?') ? '&' : '?') + 't=' + Date.now());
@@ -132,7 +134,7 @@ async function init() {
     $('status').classList.toggle('warn', !!old);
     $('status').textContent = old ? 'Tidak bisa memuat data terbaru, menampilkan salinan terakhir yang tersimpan di perangkat ini.'
       : 'Gagal memuat data (' + err.message + '). Cek DATA_URL / pastikan dibuka lewat server, bukan file://.';
-    if (!old) renderChart();
+    if (!old) { document.documentElement.classList.add('ready'); renderChart(); }
   }
   hideSplash(Math.max(0, 600 - (performance.now() - t0))); // tampil minimal sebentar supaya tidak berkedip
 }
