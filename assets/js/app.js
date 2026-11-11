@@ -339,7 +339,7 @@
       row.items.sort((a, b) => a.left - b.left).forEach((it, ci) => {
         const delay = start + ri * rowStep + ci * colStep, b = base0.get(it.el);
         lastDelay = Math.max(lastDelay, delay);
-        anims.push(it.el.animate([{opacity: 0, transform: 'translate3d(0,22px,0) scale(.94)' + b}, {opacity: 1, transform: b ? b.trim() : 'none'}],
+        anims.push(it.el.animate([{opacity: 0, transform: 'translate3d(0,22px,0) scale(.94)' + b}, {opacity: 1}],
           {duration: dur + 80, delay, easing: POP, fill: 'backwards'}));
       });
     });
