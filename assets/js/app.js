@@ -458,6 +458,30 @@
     };
   }
 
+  /* Ganti sub-tab Galeri (Semua / 2-Shot / 2-Shot Event / Chekicha) atau filter member: polaroid dibangun ulang oleh renderGallery,
+     jadi masuknya digerakkan di sini (CSS animasi galeri sengaja dimatikan). Per baris dari atas ke bawah, kiri ke kanan; hanya yang terlihat. */
+  let galAnims = [];
+  function galleryIn() {
+    galAnims.forEach(a => { try { a.cancel(); } catch (e) {} }); galAnims = [];
+    if (calm()) return;
+    const L = lite(), items = [];
+    for (const el of document.querySelectorAll('#gallery .gi')) {
+      const r = el.getBoundingClientRect();
+      if (!r.height || r.bottom < 0) continue;
+      if (r.top > innerHeight || items.length >= (L ? 8 : 14)) break;
+      items.push({el, top: r.top, left: r.left});
+    }
+    const rows = [];
+    items.sort((a, b) => a.top - b.top || a.left - b.left).forEach(it => { const l = rows[rows.length - 1]; if (l && Math.abs(it.top - l.top) < 20) l.items.push(it); else rows.push({top: it.top, items: [it]}); });
+    rows.forEach((row, ri) => row.items.forEach((it, ci) => {
+      const t = getComputedStyle(it.el).transform, b = t && t !== 'none' ? ' ' + t : ''; // pertahankan kemiringan polaroid
+      galAnims.push(it.el.animate([{opacity: 0, transform: 'translate3d(0,26px,0) scale(.93)' + b}, {opacity: 1, transform: b ? b.trim() : 'none'}],
+        {duration: L ? 760 : 900, delay: 60 + ri * (L ? 110 : 130) + ci * (L ? 60 : 75), easing: POP, fill: 'backwards'}));
+    }));
+  }
+  document.addEventListener('click', e => { if (e.target.closest('[data-gk]')) galleryIn(); }); // sesudah handler shared.js (renderGallery sudah selesai)
+  document.addEventListener('change', e => { if (e.target.id === 'g-member') galleryIn(); });
+
   function switchTab(name, drag) {
     const list = tabs(), from = list.findIndex(t => t.classList.contains('on')), to = list.findIndex(t => t.dataset.tab === name);
     if (to < 0 || to === from) return;
