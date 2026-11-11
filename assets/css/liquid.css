@@ -117,3 +117,23 @@ body.adm .gk,body.adm .btn-s{transition:transform .5s var(--spring-b),background
 
 /* ---------- Admin: tab lama memudar keluar (ghost), sama seperti index ---------- */
 body.adm .view.ghost{display:flex!important;flex-direction:column;align-items:center;position:fixed;margin:0!important;overflow:hidden;pointer-events:none;z-index:5;box-sizing:border-box;contain:paint}
+
+/* ---------- Harmonisasi posisi & jarak (index + admin) ---------- */
+@media(min-width:1280px){
+  :root{--col-w:900px}
+  /* kolom sempit rata kiri, sejajar dengan tepi header */
+  body.app #view-tl,body.app #view-gal,body.adm .view.active{align-items:flex-start}
+  body.app #view-ev{margin:0}
+  /* header admin = header index */
+  body.adm .head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:20px;text-align:left;margin-bottom:22px;padding:0}
+  body.adm .head h1{grid-column:1;font-size:30px;margin:0 0 4px;letter-spacing:-.01em}
+  body.adm .head .sub{grid-column:1;margin:0}
+  body.adm .head .badge{grid-column:2;grid-row:1/3;align-self:center}
+}
+/* tablet/HP: semua blok admin selebar kolom yang sama */
+@media(max-width:1279px){body.adm .view.active>*{width:100%;max-width:none;box-sizing:border-box}}
+/* jarak tombol "Lihat semua" ke daftar di bawahnya */
+#ev-rank{margin-bottom:16px}
+#ev-rank>button:last-child,#ev-rank .btn-s{margin-top:10px}
+/* galeri HP: jarak antar polaroid lebih lega */
+@media(max-width:600px){#gallery{column-gap:20px}}
