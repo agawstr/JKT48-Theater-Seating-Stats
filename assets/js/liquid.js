@@ -130,7 +130,7 @@
     const rowStep = Math.min(L ? 60 : 75, (L ? 360 : 520) / Math.max(1, rows.length)), colStep = L ? 32 : 42, out = [];
     rows.forEach((row, ri) => row.items.forEach((it, ci) => {
       const t = getComputedStyle(it.el).transform, b = t && t !== 'none' ? ' ' + t : ''; // jaga kemiringan polaroid
-      out.push(it.el.animate([{opacity: 0, transform: 'translate3d(0,16px,0) scale(.95)' + b}, {opacity: 1, transform: b ? b.trim() : 'none'}],
+      out.push(it.el.animate([{opacity: 0, transform: 'translate3d(0,16px,0) scale(.95)' + b}, {opacity: 1}],
         {duration: L ? 520 : 640, delay: 10 + ri * rowStep + ci * colStep, easing: POP, fill: 'backwards'}));
     }));
     return out;
