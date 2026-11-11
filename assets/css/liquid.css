@@ -122,7 +122,9 @@ body.adm .view.ghost{display:flex!important;flex-direction:column;align-items:ce
 @media(min-width:1280px){
   :root{--col-w:900px}
   /* kolom sempit rata kiri, sejajar dengan tepi header */
-  body.app #view-tl,body.app #view-gal,body.adm .view.active{align-items:flex-start}
+  body.app #view-tl,body.adm .view.active{align-items:flex-start}
+  /* galeri: grid-nya selebar penuh, jadi chip + filter di atasnya harus ditengahkan (bukan rata kiri) */
+  body.app #view-gal{align-items:center}
   body.app #view-ev{margin:0}
   /* header admin = header index */
   body.adm .head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:20px;text-align:left;margin-bottom:22px;padding:0}
@@ -155,3 +157,8 @@ body.adm .view.ghost{display:flex!important;flex-direction:column;align-items:ce
   body.app:has(#view-main:not([hidden])) .col-side{min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:6px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.18) transparent}
   body.app:has(#view-main:not([hidden])) #foot{display:none}
 }
+
+/* ---------- Tablet sentuh (iPad): pindah tab cukup fade pendek, tanpa animasi item satu-satu ----------
+   Layar iPad besar (2x retina) + puluhan kartu yang dianimasikan sekaligus = berat. Admin ringan karena tidak ada animasi pindah tab. */
+html[data-snappy] .enter *,html[data-snappy] .enter{animation:none!important}
+html[data-snappy] #gallery .gi.a{animation:none!important}
