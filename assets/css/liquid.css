@@ -157,3 +157,9 @@ body.adm .view.ghost{display:flex!important;flex-direction:column;align-items:ce
   body.app:has(#view-main:not([hidden])) .col-side{min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:6px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.18) transparent}
   body.app:has(#view-main:not([hidden])) #foot{display:none}
 }
+
+
+/* Mode hemat animasi item (data-cheap diset app.js): matikan animasi CSS per kartu / header yang memutar ulang tiap pindah tab */
+html[data-cheap] .head h1,html[data-cheap] .head .sub,html[data-cheap] .head .badge,
+html[data-cheap] .enter .tl-i.a,html[data-cheap] .enter .ev-g,html[data-cheap] .enter .ev-c,
+html[data-cheap] #gallery .gi.a,html[data-cheap] body.app #gallery .gi.a,html[data-cheap] .enter #gallery .gi{animation:none!important}
