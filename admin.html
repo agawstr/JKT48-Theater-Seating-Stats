@@ -790,6 +790,8 @@ const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTod
     if (name === 'solo') { renderSolo(); renderTsEv(); }
   }
 
+  // animasi keluar tab lama memakai fill:'forwards' (opacity 0). Kalau dibiarkan, efeknya menempel dan tab itu tampil kosong saat dibuka lagi.
+  const unfill = el => { if (el) el.getAnimations().forEach(x => { try { if (x.effect.getTiming().fill === 'forwards') x.cancel(); } catch (e) {} }); };
   function switchTab(name, drag) {
     const list = tabs(), from = list.findIndex(t => t.classList.contains('on')), to = list.findIndex(t => t.dataset.tab === name);
     if (to < 0) return;
@@ -799,13 +801,13 @@ const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTod
     document.querySelectorAll('.view.ghost').forEach(v => { if (!ghost || v !== ghost.el) { v.classList.remove('ghost'); v.style.cssText = ''; } });
     list.forEach((t, i) => { t.classList.toggle('on', i === to); t.setAttribute('aria-selected', i === to); });
     if (typeof moveInd === 'function') moveInd(); // pil meluncur ke tab baru
-    document.querySelectorAll('.view').forEach(v => { v.classList.toggle('active', v.id === 'view-' + name); if (v.id !== 'view-' + name && !(ghost && v === ghost.el)) { v.style.transform = ''; v.style.opacity = ''; } });
+    document.querySelectorAll('.view').forEach(v => { if (v.id === 'view-' + name) unfill(v); v.classList.toggle('active', v.id === 'view-' + name); if (v.id !== 'view-' + name && !(ghost && v === ghost.el)) { v.style.transform = ''; v.style.opacity = ''; } });
     afterSwitch(name);
     const hd = document.querySelector('.head'), top = hd.getBoundingClientRect().bottom + scrollY - 8; // isi baru mulai dari bawah header
     if (scrollY > top && !mqDesk.matches) scrollTo({top, behavior: 'instant'});
     if (ghost) ghost.el.scrollTop = ghost.off;
     const next = viewOf(name);
-    const unGhost = () => { if (ghost) { ghost.el.classList.remove('ghost'); ghost.el.style.cssText = ''; } };
+    const unGhost = () => { if (ghost) { ghost.el.classList.remove('ghost'); ghost.el.style.cssText = ''; unfill(ghost.el); } };
     if (to === from || from < 0 || !next) { unGhost(); return; }
     const track = list => { // satu "pegangan" untuk semua animasi tab ini, supaya ketukan beruntun / geser jari bisa membatalkannya
       const h = {cancel() { list.forEach(x => { try { x.cancel(); } catch (e) {} }); unGhost(); }, finished: Promise.allSettled(list.map(x => x.finished))};
