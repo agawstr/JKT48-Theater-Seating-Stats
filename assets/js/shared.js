@@ -1423,7 +1423,17 @@ function syncFbar() {
   const show = isFiltered() && !$('view-main').hidden;
   if (show) fbar.innerHTML = `<span>${esc(parts.join(' · '))} · <b>${view().length}</b> show</span><button type="button">Reset</button>`;
   fbar.classList.toggle('on', show);
+  centerFbar();
 }
+// bar filter di bawah: tengahnya = tengah PETA (bukan tengah layar), supaya tidak geser saat ada panel kanan / sidebar
+function centerFbar() {
+  if (!fbar) return;
+  const w = $('seating-wrapper'), r = w && w.getBoundingClientRect();
+  if (!r || !r.width) return;
+  const l = Math.max(r.left, 0), rt = Math.min(r.right, innerWidth);
+  if (rt > l) fbar.style.left = Math.round((l + rt) / 2) + 'px';
+}
+addEventListener('resize', () => centerFbar());
 
 // hitung mundur tiket mendatang
 function tickCountdown() {
