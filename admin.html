@@ -356,7 +356,7 @@ body.adm #msg.pulse{animation-duration:.55s;animation-timing-function:var(--ios)
 @keyframes sp-failsafe{to{opacity:0;visibility:hidden}} /* cadangan kalau JS gagal: hilang sendiri setelah 10 detik */
 @media(prefers-reduced-motion:reduce){#splash b,#splash span,#splash i{animation:none}#splash i::after{animation:none;left:30%}}
 
-/* kartu / blok Tiket & Pengeluaran kini masuk lewat revealIn() (JS): CSS per-kartu dan fade pembungkus dimatikan supaya tidak dobel */
+/* kartu / blok Tiket & Pengeluaran kini masuk lewat liquid.swap() (liquid.js): CSS per-kartu dan fade pembungkus dimatikan supaya tidak dobel */
 body.adm .tt-c{animation:none}
 body.adm #ex:not([hidden]),body.adm #away:not([hidden]),body.adm #misc:not([hidden]){animation:none}
 @media(prefers-reduced-motion:reduce){body.adm .tt-c,body.adm .tt-bar,body.adm #ex,body.adm #away,body.adm #misc,body.adm .tt-m[open] .tt-ml,body.adm #todo .todo-c,body.adm #msg.pulse{animation:none!important}body.adm .tt-m::details-content{transition:none}}
@@ -816,36 +816,6 @@ const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTod
     }));
     return out;
   }
-
-  /* Ganti chip (Gabungan / Video Call / tahun / sub-tab Biaya): isi dirender ulang, jadi masuknya digerakkan di sini,
-     per baris dari atas ke bawah dan kiri ke kanan, sama seperti saat pindah tab. */
-  let revAnims = [];
-  function revealIn(root) {
-    revAnims.forEach(a => { try { a.cancel(); } catch (e) {} }); revAnims = [];
-    if (!root || still()) return;
-    const L = lite(), items = [];
-    [...root.children].forEach(c => { if (c.classList.contains('tt-cards')) items.push(...c.children); else items.push(c); });
-    const vis = [];
-    for (const el of items) {
-      const r = el.getBoundingClientRect();
-      if (!r.height || r.bottom < 0) continue;
-      if (r.top > innerHeight || vis.length >= (L ? 24 : 36)) break;
-      vis.push({el, top: r.top, left: r.left});
-    }
-    const rows = [];
-    vis.sort((a, b) => a.top - b.top || a.left - b.left).forEach(it => { const l = rows[rows.length - 1]; if (l && Math.abs(it.top - l.top) < 14) l.items.push(it); else rows.push({top: it.top, items: [it]}); });
-    const rowStep = Math.min(L ? 90 : 110, 700 / Math.max(1, rows.length));
-    rows.forEach((row, ri) => row.items.forEach((it, ci) => {
-      revAnims.push(it.el.animate([{opacity: 0, transform: 'translate3d(0,22px,0) scale(.96)'}, {opacity: 1, transform: 'none'}],
-        {duration: L ? 700 : 820, delay: 40 + ri * rowStep + ci * (L ? 50 : 65), easing: POP, fill: 'backwards'}));
-    }));
-  }
-  document.addEventListener('click', e => {
-    if (!e.target.closest || !e.target.closest('.tt-y,.tt-k,.ex-t,.tt-c[data-k]')) return;
-    const act = id => viewOf(id).classList.contains('active');
-    if (act('tiket')) revealIn(document.getElementById('tt'));
-    else if (act('biaya')) revealIn(['ex', 'away', 'misc'].map(i => document.getElementById(i)).find(el => el && !el.hidden));
-  });
 
   function afterSwitch(name) { // render yang dulu ada di switchTab
     if (name === 'peta') requestAnimationFrame(centerChart);
