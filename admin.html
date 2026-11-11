@@ -342,11 +342,29 @@ body.adm .tt-m[open] .tt-ml{animation:fade .45s var(--ios)}
 body.adm .tt-m .nm::before{transition:transform .4s var(--ios)}
 body.adm #todo .todo-c{animation-duration:.5s;animation-timing-function:var(--ios)}
 body.adm #msg.pulse{animation-duration:.55s;animation-timing-function:var(--ios)}
+#splash{position:fixed;inset:0;z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;box-sizing:border-box;text-align:center;
+  background:radial-gradient(40% 35% at 15% 10%,rgba(255,42,95,.45),transparent 70%),radial-gradient(35% 35% at 90% 25%,rgba(255,140,0,.32),transparent 70%),radial-gradient(45% 40% at 70% 95%,rgba(136,19,55,.55),transparent 70%),#0d090d;
+  transition:opacity .55s var(--spring),transform .55s var(--spring),visibility 0s .55s;
+  animation:sp-failsafe .3s 10s forwards}
+#splash.done{opacity:0;transform:scale(1.02);visibility:hidden;pointer-events:none}
+#splash b{font-size:clamp(26px,6vw,38px);font-weight:700;letter-spacing:-.03em;line-height:1.15;text-wrap:balance;animation:sp-up .8s var(--spring) both}
+#splash span{font-size:12px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55);animation:sp-up .8s var(--spring) .12s both}
+#splash i{position:relative;display:block;width:96px;height:3px;margin-top:10px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden;animation:sp-up .8s var(--spring) .22s both}
+#splash i::after{content:"";position:absolute;top:0;left:0;height:100%;width:40%;border-radius:3px;background:linear-gradient(90deg,transparent,#ff375f,#ff9f0a);animation:sp-sweep 1.3s cubic-bezier(.4,0,.2,1) infinite}
+@keyframes sp-up{from{opacity:0;transform:translateY(10px)}}
+@keyframes sp-sweep{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
+@keyframes sp-failsafe{to{opacity:0;visibility:hidden}} /* cadangan kalau JS gagal: hilang sendiri setelah 10 detik */
+@media(prefers-reduced-motion:reduce){#splash b,#splash span,#splash i{animation:none}#splash i::after{animation:none;left:30%}}
+
+/* kartu / blok Tiket & Pengeluaran kini masuk lewat revealIn() (JS): CSS per-kartu dan fade pembungkus dimatikan supaya tidak dobel */
+body.adm .tt-c{animation:none}
+body.adm #ex:not([hidden]),body.adm #away:not([hidden]),body.adm #misc:not([hidden]){animation:none}
 @media(prefers-reduced-motion:reduce){body.adm .tt-c,body.adm .tt-bar,body.adm #ex,body.adm #away,body.adm #misc,body.adm .tt-m[open] .tt-ml,body.adm #todo .todo-c,body.adm #msg.pulse{animation:none!important}body.adm .tt-m::details-content{transition:none}}
 </style>
 <link rel="stylesheet" href="assets/css/liquid.css">
 </head>
 <body class="adm">
+<div id="splash" role="status" aria-live="polite"><b>agaxx's Idoling Diary</b><span>Admin · Memuat data</span><i aria-hidden="true"></i></div>
 <div class="wrap">
   <div class="head">
     <h1>agaxx's Idoling Diary</h1>
@@ -765,9 +783,9 @@ const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTod
   const POP = 'cubic-bezier(.22,1,.36,1)';
   const CASCADE = { // blok yang ikut masuk bertahap di tiap tab (hanya yang terlihat di layar)
     peta: '#story, #last .last-c, #stats .stat, #cover, #filters, #zoomctl, #seating-wrapper, #legend', // sama dengan index; isi tab Peta dirender skrip, jadi bukan hanya peta kursinya
-    tiket: '#tt > *',
+    tiket: '#tt > *:not(.tt-cards), #tt .tt-cards > *',
     solo: '#tsev > *, #solo > *',
-    biaya: '.ex-sub, #ex > *, #away > *, #misc > *',
+    biaya: '.ex-sub, #ex > *:not(.tt-cards), #ex .tt-cards > *, #away > *, #misc > *',
     crud: '.crud > .card'
   };
   /* Item masuk PER BARIS dari atas ke bawah, dalam satu baris dari kiri ke kanan (urutan mengikuti posisi nyata di layar).
@@ -798,6 +816,36 @@ const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTod
     }));
     return out;
   }
+
+  /* Ganti chip (Gabungan / Video Call / tahun / sub-tab Biaya): isi dirender ulang, jadi masuknya digerakkan di sini,
+     per baris dari atas ke bawah dan kiri ke kanan, sama seperti saat pindah tab. */
+  let revAnims = [];
+  function revealIn(root) {
+    revAnims.forEach(a => { try { a.cancel(); } catch (e) {} }); revAnims = [];
+    if (!root || still()) return;
+    const L = lite(), items = [];
+    [...root.children].forEach(c => { if (c.classList.contains('tt-cards')) items.push(...c.children); else items.push(c); });
+    const vis = [];
+    for (const el of items) {
+      const r = el.getBoundingClientRect();
+      if (!r.height || r.bottom < 0) continue;
+      if (r.top > innerHeight || vis.length >= (L ? 24 : 36)) break;
+      vis.push({el, top: r.top, left: r.left});
+    }
+    const rows = [];
+    vis.sort((a, b) => a.top - b.top || a.left - b.left).forEach(it => { const l = rows[rows.length - 1]; if (l && Math.abs(it.top - l.top) < 14) l.items.push(it); else rows.push({top: it.top, items: [it]}); });
+    const rowStep = Math.min(L ? 90 : 110, 700 / Math.max(1, rows.length));
+    rows.forEach((row, ri) => row.items.forEach((it, ci) => {
+      revAnims.push(it.el.animate([{opacity: 0, transform: 'translate3d(0,22px,0) scale(.96)'}, {opacity: 1, transform: 'none'}],
+        {duration: L ? 700 : 820, delay: 40 + ri * rowStep + ci * (L ? 50 : 65), easing: POP, fill: 'backwards'}));
+    }));
+  }
+  document.addEventListener('click', e => {
+    if (!e.target.closest || !e.target.closest('.tt-y,.tt-k,.ex-t,.tt-c[data-k]')) return;
+    const act = id => viewOf(id).classList.contains('active');
+    if (act('tiket')) revealIn(document.getElementById('tt'));
+    else if (act('biaya')) revealIn(['ex', 'away', 'misc'].map(i => document.getElementById(i)).find(el => el && !el.hidden));
+  });
 
   function afterSwitch(name) { // render yang dulu ada di switchTab
     if (name === 'peta') requestAnimationFrame(centerChart);
@@ -1839,6 +1887,7 @@ $('solo').addEventListener('click', async e => {
 // ---------- Init ----------
 renderAll(); renderBackup();
 requestAnimationFrame(centerChart);
+(() => { const sp = document.getElementById('splash'); if (sp) setTimeout(() => { sp.classList.add('done'); setTimeout(() => sp.remove(), 700); }, Math.max(0, 700 - performance.now())); })(); // layar muat: tampil minimal sebentar supaya tidak berkedip
 </script>
 </body>
 </html>
