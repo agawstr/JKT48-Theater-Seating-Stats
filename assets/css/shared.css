@@ -1070,3 +1070,10 @@ html[data-perf=lite] .gi .gi-ph:not(.ok):not(.bad)::before,
 /* lightbox: ukuran tetap sejak thumbnail sampai foto penuh (tidak melompat saat ditukar) */
 #lb-img.fit{width:min(calc(100vw - 30px),calc(90vh * var(--ar)),720px);height:auto;aspect-ratio:var(--ar);max-width:none;max-height:none;object-fit:contain}
 @supports(height:1dvh){#lb-img.fit{width:min(calc(100vw - 30px),calc(90dvh * var(--ar)),720px)}}
+
+/* tempo seragam: sisa transisi pendek (bar yang berubah di tempat, buka-tutup detail) disamakan dengan gerak iOS lainnya */
+.cov-bar i,.sl-bar i{transition:width .9s var(--ios)}
+.mc-b i{transition:height .9s var(--ios)}
+.ev-g::details-content{transition:block-size .5s var(--ios),content-visibility .5s allow-discrete}
+.ev-g[open] .ev-d{animation:fade .45s var(--ios)}
+@media(prefers-reduced-motion:reduce){.cov-bar i,.sl-bar i,.mc-b i,.ev-g::details-content{transition:none}.ev-g[open] .ev-d{animation:none}}
