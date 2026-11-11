@@ -157,8 +157,3 @@ body.adm .view.ghost{display:flex!important;flex-direction:column;align-items:ce
   body.app:has(#view-main:not([hidden])) .col-side{min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:6px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.18) transparent}
   body.app:has(#view-main:not([hidden])) #foot{display:none}
 }
-
-/* ---------- Tablet sentuh (iPad): pindah tab cukup fade pendek, tanpa animasi item satu-satu ----------
-   Layar iPad besar (2x retina) + puluhan kartu yang dianimasikan sekaligus = berat. Admin ringan karena tidak ada animasi pindah tab. */
-html[data-snappy] .enter *,html[data-snappy] .enter{animation:none!important}
-html[data-snappy] #gallery .gi.a{animation:none!important}
