@@ -751,7 +751,7 @@ const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTod
   const viewOf = k => document.getElementById('view-' + k);
   let anim = null;
   const lite = () => perf.lite(); // tingkat performa dari shared.js: sama dengan index (HP / tablet sentuh / hemat data = ringan)
-  const IN_MS = () => lite() ? 460 : 640, OUT_MS = () => lite() ? 260 : 360;
+  const IN_MS = () => lite() ? 560 : 800, OUT_MS = () => lite() ? 300 : 440;
   function makeGhost(prev) { // tab lama tetap terlihat di tempatnya, lalu memudar keluar (bukan langsung hilang)
     const r = prev.getBoundingClientRect();
     if (!r.width || !r.height) return null;
@@ -787,14 +787,14 @@ const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTod
     items.sort((a, b) => a.top - b.top || a.left - b.left);
     const rows = [];
     items.forEach(it => { const l = rows[rows.length - 1]; if (l && Math.abs(it.top - l.top) < 14) l.items.push(it); else rows.push({top: it.top, items: [it]}); });
-    const L = lite(), rowStep = Math.min(L ? 70 : 85, (L ? 520 : 680) / Math.max(1, rows.length)), colStep = L ? 40 : 50, out = [];
+    const L = lite(), rowStep = Math.min(L ? 80 : 105, (L ? 600 : 840) / Math.max(1, rows.length)), colStep = L ? 48 : 62, out = [];
     // transform diam elemen = patokan akhir animasi. Kalau elemen sedang dianimasikan CSS (mis. .card 'rise'), transform yang terbaca itu sementara:
     // dipakai sebagai patokan akhir, elemen berhenti di posisi geser lalu melompat saat animasi selesai. Jadi abaikan bila ada animasi berjalan.
     const base0 = new Map(items.map(it => { const t = it.el.getAnimations().length ? 'none' : getComputedStyle(it.el).transform; return [it.el, t && t !== 'none' ? ' ' + t : '']; }));
     rows.forEach((row, ri) => row.items.sort((a, b) => a.left - b.left).forEach((it, ci) => {
       const b = base0.get(it.el);
       out.push(it.el.animate([{opacity: 0, transform: 'translate3d(0,22px,0) scale(.94)' + b}, {opacity: 1, transform: b ? b.trim() : 'none'}],
-        {duration: L ? 600 : 720, delay: (L ? 40 : 80) + ri * rowStep + ci * colStep, easing: POP, fill: 'backwards'}));
+        {duration: L ? 720 : 900, delay: (L ? 50 : 100) + ri * rowStep + ci * colStep, easing: POP, fill: 'backwards'}));
     }));
     return out;
   }
