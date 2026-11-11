@@ -15,6 +15,7 @@ permissions:
 jobs:
   smoke:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -28,6 +29,6 @@ jobs:
       - name: Pasang Playwright
         run: |
           pip install playwright
-          playwright install --with-deps chromium
+          playwright install chromium
       - name: Smoke test index.html
         run: python scripts/smoke_test.py
