@@ -799,11 +799,12 @@ const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTod
     // transform diam elemen = patokan akhir animasi. Kalau elemen sedang dianimasikan CSS (mis. .card 'rise'), transform yang terbaca itu sementara:
     // dipakai sebagai patokan akhir, elemen berhenti di posisi geser lalu melompat saat animasi selesai. Jadi abaikan bila ada animasi berjalan.
     const base0 = new Map(items.map(it => { const t = it.el.getAnimations().length ? 'none' : getComputedStyle(it.el).transform; return [it.el, t && t !== 'none' ? ' ' + t : '']; }));
-    rows.forEach((row, ri) => row.items.sort((a, b) => a.left - b.left).forEach((it, ci) => {
+    rows.forEach((row, ri) => { const cs = row.items.length > 1 ? Math.min(colStep, rowStep * 0.8 / (row.items.length - 1)) : 0; // baris lebar: kolom terakhir tetap muncul sebelum baris di bawahnya
+      row.items.sort((a, b) => a.left - b.left).forEach((it, ci) => {
       const b = base0.get(it.el);
       out.push(it.el.animate([{opacity: 0, transform: 'translate3d(0,22px,0) scale(.94)' + b}, {opacity: 1, transform: b ? b.trim() : 'none'}],
-        {duration: L ? 720 : 900, delay: (L ? 50 : 100) + ri * rowStep + ci * colStep, easing: POP, fill: 'backwards'}));
-    }));
+        {duration: L ? 720 : 900, delay: (L ? 50 : 100) + ri * rowStep + ci * cs, easing: POP, fill: 'backwards'}));
+    }); });
     return out;
   }
 
