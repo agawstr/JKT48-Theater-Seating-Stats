@@ -806,12 +806,14 @@ function renderTimeline() {
   const mon = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
   const numOf = new Map(all.slice().reverse().map((r, i) => [r.id, i + 1])); // nomor urut show sepanjang masa
   const perMon = {}; list.forEach(r => { const k = r.date.slice(0, 7); perMon[k] = (perMon[k] || 0) + 1; });
-  let cur = '', curY = '', html = '', cnt = 0;
+  let cur = '', curY = '', html = '', cnt = 0, grp = false; // tiap bulan dibungkus .tl-g: header bulan menempel hanya selama bulannya terlihat, lalu didorong keluar oleh bulan berikutnya (tidak bertumpuk)
   for (const r of list) {
     const ym = r.date.slice(0, 7), n = numOf.get(r.id), ms = n === 1 || n === 10 || n % 25 === 0; // milestone
-    if (r.date.slice(0, 4) !== curY) { curY = r.date.slice(0, 4); html += `<div class="tl-yh">${esc(curY) || '–'}</div>`; }
+    if (r.date.slice(0, 4) !== curY) { curY = r.date.slice(0, 4); if (grp) { html += '</div>'; grp = false; } html += `<div class="tl-yh">${esc(curY) || '–'}</div>`; }
     if (ym !== cur) {
       cur = ym;
+      if (grp) html += '</div>';
+      html += '<div class="tl-g">'; grp = true;
       html += `<h3 class="tl-mh"><span>${/^\d{4}-\d{2}$/.test(ym) ? mon[+ym.slice(5) - 1] + ' ' + ym.slice(0, 4) : 'Tanpa tanggal'}</span><small>${perMon[ym]} show</small></h3>`;
     }
     const ex = extras(r), lt = lotInfo(r), ci = cnt++;
@@ -822,6 +824,7 @@ function renderTimeline() {
         ${r.note ? `<div class="tl-n">“${esc(r.note)}”</div>` : ''}</div>
       <button type="button" class="seat-badge tl-s" data-seat="${esc(r.seat)}" aria-label="Lihat kursi ${esc(r.seat)}">${esc(r.seat)}</button></div>`;
   }
+  if (grp) html += '</div>';
   flipRender(el, '.tl-i', it => it.dataset.id, () => { el.innerHTML = html || (q ? `<div class="empty">Tidak ada show yang cocok dengan “${esc($('tl-q').value.trim())}”<br><button type="button" class="btn-s" data-tlclear>Hapus pencarian</button></div>` : '<div class="empty">Belum ada riwayat</div>'); });
 }
 $('timeline')?.addEventListener('click', e => {
