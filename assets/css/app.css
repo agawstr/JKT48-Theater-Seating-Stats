@@ -45,12 +45,12 @@ body.app .tab::before{content:'';flex:none;width:22px;height:22px;background:cur
 /* ---------- menu "Aksi" (semua ukuran layar) ---------- */
 .actions{position:relative;display:inline-block}
 .actions-t{display:inline-flex;align-items:center;gap:6px}
-.actions-t::after{content:'';width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .2s}
+.actions-t::after{content:'';width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .35s var(--ios)}
 .actions-t[aria-expanded=true]::after{transform:translateY(1px) rotate(-135deg)}
 .actions-m{position:absolute;right:0;top:calc(100% + 8px);z-index:20;min-width:210px;padding:6px;border-radius:18px;
   background:#1d1318;border:1px solid rgba(255,255,255,.14);box-shadow:0 18px 40px rgba(0,0,0,.55);
   display:none;flex-direction:column;gap:2px}
-.actions.open .actions-m{display:flex;animation:fade .15s ease-out}
+.actions.open .actions-m{display:flex;animation:menu-in .35s var(--ios)}
 .actions-m .btn-s{display:block;width:100%;text-align:left;border:none;background:transparent;border-radius:12px;padding:12px 14px;font-size:14px;min-height:0;box-shadow:none}
 .actions-m .btn-s:hover,.actions-m .btn-s:focus-visible{background:rgba(255,255,255,.09)}
 body.app #legend{justify-content:center}
