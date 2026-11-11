@@ -1491,7 +1491,7 @@ function burst(el) {
 // animasi ganti tahun di kalender: kalender & judul tahun meluncur sesuai arah, kotak berisi menyala bergantian
 function slideCal(dir) {
   if (calm()) return;
-  const ease = {duration: 380, easing: 'cubic-bezier(.2,.8,.2,1)'};
+  const ease = {duration: 560, easing: 'cubic-bezier(.22,1,.36,1)'};
   ['.cal-g', '.cal-m'].forEach(sel => $('cal').querySelector(sel)?.animate([{opacity: 0, transform: `translateX(${dir * 28}px)`}, {opacity: 1, transform: 'none'}], ease));
   $('cal-nav').querySelector('b')?.animate([{opacity: 0, transform: `translateY(${dir * -10}px)`}, {opacity: 1, transform: 'none'}], ease);
   const c = $('cal');
