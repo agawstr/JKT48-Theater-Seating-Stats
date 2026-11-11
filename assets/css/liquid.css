@@ -247,7 +247,7 @@ p.tt-note b{color:#e4e4e7}
    jadi lebih lambat tapi tidak menambah beban. Foto memudar masuk lebih halus. */
 body.app #gallery .gi.a,#gallery .gi.a{animation-duration:1.05s;animation-timing-function:var(--ios);animation-delay:calc(min(var(--i,0),8) * 75ms)}
 @keyframes drop-pol{from{opacity:0;transform:translate3d(0,18px,0) scale(.97)}}
-.gi-ph img{transition:opacity .6s var(--ios)}
+.gi-ph img{transition:opacity .9s var(--ios) .12s}
 body.app .enter .tl-i.a,body.app .enter .ev-g:nth-child(-n+8),body.app .enter .ev-c,
 .enter .tl-i.a,.enter .ev-g:nth-child(-n+8),.enter .ev-c{animation-duration:.9s;animation-timing-function:var(--ios);animation-delay:calc(var(--i,0) * 50ms)}
 @keyframes rise{from{opacity:0;transform:translate3d(0,14px,0)}}
