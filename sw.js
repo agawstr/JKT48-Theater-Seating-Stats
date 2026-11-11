@@ -6,7 +6,7 @@
    - Google Fonts: pakai cache dulu, diperbarui di belakang
    - admin.html & request non-GET: tidak disentuh
    Naikkan VERSION kalau daftar SHELL berubah. */
-const VERSION = 'v4';
+const VERSION = 'v5';
 const SHELL_CACHE = 'shell-' + VERSION;
 const PHOTO_CACHE = 'photos-' + VERSION;
 const FONT_CACHE = 'fonts-' + VERSION;
