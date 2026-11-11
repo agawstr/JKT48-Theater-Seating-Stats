@@ -137,3 +137,21 @@ body.adm .view.ghost{display:flex!important;flex-direction:column;align-items:ce
 #ev-rank>button:last-child,#ev-rank .btn-s{margin-top:10px}
 /* galeri HP: jarak antar polaroid lebih lega */
 @media(max-width:600px){#gallery{column-gap:20px}}
+
+/* layar lebar (fullscreen): kolom sempit ditengahkan supaya sisi kanan tidak kosong sebelah */
+@media(min-width:1500px){
+  body.app #view-tl{align-items:center}
+  body.app #view-ev{margin:0 auto}
+  body.adm .view.active{align-items:center}
+}
+
+/* laptop, tab Peta: halaman tidak ikut scroll; peta diam, hanya panel kanan (detail & statistik) yang scroll sendiri */
+@media(min-width:1280px) and (hover:hover) and (pointer:fine){
+  html:has(body.app #view-main:not([hidden])){overflow:hidden}
+  body.app:has(#view-main:not([hidden])) .wrap{height:100vh;box-sizing:border-box;padding-bottom:20px;overflow:hidden}
+  body.app:has(#view-main:not([hidden])) #view-main{flex:1 1 auto;min-height:0;width:100%}
+  body.app:has(#view-main:not([hidden])) #split{height:100%;align-items:stretch}
+  body.app:has(#view-main:not([hidden])) .col-map{position:static;max-height:100%}
+  body.app:has(#view-main:not([hidden])) .col-side{min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:6px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.18) transparent}
+  body.app:has(#view-main:not([hidden])) #foot{display:none}
+}
