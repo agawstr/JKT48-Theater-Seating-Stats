@@ -169,6 +169,9 @@ function renderChartRaw() {
   const first = !introDone && records.length > 0; // animasi masuk hanya sekali
   introDone = introDone || first; intro = first;
   $('chart').classList.toggle('intro', first);
+  // .intro harus dilepas setelah animasi masuk selesai. Kalau dibiarkan, setiap tab Peta dibuka lagi (display:none -> tampil)
+  // 60 baris kursi memutar ulang animasi 'rise' (delay bertingkat sampai ~4 detik) = berat + peta lama muncul
+  if (first) { clearTimeout(renderChartRaw._introT); renderChartRaw._introT = setTimeout(() => $('chart').classList.remove('intro'), 4600); }
   const sig = JSON.stringify(filter);
   if (lastSig !== null && sig !== lastSig && !first && replayN === null) playRefresh();
   lastSig = sig;
