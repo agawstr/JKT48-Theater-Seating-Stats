@@ -44,6 +44,29 @@ const perf = (() => {
     degrade() { if (root.dataset.glass !== 'on') return false; autoSet('off'); apply(); return true; }
   };
 })();
+// ---------- Kecepatan animasi: satu pengali untuk SEMUA animasi JS (tab, kartu, pil, foto, modal) di index & admin ----------
+// 1 = kecepatan lama, 1.35 = lebih pelan. Uji cepat: ?speed=1.6 (tersimpan di perangkat ini; ?speed=1 untuk mengembalikan).
+// Durasi < 250ms (umpan balik sentuhan / gestur) tidak diubah supaya tetap responsif.
+const ANIM_SLOW = (() => {
+  let v = 1.35;
+  try {
+    const q = parseFloat(new URLSearchParams(location.search).get('speed'));
+    if (q > 0 && q <= 4) localStorage.setItem('jkt48_speed', String(q));
+    const st = parseFloat(localStorage.getItem('jkt48_speed'));
+    if (st > 0 && st <= 4) v = st;
+  } catch (e) {}
+  return v;
+})();
+if (ANIM_SLOW !== 1 && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const baseAnimate = Element.prototype.animate;
+  Element.prototype.animate = function (kf, o) {
+    if (o && typeof o === 'object') {
+      const d = typeof o.duration === 'number' ? o.duration : null;
+      if (d !== null && d >= 250) { o = {...o, duration: d * ANIM_SLOW}; if (typeof o.delay === 'number') o.delay *= ANIM_SLOW; }
+    } else if (typeof o === 'number' && o >= 250) o *= ANIM_SLOW;
+    return baseAnimate.call(this, kf, o);
+  };
+}
 const openEl = id => {
   const el = $(id);
   clearTimeout(timers[id]);
