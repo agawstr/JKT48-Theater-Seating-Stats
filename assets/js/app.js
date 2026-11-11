@@ -274,7 +274,7 @@
   // kurva masuk item: melambat halus lalu BERHENTI tepat di posisi akhir (tanpa overshoot).
   // Dulu memakai pegas yang melewati posisi akhir ±2px lalu kembali, sehingga kartu terlihat naik/turun sendiri setelah animasi selesai.
   const POP = 'cubic-bezier(.22,1,.36,1)';
-  const IN_MS = () => lite() ? 460 : 640, OUT_MS = () => lite() ? 260 : 360;
+  const IN_MS = () => lite() ? 560 : 800, OUT_MS = () => lite() ? 300 : 440;
   const viewOf = k => $('view-' + k);
   let run = null; // transisi yang sedang berjalan: {anims, done}
 
@@ -323,8 +323,8 @@
       if (last && Math.abs(it.top - last.top) < 14) last.items.push(it); else rows.push({top: it.top, items: [it]});
     });
     const L = lite(), start = L ? 40 : base;
-    const rowStep = Math.min(L ? 70 : 85, (L ? 520 : 680) / Math.max(1, rows.length)); // total waktu bertahap dibatasi
-    const colStep = L ? 40 : 50;
+    const rowStep = Math.min(L ? 80 : 105, (L ? 600 : 840) / Math.max(1, rows.length)); // total waktu bertahap dibatasi
+    const colStep = L ? 48 : 62;
     const base0 = new Map(items.map(it => { const t = getComputedStyle(it.el).transform; return [it.el, t && t !== 'none' ? ' ' + t : '']; })); // jaga kemiringan polaroid
     // garis timeline: ukur SEBELUM animasi item dibuat (supaya posisi belum bergeser oleh keyframe awal)
     const tl = view.id === 'view-tl' ? $('timeline') : null;
@@ -334,7 +334,7 @@
       const reach = items.reduce((m, it) => Math.max(m, it.top + it.el.offsetHeight - tr.top), 0); // ujung bawah kartu terbawah yang ikut beranimasi
       lnRest = Math.max(0, Math.round(tr.height - reach));
     }
-    const dur = L ? 520 : 640, anims = [];
+    const dur = L ? 640 : 800, anims = [];
     let lastDelay = 0;
     rows.forEach((row, ri) => {
       row.items.sort((a, b) => a.left - b.left).forEach((it, ci) => {
