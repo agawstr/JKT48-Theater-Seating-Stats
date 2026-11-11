@@ -100,7 +100,52 @@
     };
     requestAnimationFrame(tick);
   }
-  window.liquid = {watch};
+  /* ---------- 3b. swap: isi baru masuk bertahap (pegas) saat sub-tab / filter di dalam satu tab diganti ----------
+     Dipakai untuk: Tiket (Gabungan/jenis/tahun), Biaya (Ringkasan/Away/lainnya + tahun), Galeri (Semua/2-Shot/...), Tiket index.
+     Hanya opacity + transform, hanya item yang terlihat di layar. Dipanggil SETELAH render selesai. */
+  const EASE = 'cubic-bezier(.32,.72,0,1)';
+  const POP = (() => {
+    try { if (!CSS.supports('transition-timing-function', 'linear(0,1)')) return EASE; } catch (e) { return EASE; }
+    const v = getComputedStyle(document.documentElement).getPropertyValue('--spring-b').trim();
+    return /^linear\(/.test(v) ? v : EASE;
+  })();
+  function swap(root, sel) {
+    if (!root || root.hidden || calm()) return [];
+    const L = typeof perf !== 'undefined' && perf.lite();
+    let els = sel ? [...root.querySelectorAll(sel)] : [...root.children].filter(e => !e.hidden && !e.matches('.tt-years,.ex-sub,.gk-bar,script,style'));
+    if (!sel) els = els.flatMap(e => { // blok berisi kartu berjajar (grid / baris): animasikan kartunya, bukan blok pembungkusnya
+      const cs = getComputedStyle(e), k = [...e.children];
+      return k.length > 1 && (cs.display === 'grid' || (cs.display === 'flex' && cs.flexDirection === 'row' && cs.flexWrap !== 'nowrap')) ? k : [e];
+    });
+    const items = [];
+    for (const el of els) {
+      const r = el.getBoundingClientRect();
+      if (!r.height || r.bottom < 0 || r.top > innerHeight) continue;
+      items.push({el, top: r.top, left: r.left});
+      if (items.length >= (L ? 16 : 28)) break;
+    }
+    items.sort((a, b) => a.top - b.top || a.left - b.left);
+    const rows = [];
+    items.forEach(it => { const l = rows[rows.length - 1]; if (l && Math.abs(it.top - l.top) < 14) l.items.push(it); else rows.push({top: it.top, items: [it]}); });
+    const rowStep = Math.min(L ? 60 : 75, (L ? 360 : 520) / Math.max(1, rows.length)), colStep = L ? 32 : 42, out = [];
+    rows.forEach((row, ri) => row.items.forEach((it, ci) => {
+      const t = getComputedStyle(it.el).transform, b = t && t !== 'none' ? ' ' + t : ''; // jaga kemiringan polaroid
+      out.push(it.el.animate([{opacity: 0, transform: 'translate3d(0,16px,0) scale(.95)' + b}, {opacity: 1, transform: b ? b.trim() : 'none'}],
+        {duration: L ? 520 : 640, delay: 10 + ri * rowStep + ci * colStep, easing: POP, fill: 'backwards'}));
+    }));
+    return out;
+  }
+  // pemicu: klik sub-tab / filter. Dibaca di fase capture (DOM lama masih utuh), animasi dimulai setelah render selesai
+  const HOOKS = [['#tt [data-y],#tt [data-k]', 'tt'], ['#ex [data-ey]', 'ex'], ['#away [data-ey]', 'away'], ['#misc [data-ey]', 'misc'],
+    ['#g-kinds [data-gk]', 'gallery'], ['#ev-cats [data-cat]', 'ev-list']];
+  const later = fn => requestAnimationFrame(() => requestAnimationFrame(fn));
+  document.addEventListener('click', e => {
+    const t = e.target; if (!t.closest) return;
+    if (t.closest('.ex-t')) { later(() => swap(['ex', 'away', 'misc'].map(id => document.getElementById(id)).find(x => x && !x.hidden))); return; }
+    for (const [q, id] of HOOKS) if (t.closest(q)) { later(() => swap(document.getElementById(id))); return; }
+  }, true);
+  document.addEventListener('change', e => { if (e.target && e.target.id === 'g-member') later(() => swap(document.getElementById('gallery'))); }, true);
+  window.liquid = {watch, swap};
 
   /* ---------- 4. getar halus (Android; iOS Safari tidak mendukung, jadi diabaikan) ---------- */
   if (typeof navigator.vibrate === 'function') {
