@@ -121,6 +121,7 @@ summary{cursor:pointer;color:#ff8c00;font-size:13px;font-weight:600}
 /* animasi admin */
 .view.active{animation:tabin .3s var(--ease)}
 .card{animation:rise .5s var(--ease) both}
+.crud>.card{animation:none} /* masuknya sudah dipegang cascade() di switchTab; animasi ganda bikin kartu melompat di akhir */
 #msg.pulse{animation:rise .35s var(--ease)}
 #todo .todo-c{animation:popin .3s var(--ease) both}
 tbody tr{transition:background .2s}
@@ -774,7 +775,9 @@ const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTod
     const rows = [];
     items.forEach(it => { const l = rows[rows.length - 1]; if (l && Math.abs(it.top - l.top) < 14) l.items.push(it); else rows.push({top: it.top, items: [it]}); });
     const L = lite(), rowStep = Math.min(L ? 70 : 85, (L ? 520 : 680) / Math.max(1, rows.length)), colStep = L ? 40 : 50, out = [];
-    const base0 = new Map(items.map(it => { const t = getComputedStyle(it.el).transform; return [it.el, t && t !== 'none' ? ' ' + t : '']; }));
+    // transform diam elemen = patokan akhir animasi. Kalau elemen sedang dianimasikan CSS (mis. .card 'rise'), transform yang terbaca itu sementara:
+    // dipakai sebagai patokan akhir, elemen berhenti di posisi geser lalu melompat saat animasi selesai. Jadi abaikan bila ada animasi berjalan.
+    const base0 = new Map(items.map(it => { const t = it.el.getAnimations().length ? 'none' : getComputedStyle(it.el).transform; return [it.el, t && t !== 'none' ? ' ' + t : '']; }));
     rows.forEach((row, ri) => row.items.sort((a, b) => a.left - b.left).forEach((it, ci) => {
       const b = base0.get(it.el);
       out.push(it.el.animate([{opacity: 0, transform: 'translate3d(0,22px,0) scale(.94)' + b}, {opacity: 1, transform: b ? b.trim() : 'none'}],
