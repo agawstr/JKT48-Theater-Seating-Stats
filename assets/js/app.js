@@ -271,12 +271,9 @@
        3. baru setelah itu semua animasi dimulai pada frame yang sama (hanya transform & opacity). */
   const VIEW_IDS = ['main', 'gal', 'tl', 'ev'];
   const EASE = 'cubic-bezier(.32,.72,0,1)';
-  // pegas "pop" ala iOS untuk item yang masuk (nilai dari --spring-b di app.css); browser lama jatuh ke kurva biasa
-  const POP = (() => {
-    try { if (!CSS.supports('transition-timing-function', 'linear(0,1)')) return EASE; } catch (e) { return EASE; }
-    const v = getComputedStyle(document.documentElement).getPropertyValue('--spring-b').trim();
-    return /^linear\(/.test(v) ? v : EASE;
-  })();
+  // kurva masuk item: melambat halus lalu BERHENTI tepat di posisi akhir (tanpa overshoot).
+  // Dulu memakai pegas yang melewati posisi akhir ±2px lalu kembali, sehingga kartu terlihat naik/turun sendiri setelah animasi selesai.
+  const POP = 'cubic-bezier(.22,1,.36,1)';
   const IN_MS = () => lite() ? 460 : 640, OUT_MS = () => lite() ? 260 : 360;
   const viewOf = k => $('view-' + k);
   let run = null; // transisi yang sedang berjalan: {anims, done}
