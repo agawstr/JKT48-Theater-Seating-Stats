@@ -24,9 +24,7 @@ const perf = (() => {
     const c = navigator.connection || {};
     return !!c.saveData || (navigator.deviceMemory && navigator.deviceMemory <= 2) || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2);
   };
-  // iPadOS 13+ memakai UA "Macintosh" dan bisa melapor hover/fine (mis. dengan keyboard) -> terlewat sebagai laptop. Dideteksi lewat maxTouchPoints.
-  const ipad = () => navigator.maxTouchPoints > 1 && /Macintosh|iPad/.test(navigator.userAgent);
-  const tier = () => (force === 'lite' || force === 'full') ? force : (weak() || ipad() || mqs[0].matches || mqs[1].matches ? 'lite' : 'full');
+  const tier = () => (force === 'lite' || force === 'full') ? force : (weak() || mqs[0].matches || mqs[1].matches ? 'lite' : 'full');
   const glass = () => {
     if (forceGlass === 'on') return 'on';
     if (!(CSS.supports('backdrop-filter', 'blur(1px)') || CSS.supports('-webkit-backdrop-filter', 'blur(1px)'))) return 'off';
@@ -36,15 +34,12 @@ const perf = (() => {
     const t = tier(), g = glass();
     if (root.dataset.perf !== t) root.dataset.perf = t;
     if (root.dataset.glass !== g) root.dataset.glass = g;
-    root.toggleAttribute('data-snappy', t === 'lite' && innerWidth > 768);
   };
   apply();
   mqs.forEach(m => m.addEventListener('change', apply));
-  addEventListener('resize', apply);
   if (navigator.connection && navigator.connection.addEventListener) navigator.connection.addEventListener('change', apply);
   return {
     lite: () => root.dataset.perf === 'lite',
-    tablet: () => root.dataset.perf === 'lite' && innerWidth > 768,
     glassOn: () => root.dataset.glass === 'on',
     degrade() { if (root.dataset.glass !== 'on') return false; autoSet('off'); apply(); return true; }
   };
