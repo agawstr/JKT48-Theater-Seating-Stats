@@ -281,6 +281,10 @@
   const viewOf = k => $('view-' + k);
   let run = null; // transisi yang sedang berjalan: {anims, done}
 
+  /* Mode hemat animasi item: tablet / layar sentuh / mode lite. Animasi item (cascade + animasi CSS per kartu) tiap satu jadi layer sendiri
+     dan menghabiskan sekitar 2/3 biaya render saat pindah tab. Geser tab + pil pegas tetap utuh; yang dikurangi hanya animasi kartu satu-satu. */
+  const cheap = () => perf.lite() || navigator.maxTouchPoints > 1;
+  document.documentElement.toggleAttribute('data-cheap', cheap());
   const lite = () => perf.lite(); // tingkat performa dari shared.js (HP, tablet sentuh, hemat data, perangkat lemah): layer lebih sedikit supaya tetap 60fps
   // sidebar vertikal hanya untuk laptop/mouse (>=1280px). iPad/tablet sentuh memakai dock bawah, jadi geraknya horizontal seperti di HP
   const sideNav = () => mqDesk.matches && !mqTouch.matches;
@@ -311,7 +315,7 @@
       const r = el.getBoundingClientRect();
       if (!r.height || r.bottom < 0 || r.top > innerHeight) continue;
       items.push({el, top: r.top, left: r.left});
-      if (items.length >= (lite() ? 28 : 40)) break;
+      if (items.length >= (cheap() ? 6 : lite() ? 28 : 40)) break;
     }
     const set = new Set(items.map(it => it.el)); // elemen di dalam elemen lain yang ikut dianimasikan tidak perlu dianimasikan lagi
     items = items.filter(it => { for (let p = it.el.parentElement; p && p !== view; p = p.parentElement) if (set.has(p)) return false; return true; });
