@@ -163,3 +163,12 @@ body.adm .view.ghost{display:flex!important;flex-direction:column;align-items:ce
 html[data-cheap] .head h1,html[data-cheap] .head .sub,html[data-cheap] .head .badge,
 html[data-cheap] .enter .tl-i.a,html[data-cheap] .enter .ev-g,html[data-cheap] .enter .ev-c,
 html[data-cheap] #gallery .gi.a,html[data-cheap] body.app #gallery .gi.a,html[data-cheap] .enter #gallery .gi{animation:none!important}
+
+/* animasi CSS (bukan JS) diperlambat sedikit supaya sejalan dengan pengali di shared.js */
+.overlay.open>.modal{animation-duration:.85s}
+#lightbox.open>img{animation-duration:.75s}
+html:not([data-cheap]) .head h1{animation-duration:.95s}
+html:not([data-cheap]) .head .sub{animation-duration:.95s}
+html:not([data-cheap]) .head .badge{animation-duration:.95s}
+body.app .enter .tl-i.a,body.app .enter .ev-g:nth-child(-n+8),body.app .enter .ev-c{animation-duration:.6s}
+body.app #gallery .gi.a{animation-duration:.6s}
