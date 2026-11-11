@@ -753,7 +753,7 @@ const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTod
     return 'linear(0,0.0515 3.6%,0.1763 7.1%,0.3369 10.7%,0.5052 14.3%,0.6625 17.9%,0.7974 21.4%,0.9048 25.0%,0.9839 28.6%,1.037 32.1%,1.068 35.7%,1.0817 39.3%,1.0827 42.9%,1.0754 46.4%,1.0634 50.0%,1.0495 53.6%,1.0357 57.1%,1.0233 60.7%,1.0129 64.3%,1.0049 67.9%,0.9993 71.4%,0.9956 75.0%,0.9937 78.6%,0.993 82.1%,0.9933 85.7%,0.9941 89.3%,0.9952 92.9%,0.9964 96.4%,1)';
   })();
   const CASCADE = { // blok yang ikut masuk bertahap di tiap tab (hanya yang terlihat di layar)
-    peta: '#stage-container .stage, #stage-container .catwalk, #chart',
+    peta: '#story, #last .last-c, #stats .stat, #cover, #filters, #zoomctl, #seating-wrapper, #legend', // sama dengan index; isi tab Peta dirender skrip, jadi bukan hanya peta kursinya
     tiket: '#tt > *',
     solo: '#tsev > *, #solo > *',
     biaya: '.ex-sub, #ex > *, #away > *, #misc > *',
