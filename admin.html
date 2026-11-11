@@ -839,6 +839,7 @@ const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTod
   const ico = document.querySelector('link[rel=icon]')?.href || '';
   tb.insertAdjacentHTML('afterbegin', `<div class="sb-brand" aria-hidden="true"><img src="${ico}" alt=""><b>Idoling<br>Admin</b></div>`);
   tb.insertAdjacentHTML('beforeend', '<div class="sb-keys" aria-hidden="true"><div><kbd>←</kbd><kbd>→</kbd>ganti tab</div><div><kbd>Esc</kbd>tutup</div></div>');
+  if (typeof moveInd === 'function') { moveInd(true); requestAnimationFrame(() => moveInd(true)); } // logo menggeser tab ke bawah: hitung ulang posisi pil
 
   /* keyboard: ← → ganti tab */
   const typing = t => !!t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
