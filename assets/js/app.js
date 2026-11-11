@@ -302,7 +302,7 @@
     main: '#story, #last .last-c, #stats .stat, #cover, #filters, #seating-wrapper, #legend',
     tl: '#tl-bar, .tl-yh, .tl-mh, .tl-i',
     gal: '.gk-bar, #gallery-bar, #gallery .gi',
-    ev: '#view-ev > h2, #lot .lot-cards .stat, #lot .sec2, #lot .lot-r, #ev-up, #ev-cats, #ev-bar, #ev-rank, #ev-list .ev-g, #ev-list .ev-c'
+    ev: '#view-ev > h2, #lot .lot-cards .stat, #lot .sec2, #lot .lot-r, #lot .ls-r, #lot .lot-notes, #ev-up, #ev-cats, #ev-bar, #ev-rank, #ev-list .ev-g, #ev-list .ev-c'
   };
   function cascade(view, base = 80) {
     const sel = CASCADE[view.id.replace('view-', '')];
@@ -337,8 +337,10 @@
     const dur = L ? 640 : 800, anims = [];
     let lastDelay = 0;
     rows.forEach((row, ri) => {
+      // selisih antar kolom diperkecil bila baris lebar, supaya kolom terakhir baris ini tetap muncul SEBELUM kolom pertama baris di bawahnya
+      const cs = row.items.length > 1 ? Math.min(colStep, rowStep * 0.8 / (row.items.length - 1)) : 0;
       row.items.sort((a, b) => a.left - b.left).forEach((it, ci) => {
-        const delay = start + ri * rowStep + ci * colStep, b = base0.get(it.el);
+        const delay = start + ri * rowStep + ci * cs, b = base0.get(it.el);
         lastDelay = Math.max(lastDelay, delay);
         anims.push(it.el.animate([{opacity: 0, transform: 'translate3d(0,22px,0) scale(.94)' + b}, {opacity: 1}],
           {duration: dur + 80, delay, easing: POP, fill: 'backwards'}));
