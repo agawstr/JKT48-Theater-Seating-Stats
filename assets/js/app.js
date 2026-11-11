@@ -315,7 +315,7 @@
       const r = el.getBoundingClientRect();
       if (!r.height || r.bottom < 0 || r.top > innerHeight) continue;
       items.push({el, top: r.top, left: r.left});
-      if (items.length >= (cheap() ? 6 : lite() ? 28 : 40)) break;
+      if (items.length >= (lite() ? 28 : 40)) break;
     }
     const set = new Set(items.map(it => it.el)); // elemen di dalam elemen lain yang ikut dianimasikan tidak perlu dianimasikan lagi
     items = items.filter(it => { for (let p = it.el.parentElement; p && p !== view; p = p.parentElement) if (set.has(p)) return false; return true; });
