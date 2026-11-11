@@ -343,19 +343,6 @@ body.adm .tt-m[open] .tt-ml{animation:fade .45s var(--ios)}
 body.adm .tt-m .nm::before{transition:transform .4s var(--ios)}
 body.adm #todo .todo-c{animation-duration:.5s;animation-timing-function:var(--ios)}
 body.adm #msg.pulse{animation-duration:.55s;animation-timing-function:var(--ios)}
-#splash{position:fixed;inset:0;z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;box-sizing:border-box;text-align:center;
-  background:radial-gradient(40% 35% at 15% 10%,rgba(255,42,95,.45),transparent 70%),radial-gradient(35% 35% at 90% 25%,rgba(255,140,0,.32),transparent 70%),radial-gradient(45% 40% at 70% 95%,rgba(136,19,55,.55),transparent 70%),#0d090d;
-  transition:opacity .55s var(--spring),transform .55s var(--spring),visibility 0s .55s;
-  animation:sp-failsafe .3s 10s forwards}
-#splash.done{opacity:0;transform:scale(1.02);visibility:hidden;pointer-events:none}
-#splash b{font-size:clamp(26px,6vw,38px);font-weight:700;letter-spacing:-.03em;line-height:1.15;text-wrap:balance;animation:sp-up .8s var(--spring) both}
-#splash span{font-size:12px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55);animation:sp-up .8s var(--spring) .12s both}
-#splash i{position:relative;display:block;width:96px;height:3px;margin-top:10px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden;animation:sp-up .8s var(--spring) .22s both}
-#splash i::after{content:"";position:absolute;top:0;left:0;height:100%;width:40%;border-radius:3px;background:linear-gradient(90deg,transparent,#ff375f,#ff9f0a);animation:sp-sweep 1.3s cubic-bezier(.4,0,.2,1) infinite}
-@keyframes sp-up{from{opacity:0;transform:translateY(10px)}}
-@keyframes sp-sweep{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
-@keyframes sp-failsafe{to{opacity:0;visibility:hidden}} /* cadangan kalau JS gagal: hilang sendiri setelah 10 detik */
-@media(prefers-reduced-motion:reduce){#splash b,#splash span,#splash i{animation:none}#splash i::after{animation:none;left:30%}}
 
 /* kartu / blok Tiket & Pengeluaran kini masuk lewat liquid.swap() (liquid.js): CSS per-kartu dan fade pembungkus dimatikan supaya tidak dobel */
 body.adm .tt-c{animation:none}
@@ -363,9 +350,11 @@ body.adm #ex:not([hidden]),body.adm #away:not([hidden]),body.adm #misc:not([hidd
 @media(prefers-reduced-motion:reduce){body.adm .tt-c,body.adm .tt-bar,body.adm #ex,body.adm #away,body.adm #misc,body.adm .tt-m[open] .tt-ml,body.adm #todo .todo-c,body.adm #msg.pulse{animation:none!important}body.adm .tt-m::details-content{transition:none}}
 </style>
 <link rel="stylesheet" href="assets/css/liquid.css">
+<link rel="stylesheet" href="assets/css/splash.css">
 </head>
 <body class="adm">
-<div id="splash" role="status" aria-live="polite"><b>agaxx's Idoling Diary</b><span>Admin · Memuat data</span><i aria-hidden="true"></i></div>
+<div id="splash" role="status" aria-live="polite" data-stages="ready" data-min="1800"><canvas id="splash-cv" width="80" height="45" aria-hidden="true"></canvas><b>agaxx's Idoling Diary</b><span id="splash-t">Admin · Memuat data</span></div>
+<script src="assets/js/splash.js"></script>
 <div class="wrap">
   <div class="head">
     <h1>agaxx's Idoling Diary</h1>
@@ -1858,7 +1847,7 @@ $('solo').addEventListener('click', async e => {
 // ---------- Init ----------
 renderAll(); renderBackup();
 requestAnimationFrame(centerChart);
-(() => { const sp = document.getElementById('splash'); if (sp) setTimeout(() => { sp.classList.add('done'); setTimeout(() => sp.remove(), 700); }, Math.max(0, 700 - performance.now())); })(); // layar muat: tampil minimal sebentar supaya tidak berkedip
+window.Splash && Splash.mark('ready'); // layar muat (assets/js/splash.js) menutup sendiri setelah tampil minimal sebentar
 </script>
 </body>
 </html>
