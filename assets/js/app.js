@@ -370,7 +370,7 @@
     const baseEnter = playEnter;
     playEnter = function (el) {
       baseEnter(el);
-      const anims = el && /^view-/.test(el.id) ? cascade(el) : [];
+      const anims = el && /^view-/.test(el.id) && !perf.tablet() ? cascade(el) : []; // tablet: tanpa cascade, cukup fade
       if (run) run.anims.push(...anims);
       return anims;
     };
@@ -497,6 +497,13 @@
     }
 
     void next.offsetHeight; // paksa tata letak selesai sekarang, bukan di tengah animasi
+    if (perf.tablet()) { // iPad / tablet sentuh: fade pendek saja (tanpa geser layer besar + tanpa animasi item) supaya ringan seperti admin
+      anims.push(next.animate([{opacity: 0}, {opacity: 1}], {duration: 200, easing: 'ease-out', fill: 'backwards'}));
+      if (hold) Promise.allSettled([anims[0].finished]).then(() => { if (run === r) requestAnimationFrame(releaseImgs); });
+      playEnter(next);
+      Promise.allSettled(anims.map(a => a.finished)).then(() => { if (run === r) { run = null; r.done(); } });
+      return;
+    }
     const off = dir * travel();
     anims.push(next.animate([{opacity: 0, transform: shift(off)}, {opacity: 1, offset: 0.35}, {opacity: 1, transform: 'none'}],
       {duration: IN_MS(), delay: lite() ? 30 : 60, easing: EASE, fill: 'backwards'}));
