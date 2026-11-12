@@ -2,6 +2,9 @@
    Butuh elemen: #chart, #total, #seating-wrapper, #stage-container,
    #seat-modal (+ #seat-close, #modal-seat, #modal-hist), #lightbox (+ #lb-img) */
 const $ = id => document.getElementById(id);
+// Harga/biaya HANYA tampil di admin (body.adm). Di halaman publik harga dianggap 0, jadi kartu Total biaya, chip harga, tooltip bulan,
+// kartu Wrapped, dan riwayat kursi otomatis tidak menampilkan harga sama sekali.
+const PRICES_VISIBLE = document.body.classList.contains('adm');
 const lastFocus = {}, timers = {};
 
 // ---------- Tingkat performa: SATU penentu untuk CSS (html[data-perf], html[data-glass]) dan JS (perf.*) ----------
@@ -157,7 +160,7 @@ function sanitize(r, i) {
     setlist: String(r.setlist || ''), date: String(r.date || ''),
     sesi: ['Siang', 'Malam'].includes(r.sesi) ? r.sesi : '',
     note: String(r.note || ''),
-    harga: Math.max(0, Number(r.harga) || 0), // biaya tiket (Rp)
+    harga: PRICES_VISIBLE ? Math.max(0, Number(r.harga) || 0) : 0, // biaya tiket (Rp); disembunyikan di halaman publik
     tiket: String(r.tiket || '').slice(0, 40),
     // lineup: semua member yang tampil di show ini (diisi dari admin), tanpa duplikat
     lineup: Array.isArray(r.lineup) ? [...new Set(r.lineup.map(x => String(x || '').trim().slice(0, 60)).filter(Boolean))].slice(0, 80) : []
@@ -588,7 +591,8 @@ const viewEx = skip => { // saat putar ulang: hanya N show pertama menurut tangg
 };
 const view = () => viewEx([]);
 // jumlah sesi lepas yang lolos filter aktif (filter setlist/baris tidak berlaku untuk sesi lepas, jadi ikut disembunyikan)
-const soloIn = kind => solo.filter(s => s.kind === kind && !filter.setlist && !filter.row && (!filter.member || s.member === filter.member) && (!filter.from || s.date >= filter.from) && (!filter.to || s.date <= filter.to)).length; // record yang lolos semua filter (dipakai peta)
+const soloView = kind => solo.filter(s => (!kind || s.kind === kind) && !filter.setlist && !filter.row && (!filter.member || s.member === filter.member) && (!filter.from || s.date >= filter.from) && (!filter.to || s.date <= filter.to));
+const soloIn = kind => soloView(kind).length; // record yang lolos semua filter (dipakai peta)
 
 // warna heatmap: makin sering makin terang.
 // Ambang menyesuaikan data (setHeatScale): kalau kunjungan terbanyak <= 5, tiap jumlah dapat warna sendiri
@@ -679,7 +683,7 @@ function renderStats() {
     card('Baris favorit', ...st(by(r => r.seat[0], (a, b) => a.localeCompare(b)))),
     card('2-Shot', view().filter(r => r.twoshot === 'Ya').length + soloIn('ts'), soloIn('ts') ? 'termasuk ' + soloIn('ts') + ' di luar show' : ''),
     card('Chekicha', view().filter(r => r.chekicha === 'Ya').length + soloIn('ck'), soloIn('ck') ? 'termasuk ' + soloIn('ck') + ' di luar show' : ''),
-    (t => card('Member terbanyak', ...st(t), t ? ` data-member="${esc(t[0])}" role="button" tabindex="0" title="Ketuk untuk statistik ${esc(t[0])}"` : ''))(by(r => extras(r).map(x => x.member))),
+    (t => card('Member terbanyak', ...st(t), t ? ` data-member="${esc(t[0])}" role="button" tabindex="0" title="Ketuk untuk statistik ${esc(t[0])}"` : ''))(tally([...view().flatMap(r => extras(r).map(x => x.member)), ...soloView().map(w => w.member)], m => m)), // pertemuan di show + sesi lepas, sama dengan kartu 2-Shot/Chekicha
     ...(tot ? [card('Total biaya', rupiah(tot), '', '', tot, 'rp'), card('Rata-rata / show', rupiah(tot / paid.length), `dari ${paid.length} show berbayar`, '', Math.round(tot / paid.length), 'rp')] : [])
   ].join('');
 }
