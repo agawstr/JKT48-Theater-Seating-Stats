@@ -7,7 +7,7 @@
    - Google Fonts: pakai cache dulu, diperbarui di belakang
    - admin.html & request non-GET: tidak disentuh
    Naikkan VERSION kalau daftar SHELL berubah. */
-const VERSION = 'v10';
+const VERSION = 'v11';
 const SHELL_CACHE = 'shell-' + VERSION;
 const PHOTO_CACHE = 'photos-' + VERSION;
 const FONT_CACHE = 'fonts-' + VERSION;
@@ -19,8 +19,8 @@ let warmed = false;
 
 const SHELL = [
   './', 'index.html',
-  'assets/css/shared.css', 'assets/css/app.css', 'assets/css/liquid.css', 'assets/js/shared.js', 'assets/js/app.js', 'assets/js/liquid.js',
-  'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png',
+  'assets/css/shared.css', 'assets/css/app.css', 'assets/css/liquid.css', 'assets/css/splash.css', 'assets/js/shared.js', 'assets/js/app.js', 'assets/js/liquid.js', 'assets/js/splash.js',
+  'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png',
   'icons/apple-touch-icon.png'
 ];
 
