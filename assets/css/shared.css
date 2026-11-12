@@ -1123,6 +1123,9 @@ html[data-perf=lite] .gi .gi-ph:not(.ok):not(.bad)::before,
 #mem-bar{display:flex;gap:8px;margin-bottom:8px}
 #mem-q{flex:1;min-width:0;background:#181115;color:#e4e4e7;border:1px solid #3d222e;border-radius:9999px;padding:9px 14px;font-size:13px;outline:none}
 #mem-q:focus{border-color:#ff2a5f}
+#mem-sort{box-sizing:border-box;flex-shrink:0;overflow:hidden;white-space:nowrap;text-align:center}
+#mem-sort .ms-l{display:inline-block}
+#mem-list{position:relative}
 .mem-key{font-size:12px;color:#a1a1aa;margin:0 0 10px}
 .mem-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#ff2a5f;vertical-align:middle}
 .mem-chip.met{border-color:rgba(255,42,95,.55)}
