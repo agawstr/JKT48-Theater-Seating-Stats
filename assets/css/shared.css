@@ -1228,3 +1228,27 @@ html[data-glass=on] .mem-mode{-webkit-backdrop-filter:blur(14px) saturate(160%);
 .mem-chip.met::before{display:none}
 .mem-chip{min-height:52px;align-items:center}
 .mem-chip.met{background:linear-gradient(135deg,rgba(255,42,95,.14),rgba(255,42,95,.04)),#181115}
+
+
+/* ---- chip lompat + bar member menempel + avatar chip member ---- */
+:root{--jh:48px}
+.jump{position:sticky;top:var(--stick);z-index:6;display:flex;gap:8px;margin:0 0 -2px;padding:6px 0 14px;overflow-x:auto;scrollbar-width:none;background:linear-gradient(rgba(13,9,13,.94) 68%,rgba(13,9,13,0))}
+.jump::-webkit-scrollbar{display:none}
+.jump .btn-s{flex:1 0 auto;padding:7px 14px;white-space:nowrap}
+.jump .btn-s.on{border-color:#ff2a5f;color:#ff2a5f;background:rgba(255,42,95,.12)}
+#split .jump{display:none}
+#mem-bar{position:sticky;top:calc(var(--stick) + var(--jh));z-index:5;background:linear-gradient(rgba(13,9,13,.94) 72%,rgba(13,9,13,0));padding:8px 0 16px;margin:0 0 -8px}
+#split #mem-bar{top:0} /* laptop: kolom kanan yang menggulung sendiri (--stick di sini = tinggi sidebar, jangan dipakai) */
+.mem-n{font-size:12px;color:#a1a1aa;margin:0 0 4px;min-height:1em}
+.mem-avs{width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#2a1a1f;border:1px solid #3d222e;box-sizing:border-box}
+.mem-avs.ph{display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#a1a1aa}
+.mem-chip.av{gap:10px;padding-left:8px;padding-top:6px;padding-bottom:6px}
+.mem-chip.av.met::before{display:none}
+.mem-chip.met .mem-avs{border:2px solid #ff2a5f}
+@media(max-width:480px){
+  .mem-avs{width:26px;height:26px}
+  .mem-chip.av{gap:7px;padding-right:9px}
+  .mem-chip.av .mem-cn{font-size:12px;overflow-wrap:anywhere}
+  .mem-chip.av b{padding:2px 6px}
+  .mem-chip.av .mem-nums{gap:3px}
+}
