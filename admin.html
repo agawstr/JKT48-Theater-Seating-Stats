@@ -1433,11 +1433,17 @@ $('file-import').addEventListener('change', async e => {
     if (!Array.isArray(json) && (Array.isArray(json.away) || Array.isArray(json.misc))) { moveOffair(); renderAway(); renderMisc(); renderExpense(); }
     if (!Array.isArray(json) && Array.isArray(json.solo)) { const ids = new Set(solo.map(w => w.id)); json.solo.map(sanitizeSolo).filter(w => w.date && !ids.has(w.id)).forEach(w => solo.push(w)); saveSolo(); renderSolo(); renderExpense(); }
     const ids = new Set(records.map(r => r.id));
+    const incoming = arr.map(sanitize);
     // id kembar di dalam file yang sama juga dilewati (ids.add mengembalikan Set = truthy)
-    const fresh = arr.map(sanitize).filter(r => !ids.has(r.id) && ids.add(r.id));
-    if (!await ask(`Gabungkan ${fresh.length} data baru dari file ini? (data yang id-nya sama dilewati)`, 'Gabungkan')) return;
+    const fresh = incoming.filter(r => !ids.has(r.id) && ids.add(r.id));
+    // show yang sudah ada tapi lineup-nya masih kosong: isi dari backup (lineup yang sudah terisi tidak pernah ditimpa)
+    const byId = new Map(records.map(r => [r.id, r]));
+    const fill = incoming.filter(b => { const c = byId.get(b.id); return c && !c.lineup.length && b.lineup.length; });
+    if (!await ask(`Gabungkan ${fresh.length} data baru dari file ini?` + (fill.length ? ` Lineup ${fill.length} show yang masih kosong juga akan diisi dari backup.` : '') + ' (data lain yang id-nya sama dilewati)', 'Gabungkan')) return;
+    fill.forEach(b => { byId.get(b.id).lineup = [...b.lineup]; });
     records.push(...fresh);
     save();
+    if (fill.length) toast(`Lineup diisi untuk ${fill.length} show dari backup.`);
     renderAll();
   } catch (err) {
     alert('File tidak valid: ' + err.message);
