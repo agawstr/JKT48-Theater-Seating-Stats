@@ -1208,6 +1208,6 @@ button.mem-more:active{transform:scale(.94)}
 /* ...dan animasinya: panel yang menempel punya animasi dimatikan (!important), jadi dibuka/ditutup tiba-tiba. Hidupkan lagi hanya untuk mode melayang ini */
 #seat-modal.docked.over.open:not(.closing){animation:ov-in .5s var(--ios)!important}
 #seat-modal.docked.over.open:not(.closing) .modal{animation:modal-in .7s var(--ios)!important}
-#seat-modal.docked.over.open.closing{animation:ov-out .3s var(--ios) forwards!important}
-#seat-modal.docked.over.open.closing .modal{animation:modal-out .3s var(--ios) forwards!important;transform-origin:50% 50%}
+#seat-modal.docked.over.open.closing{animation:ov-out .46s cubic-bezier(.4,0,.2,1) forwards!important}
+#seat-modal.docked.over.open.closing .modal{animation:modal-out .46s cubic-bezier(.4,0,.2,1) forwards!important;transform-origin:50% 50%}
 @media(prefers-reduced-motion:reduce){#seat-modal.docked.over.open,#seat-modal.docked.over.open .modal{animation:none!important}}
