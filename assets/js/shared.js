@@ -2008,8 +2008,27 @@ escHooks.push(() => { if ($('mem-modal').classList.contains('open') && !$('mem-m
     const b = e.target.closest('[data-j]'), el = b && J[b.dataset.j][1]();
     if (!el || el.hidden) return;
     const y = el.getBoundingClientRect().top + scrollY - off();
-    scrollTo({top: Math.max(0, y), behavior: calm() ? 'auto' : 'smooth'});
+    glideTo(Math.max(0, y));
   });
+  // gulir beranimasi buatan sendiri (rAF): tidak bergantung pada scroll-behavior bawaan browser,
+  // yang mati kalau HP memakai "kurangi animasi". Ini aksi yang sengaja diketuk, jadi tetap dianimasikan.
+  let glide = 0;
+  const glideTo = y => {
+    cancelAnimationFrame(glide);
+    const y0 = scrollY, d = y - y0;
+    if (Math.abs(d) < 2) return;
+    const dur = Math.min(750, 320 + Math.abs(d) * 0.16), t0 = performance.now();
+    const ease = t => 1 - Math.pow(1 - t, 3);
+    const stop = () => cancelAnimationFrame(glide);
+    addEventListener('wheel', stop, {once: true, passive: true}); addEventListener('touchstart', stop, {once: true, passive: true});
+    const step = now => {
+      const t = Math.min(1, (now - t0) / dur);
+      document.documentElement.style.scrollBehavior = 'auto';
+      scrollTo(0, y0 + d * ease(t));
+      if (t < 1) glide = requestAnimationFrame(step); else document.documentElement.style.scrollBehavior = '';
+    };
+    glide = requestAnimationFrame(step);
+  };
   let raf = 0;
   const mb = $('mem-bar');
   const scroller = el => { for (let e = el.parentElement; e && e !== document.body; e = e.parentElement) { const o = getComputedStyle(e).overflowY; if (o === 'auto' || o === 'scroll') return e; } return null; };
