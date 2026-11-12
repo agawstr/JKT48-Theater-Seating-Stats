@@ -2262,3 +2262,17 @@ escHooks.push(() => { if ($('mem-modal').classList.contains('open') && !$('mem-m
   if (window.ResizeObserver) new ResizeObserver(() => { if (!raf) raf = requestAnimationFrame(mark); }).observe(view); // layout berpindah (satu kolom <-> dua kolom)
   mark(); setTimeout(mark, 800); setTimeout(mark, 3000);
 })();
+
+// HP: chip lompat + bar cari member menyingkir saat menggulung ke bawah, muncul lagi saat ke atas (CSS: html.bars-hide)
+(() => {
+  const root = document.documentElement, mq = matchMedia('(max-width:768px)');
+  let y = scrollY, acc = 0, hid = false;
+  const set = v => { if (v !== hid) { hid = v; root.classList.toggle('bars-hide', v); } };
+  addEventListener('scroll', () => {
+    const n = scrollY, d = n - y; y = n;
+    if (!mq.matches || n < 160) { acc = 0; return set(false); }
+    acc = (d > 0) === (acc > 0) ? acc + d : d; // arah berubah: hitung ulang
+    if (acc > 24) set(true); else if (acc < -12) set(false);
+  }, {passive: true});
+  mq.addEventListener('change', () => set(false));
+})();
