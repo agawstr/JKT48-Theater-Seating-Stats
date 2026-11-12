@@ -669,15 +669,15 @@ body::before{inset:0;contain:strict}
   margin:14px 0 10px;padding:5px 12px 5px 14px;border-radius:99px;font-size:13px;font-weight:800;color:#ffb3c4;
   background:#2a1019;border:1px solid rgba(255,110,150,.3);box-shadow:0 4px 12px rgba(0,0,0,.35)}
 .tl-mh small{font-size:11px;font-weight:700;color:#a1a1aa}
-.tl-mh::before{left:-26px;width:12px;height:12px;border:3px solid #ff2a5f;background:#0d090d}
+.tl-mh::before{left:-28px;width:8px;height:8px;border:3px solid #ff2a5f;background:#0d090d} /* total 14px, pusatnya tepat di garis (x=10) */
 .tl-i{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;border-radius:16px;padding:12px 12px 12px 10px;margin-bottom:8px;
   border:1px solid rgba(255,110,150,.16);border-left:1px solid rgba(255,110,150,.16);cursor:pointer;
   background:linear-gradient(135deg,rgba(60,14,30,.78),rgba(34,12,22,.84));box-shadow:0 3px 10px rgba(20,0,8,.35);
   transition:background .2s,border-color .2s,transform .15s var(--ease)}
 .tl-i:active{transform:scale(.985);background:linear-gradient(135deg,rgba(90,20,44,.85),rgba(40,14,26,.9))}
 @media(hover:hover){.tl-i:hover{border-color:rgba(255,110,150,.4);background:linear-gradient(135deg,rgba(80,18,40,.85),rgba(40,14,26,.9))}}
-.tl-i::before{left:-27px;top:50%;margin-top:-6px;width:10px;height:10px;box-shadow:0 0 0 4px #0d090d}
-.tl-i.ms::before{left:-30px;top:50%;margin-top:-9px;width:16px;height:16px}
+.tl-i::before{left:-26px;top:50%;margin-top:-5px;width:10px;height:10px;box-shadow:0 0 0 4px #0d090d}
+.tl-i.ms::before{left:-29px;top:50%;margin-top:-8px;width:16px;height:16px}
 .tl-i.ms{border-color:rgba(255,210,63,.4);background:linear-gradient(135deg,rgba(255,210,63,.16),rgba(40,14,26,.85) 65%)}
 .tl-d{display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1}
 .tl-d b{font-size:24px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums}
@@ -698,7 +698,7 @@ body::before{inset:0;contain:strict}
   #timeline{padding-left:26px}#tl-bar{padding-left:26px}
   #timeline::before{left:7px}
   .tl-i{grid-template-columns:38px 1fr auto;gap:10px;padding:11px 10px 11px 8px}
-  .tl-i::before{left:-24px}.tl-i.ms::before{left:-27px}.tl-mh::before{left:-23px}
+  .tl-i::before{left:-24px}.tl-i.ms::before{left:-27px}.tl-mh::before{left:-26px}
   .tl-d b{font-size:21px}.tl-t{font-size:14px}
   .tl-mh{top:var(--stick)}
 }
@@ -1077,3 +1077,11 @@ html[data-perf=lite] .gi .gi-ph:not(.ok):not(.bad)::before,
 .ev-g::details-content{transition:block-size .5s var(--ios),content-visibility .5s allow-discrete}
 .ev-g[open] .ev-d{animation:fade .45s var(--ios)}
 @media(prefers-reduced-motion:reduce){.cov-bar i,.sl-bar i,.mc-b i,.ev-g::details-content{transition:none}.ev-g[open] .ev-d{animation:none}}
+
+/* ---- teks kecil di HP: naik 1-1,5px supaya nyaman dibaca (hanya layar sempit) ---- */
+@media(max-width:600px){
+  .tl-d span{font-size:11px}
+  .tc,.chip,.mchip,.ss,.ev-c small,.last-l,#filters .fl,.tl-mh small,.lot-cards .ss{font-size:12px}
+  .gi .gi-tag{font-size:11.5px}
+  .gi .gi-m,.gi .gi-d,.gi .gi-x{font-size:11.5px}
+}
