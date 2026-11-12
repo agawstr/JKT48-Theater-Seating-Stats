@@ -2,7 +2,7 @@
 
 Catatan pribadi ngidol JKT48: peta kursi teater yang pernah ditempati, statistik, riwayat show, galeri foto 2-Shot/Chekicha, serta tiket, lotre, dan event.
 
-Tanpa backend dan tanpa proses build: cukup file statis yang bisa di-hosting di GitHub Pages. Satu-satunya sumber luar adalah Google Fonts (Inter dan Caveat); kalau gagal dimuat, tampilan otomatis memakai font sistem.
+Tanpa backend dan tanpa proses build: cukup file statis yang bisa di-hosting di GitHub Pages atau Vercel. Satu-satunya sumber luar adalah Google Fonts (Inter dan Caveat); kalau gagal dimuat, tampilan otomatis memakai font sistem.
 
 ## Fitur
 
@@ -58,9 +58,15 @@ Responsif untuk HP dan desktop, dan kontras warna sudah dicek.
 | `photos/` | Foto 2-Shot/Chekicha sebagai file terpisah (ikut di dalam paket ZIP). Versi kecil untuk galeri ada di `photos/t/` (dibuat dengan `scripts/make_thumbs.py`); kalau belum ada, galeri memakai foto penuh. |
 | `assets/js/shared.js` | Kode bersama: layout kursi, validasi data, peta, statistik, modal, popover, kartu PNG. |
 | `assets/css/shared.css` | Gaya bersama untuk kedua halaman. Bagian paling bawah (`v4`) berisi perbaikan performa, dropdown, riwayat, dan polaroid. |
-
 | `assets/js/app.js`, `assets/css/app.css` | Perilaku dan gaya "seperti app" khusus `index.html` (tab bawah, tarik-untuk-muat-ulang, dll). |
 | `sw.js`, `manifest.webmanifest` | PWA: cache offline dan pengaturan install. Harus tetap di root. |
+| `assets/js/liquid.js`, `assets/css/liquid.css` | Efek kaca (kilau mengikuti kursor, pil tab yang bisa digeser) yang dipakai bersama `index.html` dan `admin.html`. |
+| `assets/js/splash.js`, `assets/css/splash.css` | Layar muat 2-bit (canvas): hati piksel, deretan kursi heatmap, dan bar progres yang mengikuti tahap pemuatan sungguhan. Palet: `#0d090d`, `#881337`, `#ff2a5f`, `#ffd23f`. |
+| `icons/` | Ikon app dengan tema yang sama (hati piksel di atas deretan kursi): `icon-192.png` dan `icon-512.png` (favicon + PWA), `icon-maskable-512.png` (Android), `apple-touch-icon.png` (180px, iPhone). Nama file dipakai di `manifest.webmanifest`, `sw.js`, dan `<head>` kedua halaman. |
+| `scripts/` | `validate_data.py` (cek `data.json`), `make_thumbs.py` (thumbnail galeri), `check_js.py` dan `smoke_test.py` (uji cepat halaman di browser headless). |
+| `.github/workflows/` | `site-check.yml` memvalidasi data dan membuat thumbnail otomatis tiap `data.json`/foto di-upload; `smoke-test.yml` menjalankan uji cepat tiap kode berubah. |
+
+> Setelah mengubah ikon atau daftar file di `sw.js`, naikkan `VERSION` di `sw.js` supaya cache lama terganti. Ikon PWA yang sudah terpasang di perangkat baru berganti setelah dihapus lalu dipasang ulang.
 
 > `index.html`, `admin.html`, `sw.js`, `manifest.webmanifest`, dan `data.json` harus di root. CSS dan JS ada di `assets/`; jangan dipindah tanpa memperbarui path di kedua halaman HTML dan `sw.js`.
 
@@ -69,7 +75,7 @@ Responsif untuk HP dan desktop, dan kontras warna sudah dicek.
 1. Buka `admin.html`, lalu isi riwayat show baru di tab **Tambah & Kelola Data**.
 2. Klik **Unduh paket (ZIP)**, lalu ekstrak. Isinya `data.json` dan folder `photos/`.
 3. Di GitHub, upload `data.json` dan folder `photos/` ke root repo (**Add file → Upload files**, drag keduanya, lalu commit). File bernama sama otomatis menimpa.
-4. Tunggu sekitar 1 menit sampai GitHub Pages selesai deploy, lalu muat ulang dengan Ctrl+Shift+R.
+4. Tunggu sekitar 1 menit sampai GitHub Pages (atau Vercel) selesai deploy, lalu muat ulang dengan Ctrl+Shift+R.
 
 Data di admin tersimpan di browser yang dipakai untuk input. Kalau pindah perangkat atau browser, data kosong. Gunakan ** Backup lengkap (JSON)** (foto ikut di dalamnya) untuk menyimpan cadangan, lalu ** Restore (JSON)** untuk memuatnya kembali.
 
