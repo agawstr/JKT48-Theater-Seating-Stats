@@ -2265,36 +2265,47 @@ escHooks.push(() => { if ($('mem-modal').classList.contains('open') && !$('mem-m
 
 // HP: panel kaca tunggal di belakang chip lompat + bar cari (tinggi mengikuti baris yang sedang menempel)
 (() => {
-  const root = document.documentElement, mq = matchMedia('(max-width:768px)');
+  const root = document.documentElement, mq = matchMedia('(max-width:768px)'), touchTab = matchMedia('(min-width:769px) and (hover:none) and (pointer:coarse)');
   const bg = document.body.appendChild(Object.assign(document.createElement('div'), {id: 'bars-bg', ariaHidden: 'true'}));
-  let raf = 0, on = false;
+  let raf = 0, on = false, isWide = false;
   const stickPx = () => parseFloat(getComputedStyle(root).getPropertyValue('--stick')) || 50;
   const sync = () => {
     raf = 0;
     const j = document.querySelector('.jump'), m = $('mem-bar');
     let show = false;
+    let wide = false;
     if (j && j.offsetHeight) {
-      const st = stickPx(), jh = j.offsetHeight;
+      const st = stickPx(), jh = j.offsetHeight, vw = root.clientWidth;
       root.style.setProperty('--jh', jh + 'px');
       if (j.getBoundingClientRect().top <= st + .5) {
         show = true;
-        let h = jh;
         const hasM = m && !m.hidden, mr = hasM ? m.getBoundingClientRect() : null;
-        if (hasM && mr.top <= st + jh + .5) h = Math.max(jh, mr.bottom - st);
-        bg.style.setProperty('--bh', Math.round(h) + 'px');
-        if (mq.matches) { bg.style.removeProperty('--bl'); bg.style.removeProperty('--bw'); }
-        else { // kartu melayang selebar kolom konten (+10px kiri-kanan)
-          const r = (hasM ? mr : j.getBoundingClientRect());
-          bg.style.setProperty('--bl', Math.round(r.left - 10) + 'px');
-          bg.style.setProperty('--bw', Math.round(r.width + 20) + 'px');
+        wide = !!(hasM && mr.top <= st + jh + .5); // bar cari ikut menempel -> panel melebar & menyatu
+        let L, W, T = st, H = jh, R = '26px';
+        if (!wide) { // hanya chip: panel ramping, pinggirannya dekat Ringkasan & Member
+          const bs = j.querySelectorAll('.btn-s');
+          if (bs.length) {
+            const a = bs[0].getBoundingClientRect(), z = bs[bs.length - 1].getBoundingClientRect(), pad = 12;
+            L = Math.max(8, a.left - pad); W = Math.min(vw - 8, z.right + pad) - L;
+          } else { const r = j.getBoundingClientRect(); L = r.left; W = r.width; }
+          H = jh + 2;
+        } else {
+          H = Math.max(jh, mr.bottom - st);
+          if (mq.matches) { L = 0; W = vw; R = '0 0 26px 26px'; }
+          else if (touchTab.matches) { L = 0; W = vw; T = 0; H += st; R = '0 0 28px 28px'; }
+          else { L = mr.left - 10; W = mr.width + 20; R = '22px'; }
         }
+        const set = (k, v) => bg.style.setProperty(k, v);
+        set('--bl', Math.round(L) + 'px'); set('--bw', Math.round(W) + 'px'); set('--bt', Math.round(T) + 'px');
+        set('--bh', Math.round(H) + 'px'); set('--br', R);
       }
     }
+    if (wide !== isWide) { isWide = wide; root.classList.toggle('bars-wide', wide); }
     if (show !== on) { on = show; root.classList.toggle('bars-on', show); }
   };
   const kick = () => { if (!raf) raf = requestAnimationFrame(sync); };
   addEventListener('scroll', kick, {passive: true});
   addEventListener('resize', kick);
-  mq.addEventListener('change', kick);
+  mq.addEventListener('change', kick); touchTab.addEventListener('change', kick);
   sync(); setTimeout(sync, 600);
 })();
