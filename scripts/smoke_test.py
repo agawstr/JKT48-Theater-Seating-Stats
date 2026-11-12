@@ -27,7 +27,7 @@ with sync_playwright() as p:
         ctx = b.new_context(viewport=vp, has_touch=touch, is_mobile=touch, service_workers="block")
         pg = ctx.new_page()
         errs = []
-        pg.on("pageerror", lambda e: errs.append(str(e)))
+        pg.on("pageerror", lambda e: errs.append(str(e) + " @ " + " | ".join((getattr(e, "stack", "") or "").split("\n")[:3])))
         pg.on("console", lambda m: errs.append(m.text) if m.type == "error" and "fonts.g" not in m.text and "ERR_NAME_NOT_RESOLVED" not in m.text and "ERR_INTERNET" not in m.text else None)
         pg.goto(URL); pg.wait_for_timeout(2500)
         check(not errs, f"[{name}] tanpa error JS {errs[:2] if errs else ''}")
