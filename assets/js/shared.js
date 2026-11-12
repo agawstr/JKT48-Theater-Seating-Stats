@@ -490,7 +490,7 @@ const wrapEl = $('seating-wrapper');
 wrapEl.insertAdjacentHTML('beforebegin', `<div id="last"></div><div id="stats"></div><div id="cover"></div>
   <div id="filters">
     <select id="flt-setlist" aria-label="Filter setlist"></select>
-    <select id="flt-member" aria-label="Filter member"></select>
+    <input type="search" id="flt-member" list="dl-flt-member" placeholder="Semua member" aria-label="Filter member (ketik untuk mencari)" autocomplete="off"><datalist id="dl-flt-member"></datalist>
     <label class="fld" id="fld-from"><span class="fl">Mulai tanggal</span><span class="fv" aria-hidden="true">Pilih tanggal</span><input type="date" id="flt-from"></label>
     <label class="fld" id="fld-to"><span class="fl">Sampai tanggal</span><span class="fv" aria-hidden="true">Pilih tanggal</span><input type="date" id="flt-to"></label>
     <button type="button" class="btn-s" id="flt-reset">Reset</button><span id="flt-info"></span>
@@ -509,18 +509,30 @@ const heatLegend = () => HEAT.map((h, i) =>
 $('legend').innerHTML = 'Jumlah kunjungan: <span id="lg-scale">' + heatLegend() + '</span>' +
   '<button type="button" class="btn-s" id="png-btn">Simpan peta (PNG)</button><button type="button" class="btn-s" id="rp-btn">Putar ulang</button><button type="button" class="btn-s" id="wrap-btn">Wrapped</button>';
 
+// semua member yang bisa difilter: tampil di lineup ATAU bertemu 2-Shot/Chekicha
+const filterMembers = () => [...new Set(records.flatMap(r => [...extras(r).map(x => x.member), ...(r.lineup || [])]).filter(Boolean))].sort((a, b) => a.localeCompare(b));
 function renderFilters() {
   const opts = (id, vals, ph) => {
     const cur = filter[id.slice(4)];
     $(id).innerHTML = `<option value="">${ph}</option>` + (cur && !vals.includes(cur) ? [...vals, cur] : vals).map(v => `<option${v === cur ? ' selected' : ''}>${esc(v)}</option>`).join('');
   };
   opts('flt-setlist', [...new Set(records.map(r => r.setlist).filter(Boolean))].sort(), 'Semua setlist');
-  opts('flt-member', [...new Set(records.flatMap(r => [...extras(r).map(x => x.member), ...(r.lineup || [])]).filter(Boolean))].sort(), 'Semua member');
+  $('dl-flt-member').innerHTML = filterMembers().map(n => `<option value="${esc(n)}">`).join('');
+  if (document.activeElement !== $('flt-member')) $('flt-member').value = filter.member; // jangan menimpa ketikan yang sedang berjalan
   $('flt-info').textContent = isFiltered() ? `${filter.row ? 'Baris ' + filter.row + ' · ' : ''}${view().length} dari ${records.length} show cocok` : '';
 }
 $('filters').addEventListener('change', e => {
   const k = {'flt-setlist': 'setlist', 'flt-member': 'member', 'flt-from': 'from', 'flt-to': 'to'}[e.target.id];
-  if (k) { filter[k] = e.target.value; syncDates(); renderChart(); }
+  if (!k) return;
+  if (k === 'member') { // nama persis, atau potongan nama yang hanya cocok dengan satu member ("Cit" -> Citra); selain itu dipakai apa adanya (hasilnya 0)
+    const raw = e.target.value.trim(), v = raw.toLowerCase(), fm = filterMembers(), part = fm.filter(n => n.toLowerCase().includes(v));
+    filter.member = !v ? '' : fm.find(n => n.toLowerCase() === v) || (part.length === 1 ? part[0] : raw);
+    e.target.value = filter.member;
+  } else filter[k] = e.target.value;
+  syncDates(); renderChart();
+});
+$('filters').addEventListener('input', e => { // tombol × pada kolom cari mengosongkan filter tanpa menunggu 'change'
+  if (e.target.id === 'flt-member' && !e.target.value && filter.member) { filter.member = ''; renderChart(); }
 });
 $('flt-reset').addEventListener('click', () => {
   Object.keys(filter).forEach(k => filter[k] = '');
@@ -1694,26 +1706,38 @@ function memberNames() {
   });
   solo.forEach(w => { if (w.member) met[w.member] = (met[w.member] || 0) + 1; });
   const all = new Set([...Object.keys(app), ...Object.keys(met)]);
-  return [...all].map(n => [n, hasLineup ? (app[n] || met[n] || 0) : (met[n] || 0), !!met[n]]);
+  return [...all].map(n => [n, hasLineup ? (app[n] || met[n] || 0) : (met[n] || 0), met[n] || 0]); // [nama, angka utama, berapa kali ketemu (2-Shot/Chekicha/sesi lepas)]
 }
-let memQ = '', memSort = 'top';
+let memQ = '', memSort = 'top', memMode = 'all'; // memMode: 'all' (semua yang tampil) | 'met' (pernah ketemu)
 $('mchart').insertAdjacentHTML('afterend', `<h2 class="sec" id="mem-h">Per member <small class="hint" style="display:inline">· ketuk nama untuk statistiknya</small></h2>
   <div id="mem-bar"><input type="search" id="mem-q" placeholder="Cari member…" aria-label="Cari member" autocomplete="off"><button type="button" class="btn-s" id="mem-sort" aria-label="Ubah urutan"></button></div>
+  <div id="mem-mode" class="mem-mode" role="group" aria-label="Member yang ditampilkan" hidden><button type="button" data-mode="all" aria-pressed="true">Semua yang tampil</button><button type="button" data-mode="met" aria-pressed="false">Pernah ketemu</button></div>
   <p id="mem-key" class="mem-key"></p><div id="mem-list"></div>`);
 function renderMembers() {
   const box = $('mem-list');
   if (!box) return;
   const all = memberNames(), hasLineup = records.some(r => (r.lineup || []).length);
+  const mode = hasLineup ? memMode : 'all'; // saklar hanya berarti kalau lineup sudah ada
   const q = memQ.trim().toLowerCase();
-  const list = all.filter(([n]) => !q || n.toLowerCase().includes(q))
+  const list = all.filter(([n, , m]) => (mode === 'all' || m > 0) && (!q || n.toLowerCase().includes(q)))
     .sort((a, b) => memSort === 'az' ? a[0].localeCompare(b[0]) : b[1] - a[1] || a[0].localeCompare(b[0]));
   $('mem-h').hidden = $('mem-bar').hidden = $('mem-key').hidden = !all.length;
+  $('mem-mode').hidden = !all.length || !hasLineup;
+  $('mem-mode').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
   $('mem-sort').textContent = memSort === 'az' ? 'A–Z' : 'Terbanyak';
-  $('mem-key').innerHTML = hasLineup ? 'Angka = berapa kali ditonton tampil · <i class="mem-dot"></i> pernah 2-Shot / Chekicha' : 'Angka = jumlah 2-Shot + Chekicha. Isi lineup di admin untuk menghitung semua member yang tampil.';
-  box.innerHTML = list.length ? list.map(([n, c, m]) => `<button type="button" class="mem-chip${m && hasLineup ? ' met' : ''}" data-mem="${esc(n)}"><span class="mem-cn">${esc(n)}</span><b>${c}</b></button>`).join('')
+  $('mem-key').innerHTML = hasLineup
+    ? '<span class="lg-i"><b class="lg-a">8</b> kali ditonton tampil</span><span class="lg-i"><b class="lg-m">3</b> kali ketemu (2-Shot / Chekicha)</span><span class="lg-i"><i class="mem-dot"></i> pernah ketemu · yang redup belum</span>'
+    : 'Angka = jumlah 2-Shot + Chekicha. Isi lineup di admin untuk menghitung semua member yang tampil.';
+  box.classList.toggle('lu', hasLineup);
+  box.innerHTML = list.length ? list.map(([n, c, m]) => {
+    const pct = c ? Math.min(100, Math.round(m / c * 100)) : 0;
+    const ttl = hasLineup ? ` title="${esc(`Tampil ${c}× · ketemu ${m}×` + (m ? ` (${pct}%)` : ''))}"` : '';
+    return `<button type="button" class="mem-chip${m && hasLineup ? ' met' : ''}" data-mem="${esc(n)}"${ttl}><span class="mem-cn">${esc(n)}</span><span class="mem-nums"><b>${c}</b>${hasLineup && m ? `<b class="mm">${m}</b>` : ''}</span>${hasLineup && m ? `<span class="mem-rt" style="width:${pct}%"></span>` : ''}</button>`;
+  }).join('')
     : `<div class="empty">${all.length ? 'Tidak ada member yang cocok' : 'Belum ada data member'}</div>`;
 }
 $('mem-q').addEventListener('input', e => { memQ = e.target.value; renderMembers(); });
+$('mem-mode').addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if (b) { memMode = b.dataset.mode; renderMembers(); } });
 $('mem-sort').addEventListener('click', () => { memSort = memSort === 'az' ? 'top' : 'az'; renderMembers(); });
 $('lightbox').insertAdjacentHTML('beforebegin', `<div class="overlay" id="mem-modal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mem-title">
   <button class="x" id="mem-close" aria-label="Tutup">&times;</button><h3 id="mem-title" style="margin:0"></h3><div class="mem-body" id="mem-body"></div></div></div>`);
