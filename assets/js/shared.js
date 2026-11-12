@@ -137,7 +137,9 @@ function sanitize(r, i) {
     sesi: ['Siang', 'Malam'].includes(r.sesi) ? r.sesi : '',
     note: String(r.note || ''),
     harga: Math.max(0, Number(r.harga) || 0), // biaya tiket (Rp)
-    tiket: String(r.tiket || '').slice(0, 40)
+    tiket: String(r.tiket || '').slice(0, 40),
+    // lineup: semua member yang tampil di show ini (diisi dari admin), tanpa duplikat
+    lineup: Array.isArray(r.lineup) ? [...new Set(r.lineup.map(x => String(x || '').trim().slice(0, 60)).filter(Boolean))].slice(0, 80) : []
   };
   for (const K of KINDS) {
     const on = r[K.f] === 'Ya' || r[K.f] === true;
@@ -808,7 +810,7 @@ function renderTimeline() {
   const all = [...records].sort(cmp);
   if ($('t-tab') && dataLoaded) $('t-tab').textContent = `Riwayat (${all.length})`;
   const q = ($('tl-q')?.value || '').trim().toLowerCase();
-  const hay = r => [r.setlist, r.seat, r.date, r.sesi, r.note, ...extras(r).flatMap(x => [x.member, x.label])].join(' ').toLowerCase();
+  const hay = r => [r.setlist, r.seat, r.date, r.sesi, r.note, ...extras(r).flatMap(x => [x.member, x.label]), ...(r.lineup || [])].join(' ').toLowerCase();
   const list = q ? all.filter(r => q.split(/\s+/).every(w => hay(r).includes(w))) : all; // semua kata harus cocok
   if ($('tl-info')) $('tl-info').textContent = q ? `${list.length} dari ${all.length} show` : '';
   const mon = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -1667,6 +1669,12 @@ function memberStats(name) {
     if (w.setlist) m.shows.push({setlist: w.setlist, seat: '', date: w.date, solo: 1});
   });
   m.ev = tickets.filter(t => t.type !== 'SHOW' && t.used > 0 && t.member === name).length;
+  // kemunculan: show tempat dia tampil (lineup) ATAU bertemu 2-Shot/Chekicha; hanya show asli (bukan sesi lepas)
+  m.appear = records.filter(r => (r.lineup || []).includes(name) || extras(r).some(x => x.member === name));
+  m.lineupN = records.filter(r => (r.lineup || []).includes(name)).length;
+  m.hasLineup = records.some(r => (r.lineup || []).length);
+  m.appSeats = Object.entries(m.appear.reduce((o, r) => (r.seat && (o[r.seat] = (o[r.seat] || 0) + 1), o), {})).sort((a, b) => b[1] - a[1] || seatTie(a[0], b[0]));
+  m.appSetlists = Object.entries(m.appear.reduce((o, r) => (r.setlist && (o[r.setlist] = (o[r.setlist] || 0) + 1), o), {})).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
   m.dates.sort(); m.photos.sort((a, b) => b.date.localeCompare(a.date));
   m.setlists = Object.entries(m.shows.reduce((o, r) => (r.setlist && (o[r.setlist] = (o[r.setlist] || 0) + 1), o), {})).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
   m.seats = Object.entries(m.shows.reduce((o, r) => (r.seat && (o[r.seat] = (o[r.seat] || 0) + 1), o), {})).sort((a, b) => b[1] - a[1] || seatTie(a[0], b[0]));
@@ -1687,17 +1695,20 @@ function renderMembers() {
 }
 $('lightbox').insertAdjacentHTML('beforebegin', `<div class="overlay" id="mem-modal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mem-title">
   <button class="x" id="mem-close" aria-label="Tutup">&times;</button><h3 id="mem-title" style="margin:0"></h3><div class="mem-body" id="mem-body"></div></div></div>`);
+const seatBlock = (title, list) => list.length ? `<h4 class="mem-h">${title}</h4><div class="mem-seats">${list.slice(0, 10).map(([n, c]) => `<button type="button" class="seat-badge tl-s" data-seat="${esc(n)}">${esc(n)}${c > 1 ? ` ×${c}` : ''}</button>`).join('')}${list.length > 10 ? `<span class="mem-more">+${list.length - 10} lainnya</span>` : ''}</div>` : '';
 function openMember(name) {
   const m = memberStats(name);
-  if (!m.ts && !m.ck && !m.ev) return;
+  if (!m.ts && !m.ck && !m.ev && !m.appear.length) return;
   const met = m.ts + m.ck, span = m.dates.length ? (m.dates[0] === m.dates[m.dates.length - 1] ? fmtDate(m.dates[0]) : `${fmtDate(m.dates[0])} – ${fmtDate(m.dates[m.dates.length - 1])}`) : '';
-  const cell = (l, v) => `<div class="stat"><div class="sv" data-cu="${v}">${v}</div><div class="sl">${l}</div></div>`;
+  const cell = (l, v, sub) => `<div class="stat"><div class="sv" data-cu="${v}">${v}</div><div class="sl">${l}</div>${sub ? `<div class="ss">${esc(sub)}</div>` : ''}</div>`;
+  const cells = [...(m.hasLineup ? [cell('Ditonton tampil', m.appear.length, m.appear.length && met ? `${met} dengan 2-Shot/Chekicha` : '')] : []), cell('2-Shot', m.ts), cell('Chekicha', m.ck), ...(m.hasLineup ? [] : [cell('Total pertemuan', met)]), ...(m.ev ? [cell('Hadir di event', m.ev)] : [])];
   const av = m.photos[0];
   $('mem-title').innerHTML = (av ? `<img class="mem-av" src="${esc(thumbOf(av.src))}" data-full="${esc(av.src)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="" decoding="async">` : '')
     + `<span class="mem-nm"><span>${esc(name)}</span>${span ? `<small>${esc(span)}</small>` : ''}</span>`;
-  $('mem-body').innerHTML = `<div class="mem-grid">${cell('2-Shot', m.ts)}${cell('Chekicha', m.ck)}${cell('Total pertemuan', met)}${m.ev ? cell('Hadir di event', m.ev) : ''}</div>`
-    + (m.setlists.length ? `<h4 class="mem-h">Setlist yang paling sering bareng</h4>` + m.setlists.slice(0, 3).map(([n, c]) => `<div class="mem-r"><span class="mem-rn">${esc(n)}</span><i class="mem-rb"><u style="width:${c / m.setlists[0][1] * 100}%"></u></i><b>${c}×</b></div>`).join('') : '')
-    + (m.seats.length ? `<h4 class="mem-h">Kursi saat bertemu</h4><div class="mem-seats">${m.seats.slice(0, 8).map(([n, c]) => `<button type="button" class="seat-badge tl-s" data-seat="${esc(n)}">${esc(n)}${c > 1 ? ` ×${c}` : ''}</button>`).join('')}</div>` : '')
+  $('mem-body').innerHTML = `<div class="mem-grid c${cells.length}">${cells.join('')}</div>`
+    + ((sl => sl.length ? `<h4 class="mem-h">Setlist yang paling sering bareng</h4>` + sl.slice(0, 3).map(([n, c]) => `<div class="mem-r"><span class="mem-rn">${esc(n)}</span><i class="mem-rb"><u style="width:${c / sl[0][1] * 100}%"></u></i><b>${c}×</b></div>`).join('') : '')(m.hasLineup ? m.appSetlists : m.setlists))
+    + seatBlock('Kursi saat 2-Shot / Chekicha', m.seats)
+    + (m.hasLineup ? seatBlock('Kursi saat dia tampil', m.appSeats) : '')
     + (m.photos.length ? `<h4 class="mem-h">Foto</h4><div class="mem-ph">${m.photos.slice(0, 6).map(p => `<img src="${esc(thumbOf(p.src))}" data-full="${esc(p.src)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="${esc(p.label)} dengan ${esc(name)}, ${esc(fmtDate(p.date))}" decoding="async" loading="lazy">`).join('')}</div>` : '');
   $('mem-body').scrollTop = 0;
   openEl('mem-modal');
