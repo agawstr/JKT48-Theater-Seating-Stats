@@ -69,8 +69,10 @@ if (ANIM_SLOW !== 1 && !matchMedia('(prefers-reduced-motion: reduce)').matches) 
 }
 // lapisan terbuka (kartu / modal / lightbox) mengunci halaman di belakangnya, dan tombol Back menutup lapisan paling atas
 // (bukan keluar dari halaman). Satu entri riwayat "penjaga" dipasang selama ada lapisan terbuka.
-const ovOpen = () => [...document.querySelectorAll('.overlay.open:not(.closing):not(.docked)')];
-const ovLock = () => document.documentElement.classList.toggle('ov-lock', !!document.querySelector('.overlay.open:not(.docked)'));
+const OV_SEL = '.overlay.open:not(.docked),.overlay.open.over'; // panel kursi yang menempel (laptop) dihitung sebagai lapisan hanya saat .over (dibuka dari kartu member)
+const topOverlay = () => document.querySelector('.overlay.open.over:not(.closing)') || [...document.querySelectorAll(OV_SEL)].pop(); // yang paling atas (riwayat kursi dari kartu member = di atas kartu)
+const ovOpen = () => [...document.querySelectorAll(OV_SEL)].filter(o => !o.classList.contains('closing'));
+const ovLock = () => document.documentElement.classList.toggle('ov-lock', !!document.querySelector(OV_SEL));
 let histArmed = false, histIgnore = 0;
 const histSync = () => setTimeout(() => { // ditunda sedikit: tutup-lalu-buka (mis. kartu member -> kursi) tidak boleh memicu back
   const n = ovOpen().length;
@@ -96,7 +98,7 @@ const closeEl = id => {
   const el = $(id);
   if (!el.classList.contains('open') || el.classList.contains('closing')) return;
   el.classList.add('closing'); // animasi tutup dulu, baru disembunyikan
-  timers[id] = setTimeout(() => { el.classList.remove('open', 'closing'); ovLock(); try { lastFocus[id]?.focus?.({preventScroll: true}); } catch (e) {} }, 420);
+  timers[id] = setTimeout(() => { el.classList.remove('open', 'closing'); if (id === 'seat-modal') el.classList.remove('over'); ovLock(); try { lastFocus[id]?.focus?.({preventScroll: true}); } catch (e) {} }, 420);
   histSync();
 };
 
@@ -515,7 +517,7 @@ $('lb-next').addEventListener('click', () => lbGo(1));
 // ---- halaman di belakang kartu tidak ikut tergulir: roda / jari di mana pun menggulir isi kartu ----
 (() => {
   const SC = '.mem-body,.hist', OVS = ['mem-modal', 'seat-modal'];
-  const topOv = () => [...document.querySelectorAll('.overlay.open:not(.docked)')].pop();
+  const topOv = topOverlay;
   document.addEventListener('wheel', e => {
     const ov = topOv();
     if (!ov || !e.target.closest) return;
@@ -549,6 +551,7 @@ $('lb-next').addEventListener('click', () => lbGo(1));
 const escHooks = [];
 function escClose() { // tutup lapisan paling atas (dipakai Esc dan tombol Back)
   if (lbRoot.classList.contains('open') && !lbRoot.classList.contains('closing')) closeLightbox();
+  else if ($('seat-modal').classList.contains('over') && $('seat-modal').classList.contains('open') && !$('seat-modal').classList.contains('closing')) closeEl('seat-modal'); // kursi dari kartu member: tutup kursi dulu, kartu tetap
   else if (!escHooks.some(h => h())) closeEl('seat-modal');
 }
 document.addEventListener('keydown', e => {
@@ -740,7 +743,7 @@ $('png-btn').addEventListener('click', savePng);
 
 // focus trap: Tab tidak keluar dari modal yang sedang terbuka
 function trapTab(e) {
-  const ov = [...document.querySelectorAll('.overlay.open')].pop();
+  const ov = topOverlay();
   if (!ov) return;
   const f = [...ov.querySelectorAll('button,[href],input,select,textarea')].filter(el => !el.disabled && el.offsetParent !== null);
   if (!f.length) return e.preventDefault();
@@ -1896,7 +1899,9 @@ $('mem-modal').addEventListener('click', e => {
     return;
   }
   const b = e.target.closest('[data-seat]'); // ketuk kursi: tutup statistik member lalu buka riwayat kursi
-  if (b) { closeEl('mem-modal'); openSeat(b.dataset.seat); }
+  if (!b) return;
+  const sm = $('seat-modal');
+  sm.classList.add('over'); openSeat(b.dataset.seat); // riwayat kursi dibuka DI ATAS kartu member; ditutup = kembali ke kartu
 });
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-mem],[data-member]');
