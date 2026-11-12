@@ -67,18 +67,37 @@ if (ANIM_SLOW !== 1 && !matchMedia('(prefers-reduced-motion: reduce)').matches) 
     return baseAnimate.call(this, kf, o);
   };
 }
+// lapisan terbuka (kartu / modal / lightbox) mengunci halaman di belakangnya, dan tombol Back menutup lapisan paling atas
+// (bukan keluar dari halaman). Satu entri riwayat "penjaga" dipasang selama ada lapisan terbuka.
+const ovOpen = () => [...document.querySelectorAll('.overlay.open:not(.closing):not(.docked)')];
+const ovLock = () => document.documentElement.classList.toggle('ov-lock', !!document.querySelector('.overlay.open:not(.docked)'));
+let histArmed = false, histIgnore = 0;
+const histSync = () => setTimeout(() => { // ditunda sedikit: tutup-lalu-buka (mis. kartu member -> kursi) tidak boleh memicu back
+  const n = ovOpen().length;
+  if (n && !histArmed) { try { history.pushState({ov: 1}, ''); histArmed = true; } catch (e) {} }
+  else if (!n && histArmed) { histArmed = false; histIgnore++; try { history.back(); } catch (e) { histIgnore--; } }
+}, 0);
+addEventListener('popstate', () => {
+  if (histIgnore) { histIgnore--; return; }
+  if (!histArmed) return;
+  histArmed = false; // entri penjaga sudah terpakai oleh Back
+  escClose();        // tutup hanya lapisan paling atas: foto -> kartu -> halaman
+  histSync();        // masih ada lapisan di bawahnya? pasang penjaga lagi
+});
 const openEl = id => {
   const el = $(id);
   clearTimeout(timers[id]);
   el.classList.remove('closing');
   lastFocus[id] = document.activeElement; // untuk dikembalikan saat ditutup
   el.classList.add('open');
+  ovLock(); histSync();
 };
 const closeEl = id => {
   const el = $(id);
   if (!el.classList.contains('open') || el.classList.contains('closing')) return;
   el.classList.add('closing'); // animasi tutup dulu, baru disembunyikan
-  timers[id] = setTimeout(() => { el.classList.remove('open', 'closing'); try { lastFocus[id]?.focus?.({preventScroll: true}); } catch (e) {} }, 420);
+  timers[id] = setTimeout(() => { el.classList.remove('open', 'closing'); ovLock(); try { lastFocus[id]?.focus?.({preventScroll: true}); } catch (e) {} }, 420);
+  histSync();
 };
 
 // ---------- Layout kursi: jumlah kursi per blok (b1..b4) di tiap baris ----------
@@ -253,7 +272,7 @@ function openSeat(code) {
       <b>${esc(r.setlist)}</b>
       <div class="hd">${esc(fmtDate(r.date))}${r.sesi ? ' · ' + r.sesi : ''}</div>
       ${r.note ? `<div class="hn">"${esc(r.note)}"</div>` : ''}
-      ${extras(r).map(x => `<div class="ht">${esc(x.label)} dengan ${x.member ? `<button type="button" class="mem-link" data-mem="${esc(x.member)}">${esc(x.member)}</button>` : ''}</div>${x.photo ? `<div class="hi-ph"><img src="${esc(thumbOf(x.photo))}" data-full="${esc(x.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="Foto ${esc(x.label)}" decoding="async"></div>` : ''}`).join('')}
+      ${extras(r).map(x => `<div class="ht">${esc(x.label)} dengan ${x.member ? `<button type="button" class="mem-link" data-mem="${esc(x.member)}">${esc(x.member)}</button>` : ''}</div>${x.photo ? `<div class="hi-ph"><img src="${esc(thumbOf(x.photo))}" data-full="${esc(x.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="Foto ${esc(x.label)}" data-cap="${esc(x.label)} dengan ${esc(x.member)}" data-sub="${esc([r.setlist, fmtDate(r.date), r.sesi, 'Kursi ' + r.seat].filter(Boolean).join(' · '))}" decoding="async"></div>` : ''}`).join('')}
       ${r.harga ? `<div class="hn">${esc(rupiah(r.harga))}${r.tiket ? ' · ' + esc(r.tiket) : ''}</div>` : ''}
       ${lotHtml(r)}
       <button type="button" class="btn-s share" data-share="${r.id}">Bagikan kartu</button>
@@ -335,34 +354,76 @@ document.addEventListener('click', e => {
   const im = e.target.closest('img[data-photo]');
   if (im) openLightbox(im);
 });
-let lbTok = 0, lbSrc = null, lbDrag = {dy: 0, sc: 1}, lbMoved = false;
+let lbTok = 0, lbSrc = null, lbDrag = {dy: 0, sc: 1}, lbMoved = false, lbList = [], lbIdx = 0;
 const lbRoot = $('lightbox'), lbEase = 'cubic-bezier(.32,.72,0,1)';
-const lbShowSrc = () => { if (lbSrc) lbSrc.style.visibility = ''; }; // thumbnail asal disembunyikan selama foto terbuka (seperti Foto di iOS)
-function openLightbox(im) { // foto kecil langsung tampil & membesar dari posisinya, foto penuh dimuat di belakang lalu ditukar tanpa kedip
-  const lb = $('lb-img'), full = im.dataset.full || im.src, from = im.getBoundingClientRect(), tok = ++lbTok;
+lbRoot.insertAdjacentHTML('beforeend', `<button type="button" class="lb-x" id="lb-x" aria-label="Tutup foto">&times;</button>
+  <button type="button" class="lb-nav lb-prev" id="lb-prev" aria-label="Foto sebelumnya"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <button type="button" class="lb-nav lb-next" id="lb-next" aria-label="Foto berikutnya"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+  <div class="lb-cap" id="lb-cap" aria-live="polite"><b></b><span></span><small></small></div>`);
+const lbShowSrc = () => { if (lbSrc) lbSrc.style.visibility = ''; };
+// foto yang dibuka digabung dengan foto-foto lain di wadah yang sama (galeri, kartu member, riwayat kursi, kilas balik) supaya bisa digeser
+const LB_GROUP = '#gallery,.mem-ph,#modal-hist,#memory';
+function lbGather(im) {
+  const box = im.closest(LB_GROUP), els = box ? [...box.querySelectorAll('img[data-photo]')] : [im];
+  return els.includes(im) ? els : [im];
+}
+function lbCaption() { // keterangan di bawah foto: judul + sub (data-cap / data-sub), cadangan: alt
+  const im = lbList[lbIdx], cap = $('lb-cap'), [t, s, n] = cap.children;
+  t.textContent = (im.dataset.cap || im.alt || '').trim();
+  s.textContent = im.dataset.sub || '';
+  n.textContent = lbList.length > 1 ? `${lbIdx + 1} / ${lbList.length}` : '';
+  cap.hidden = !t.textContent && !s.textContent && !n.textContent;
+  $('lb-prev').hidden = $('lb-next').hidden = lbList.length < 2;
+  $('lb-prev').disabled = lbIdx <= 0; $('lb-next').disabled = lbIdx >= lbList.length - 1;
+  if (!calm() && !cap.hidden) cap.animate([{opacity: 0, transform: 'translateY(6px)'}, {opacity: 1, transform: 'none'}], {duration: 380, easing: lbEase});
+}
+function lbLoad(im, tok) { // pasang foto kecil dulu (langsung tampil), lalu foto penuh ditukar tanpa kedip
+  const lb = $('lb-img'), full = im.dataset.full || im.src;
+  const ar = im.complete && im.naturalWidth && im.naturalHeight ? im.naturalWidth / im.naturalHeight : 0;
+  // ukuran tampil dikunci dari rasio thumbnail (rasio foto penuh sama), jadi saat ditukar foto tidak melompat
+  const setAr = a => { if (a) lb.style.setProperty('--ar', a.toFixed(4)); else lb.style.removeProperty('--ar'); lb.classList.toggle('fit', !!a); };
+  setAr(ar);
+  if (ar) lb.src = im.currentSrc || im.src;
+  if (!ar || full !== lb.src) {
+    const pre = new Image(); pre.src = full;
+    (pre.decode ? pre.decode() : Promise.resolve()).catch(() => {}).then(() => {
+      if (tok !== lbTok || !lbRoot.classList.contains('open')) return;
+      if (!ar && pre.naturalWidth) setAr(pre.naturalWidth / pre.naturalHeight);
+      lb.src = full;
+    });
+  }
+  [-2, -1, 1, 2].forEach(o => { const x = lbList[lbIdx + o]; if (x) { x.loading = 'eager'; const p = new Image(); p.src = x.dataset.full || x.src; } }); // tetangga disiapkan lebih dulu
+}
+function openLightbox(im) { // foto kecil langsung tampil & membesar dari posisinya
+  const lb = $('lb-img'), from = im.getBoundingClientRect(), tok = ++lbTok;
   lb.getAnimations().forEach(a => a.cancel()); // bersihkan sisa animasi tutup sebelumnya
   lb.style.animation = ''; lb.style.transform = ''; lbRoot.style.opacity = ''; lbDrag = {dy: 0, sc: 1};
   lbShowSrc(); lbSrc = im;
-  // ukuran tampil dikunci dari rasio thumbnail (rasio foto penuh sama): thumbnail 360px lalu foto penuh ~720px
-  // sebelumnya tampil di ukuran aslinya masing-masing, jadi saat ditukar foto melompat ~2x lebih besar
-  const ar = im.naturalWidth && im.naturalHeight ? im.naturalWidth / im.naturalHeight : 0;
-  if (ar) lb.style.setProperty('--ar', ar.toFixed(4)); else lb.style.removeProperty('--ar');
-  lb.classList.toggle('fit', !!ar);
-  lb.src = im.currentSrc || im.src;
+  lbList = lbGather(im); lbIdx = lbList.indexOf(im);
+  lbCaption();
+  lbLoad(im, tok);
   openEl('lightbox');
+  try { $('lb-x').focus({preventScroll: true}); } catch (e) {}
   if (!calm() && from.width) {
     const to = lb.getBoundingClientRect(); // layout dipaksa sekarang juga (overlay sudah tampil), jadi tidak ada frame "loncat"
     if (to.width) {
       const s = from.width / to.width, dx = from.left + from.width / 2 - (to.left + to.width / 2), dy = from.top + from.height / 2 - (to.top + to.height / 2);
       lb.style.animation = 'none'; // gerak ini diatur di sini; jangan tumpang tindih dengan animasi CSS bawaan
       lb.animate([{transform: `translate3d(${dx}px,${dy}px,0) scale(${s})`, opacity: .6}, {transform: 'none', opacity: 1}], {duration: 560, easing: lbEase});
-      // thumbnail asal tetap terlihat di bawah foto yang terbang, jadi tempatnya tidak pernah kosong (terutama saat foto kembali)
     }
   }
-  if (full !== lb.src) {
-    const pre = new Image(); pre.src = full;
-    (pre.decode ? pre.decode() : Promise.resolve()).catch(() => {}).then(() => { if (tok === lbTok && lbRoot.classList.contains('open')) lb.src = full; });
-  }
+}
+function lbGo(d) { // ganti ke foto sebelumnya (-1) / berikutnya (+1) di grup yang sama
+  const ni = lbIdx + d;
+  if (!lbRoot.classList.contains('open') || lbRoot.classList.contains('closing') || ni < 0 || ni >= lbList.length) return false;
+  const lb = $('lb-img'), tok = ++lbTok, im = lbList[ni];
+  lbIdx = ni; lbSrc = im;
+  lb.getAnimations().forEach(a => a.cancel()); lb.style.animation = 'none'; lb.style.transform = ''; lbDrag = {dy: 0, sc: 1};
+  try { im.scrollIntoView({block: 'nearest', inline: 'nearest', behavior: 'instant'}); } catch (e) {} // thumbnail asal ikut terlihat di belakang, jadi foto bisa "terbang pulang" saat ditutup
+  lbCaption();
+  lbLoad(im, tok);
+  if (!calm()) lb.animate([{transform: `translate3d(${d * 64}px,0,0) scale(.96)`, opacity: 0}, {transform: 'none', opacity: 1}], {duration: 460, easing: lbEase});
+  return true;
 }
 function closeLightbox() { // foto "terbang" kembali ke thumbnail asalnya; kalau thumbnail tak terlihat: mengecil + memudar
   if (!lbRoot.classList.contains('open') || lbRoot.classList.contains('closing')) return;
@@ -370,6 +431,8 @@ function closeLightbox() { // foto "terbang" kembali ke thumbnail asalnya; kalau
   const r = src && src.isConnected ? src.getBoundingClientRect() : null;
   const vis = r && r.width > 4 && r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth;
   const cur = lb.getBoundingClientRect(); // posisi sekarang, termasuk geseran jari
+  const under = ovOpen().filter(o => o !== lbRoot).pop(); // fokus kembali ke kartu di bawahnya (mis. kartu member), bukan ke halaman
+  lastFocus.lightbox = under && under.querySelector('.x') || lastFocus.lightbox;
   closeEl('lightbox'); // latar memudar lewat kelas .closing
   if (calm() || !cur.width) { lbShowSrc(); return; }
   const fromT = `translate3d(0,${lbDrag.dy}px,0) scale(${lbDrag.sc})`;
@@ -386,27 +449,42 @@ function closeLightbox() { // foto "terbang" kembali ke thumbnail asalnya; kalau
     lbShowSrc();
   }
 }
-lbRoot.addEventListener('click', () => { if (lbMoved) { lbMoved = false; return; } closeLightbox(); });
-(() => { // geser foto ke atas/bawah untuk menutup (HP): foto + latar mengikuti jari, lepas jauh/cepat = tutup, kalau tidak = kembali memantul
+lbRoot.addEventListener('click', e => {
+  if (e.target.closest('.lb-nav,.lb-cap')) return; // tombol panah & keterangan tidak menutup foto
+  if (lbMoved) { lbMoved = false; return; }
+  closeLightbox();
+});
+$('lb-prev').addEventListener('click', () => lbGo(-1));
+$('lb-next').addEventListener('click', () => lbGo(1));
+(() => { // geser foto: ke atas/bawah = tutup (foto + latar mengikuti jari), ke kiri/kanan = foto lain (HP)
   const lb = $('lb-img');
-  let id = null, x0 = 0, y0 = 0, lastY = 0, lastT = 0, vy = 0, drag = false;
+  let id = null, x0 = 0, y0 = 0, lastX = 0, lastY = 0, lastT = 0, vx = 0, vy = 0, axis = '';
   lbRoot.addEventListener('pointerdown', e => {
     lbMoved = false;
-    if (e.pointerType === 'mouse' || !e.isPrimary || lbRoot.classList.contains('closing')) return;
-    id = e.pointerId; x0 = e.clientX; y0 = lastY = e.clientY; lastT = e.timeStamp; vy = 0; drag = false;
+    if (e.pointerType === 'mouse' || !e.isPrimary || lbRoot.classList.contains('closing') || e.target.closest('.lb-nav,.lb-x')) return;
+    id = e.pointerId; x0 = lastX = e.clientX; y0 = lastY = e.clientY; lastT = e.timeStamp; vx = vy = 0; axis = '';
   });
   lbRoot.addEventListener('pointermove', e => {
     if (e.pointerId !== id) return;
     const dy = e.clientY - y0, dx = e.clientX - x0;
-    if (!drag) {
-      if (Math.abs(dy) < 8 || Math.abs(dy) < Math.abs(dx)) return;
-      drag = true; lbMoved = true;
+    if (!axis) {
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 8) return;
+      axis = Math.abs(dx) > Math.abs(dy) ? (lbList.length > 1 ? 'h' : 'n') : 'v';
+      if (axis === 'n') return;
+      lbMoved = true;
       try { lbRoot.setPointerCapture(id); } catch (err) {}
       lb.getAnimations().forEach(a => a.cancel()); lb.style.animation = 'none';
     }
+    if (axis === 'n') return;
     const dt = e.timeStamp - lastT;
-    if (dt > 0) vy = (e.clientY - lastY) / dt;
-    lastY = e.clientY; lastT = e.timeStamp;
+    if (dt > 0) { vx = (e.clientX - lastX) / dt; vy = (e.clientY - lastY) / dt; }
+    lastX = e.clientX; lastY = e.clientY; lastT = e.timeStamp;
+    if (axis === 'h') { // di ujung grup, geseran terasa berat (tidak ada foto lagi)
+      const has = lbList[lbIdx + (dx < 0 ? 1 : -1)], x = has ? dx : dx * .3;
+      lbDrag = {dy: 0, sc: 1, dx: x};
+      lb.style.transform = `translate3d(${x}px,0,0)`;
+      return;
+    }
     const p = Math.min(Math.abs(dy) / 320, 1), sc = 1 - .16 * p;
     lbDrag = {dy, sc};
     lb.style.transform = `translate3d(0,${dy}px,0) scale(${sc})`;
@@ -415,8 +493,15 @@ lbRoot.addEventListener('click', () => { if (lbMoved) { lbMoved = false; return;
   const end = e => {
     if (e.pointerId !== id) return;
     id = null;
-    if (!drag) return;
-    drag = false;
+    if (!axis || axis === 'n') return;
+    const ax = axis; axis = '';
+    if (ax === 'h') {
+      const dx = lbDrag.dx || 0, dir = dx < 0 ? 1 : -1;
+      if ((Math.abs(dx) > 60 || Math.abs(vx) > .45) && lbGo(dir)) return;
+      const t = lb.style.transform; lb.style.transform = ''; lbDrag = {dy: 0, sc: 1};
+      lb.animate([{transform: t}, {transform: 'none'}], {duration: 420, easing: lbEase});
+      return;
+    }
     if (Math.abs(lbDrag.dy) > 110 || Math.abs(vy) > .6) { closeLightbox(); return; }
     const t = lb.style.transform, o = lbRoot.style.opacity || '1';
     lb.style.transform = ''; lbRoot.style.opacity = ''; lbDrag = {dy: 0, sc: 1};
@@ -427,13 +512,50 @@ lbRoot.addEventListener('click', () => { if (lbMoved) { lbMoved = false; return;
   lbRoot.addEventListener('pointercancel', end);
 })();
 
+// ---- halaman di belakang kartu tidak ikut tergulir: roda / jari di mana pun menggulir isi kartu ----
+(() => {
+  const SC = '.mem-body,.hist', OVS = ['mem-modal', 'seat-modal'];
+  const topOv = () => [...document.querySelectorAll('.overlay.open:not(.docked)')].pop();
+  document.addEventListener('wheel', e => {
+    const ov = topOv();
+    if (!ov || !e.target.closest) return;
+    if (ov.id === 'lightbox') { e.preventDefault(); return; }
+    if (!OVS.includes(ov.id) || e.ctrlKey) return;
+    const own = e.target.closest(SC), box = own || ov.querySelector(SC);
+    if (own) { // sedang di area gulir: biarkan gulir bawaan, tapi jangan bocor ke halaman saat sudah di ujung
+      const up = e.deltaY < 0;
+      if ((up && own.scrollTop <= 0) || (!up && own.scrollTop + own.clientHeight >= own.scrollHeight - 1)) e.preventDefault();
+      return;
+    }
+    e.preventDefault(); // di latar / judul kartu: dipakai untuk menggulir kartu
+    if (box) box.scrollTop += e.deltaY * (e.deltaMode === 1 ? 16 : 1);
+  }, {passive: false});
+  let ty = 0;
+  document.addEventListener('touchstart', e => { ty = e.touches[0].clientY; }, {passive: true});
+  document.addEventListener('touchmove', e => {
+    const ov = topOv();
+    if (!ov || !OVS.includes(ov.id) || !e.target.closest) return;
+    const y = e.touches[0].clientY, dy = y - ty; ty = y;
+    if (e.target.closest('.sheet-grip,#modal-title')) return; // tarik gagang lembar bawah: urusan gestur lembar
+    const own = e.target.closest(SC);
+    if (own) { if ((dy > 0 && own.scrollTop <= 0) || (dy < 0 && own.scrollTop + own.clientHeight >= own.scrollHeight - 1)) e.preventDefault(); return; }
+    const box = ov.querySelector(SC);
+    if (box) box.scrollTop -= dy;
+    e.preventDefault();
+  }, {passive: false});
+})();
+
 // Escape: lightbox dulu, lalu hook halaman (mis. dialog konfirmasi admin), terakhir modal kursi
 const escHooks = [];
+function escClose() { // tutup lapisan paling atas (dipakai Esc dan tombol Back)
+  if (lbRoot.classList.contains('open') && !lbRoot.classList.contains('closing')) closeLightbox();
+  else if (!escHooks.some(h => h())) closeEl('seat-modal');
+}
 document.addEventListener('keydown', e => {
   if (e.key === 'Tab') return trapTab(e);
+  if (lbRoot.classList.contains('open') && !lbRoot.classList.contains('closing') && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { e.preventDefault(); lbGo(e.key === 'ArrowRight' ? 1 : -1); return; }
   if (e.key !== 'Escape') return;
-  if ($('lightbox').classList.contains('open')) closeLightbox();
-  else if (!escHooks.some(h => h())) closeEl('seat-modal');
+  escClose();
 });
 
 // ================= Statistik, filter, legenda, setlist, PNG =================
@@ -725,7 +847,7 @@ function renderGallery() {
   const sig = galKind + '|' + cur + '|' + list.map(x => [x.photo, x.k, x.member, x.label, x.r.setlist, x.r.date, x.r.id].join('~')).join('|');
   if (sig === renderGallery.sig && g.firstElementChild) return;
   renderGallery.sig = sig;
-  g.innerHTML = list.length ? list.map((x, i) => `<figure class="gi${i < 8 ? ' a' : ''}" data-k="${esc(x.k)}" style="--i:${Math.min(i, 9)};--t:${(i * 37 % 9) - 4}deg"><div class="gi-ph"><img src="${esc(thumbOf(x.photo))}" data-full="${esc(x.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="${esc(x.label)} dengan ${esc(x.member)}" loading="lazy" decoding="async"></div>
+  g.innerHTML = list.length ? list.map((x, i) => `<figure class="gi${i < 8 ? ' a' : ''}" data-k="${esc(x.k)}" style="--i:${Math.min(i, 9)};--t:${(i * 37 % 9) - 4}deg"><div class="gi-ph"><img src="${esc(thumbOf(x.photo))}" data-full="${esc(x.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="${esc(x.label)} dengan ${esc(x.member)}" data-cap="${esc(x.label)} dengan ${esc(x.member) || '-'}" data-sub="${esc([x.r.setlist, fmtDate(x.r.date), x.r.sesi, x.solo ? 'di luar show' : ''].filter(Boolean).join(' · '))}" loading="lazy" decoding="async"></div>
     <figcaption><b class="gi-n">${esc(x.member) || '-'}</b><span class="gi-tag">${esc(x.label)}</span><span class="gi-m">${esc(x.r.setlist)}</span><time class="gi-d">${esc(fmtDate(x.r.date))}</time>${x.solo ? '<span class="gi-x">di luar show</span>' : ''}</figcaption></figure>`).join('')
     : '<div class="empty">Belum ada foto</div>';
 }
@@ -963,7 +1085,7 @@ function renderLast() {
   const ago = isNaN(d) ? '' : d < 0 ? `${-d} hari lagi` : d === 0 ? 'Hari ini' : `${d} hari yang lalu`;
   const ph = extras(r).find(x => x.photo);
   el.innerHTML = `<div class="last-c">
-    ${ph ? `<div class="last-ph"><img src="${esc(thumbOf(ph.photo))}" data-full="${esc(ph.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="Foto show terakhir"></div>` : `<div class="last-s">${esc(r.seat)}</div>`}
+    ${ph ? `<div class="last-ph"><img src="${esc(thumbOf(ph.photo))}" data-full="${esc(ph.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="Foto show terakhir" data-cap="${esc(ph.label)} dengan ${esc(ph.member)}" data-sub="${esc([r.setlist, fmtDate(r.date), r.sesi, 'Kursi ' + r.seat].filter(Boolean).join(' · '))}"></div>` : `<div class="last-s">${esc(r.seat)}</div>`}
     <div class="last-b"><span class="last-l">Terakhir nonton</span><b>${esc(r.setlist) || '(tanpa setlist)'}</b>
       <span>${esc(fmtDate(r.date))}${r.sesi ? ' · ' + esc(r.sesi) : ''} · Kursi <button type="button" class="seat-badge tl-s" data-seat="${esc(r.seat)}">${esc(r.seat)}</button></span></div>
     <div class="last-a">${esc(ago)}</div></div>`;
@@ -1658,7 +1780,7 @@ function renderMemory() {
   const when = y => y === 1 ? 'Setahun lalu hari ini' : `${y} tahun lalu hari ini`;
   const shown = items.slice(0, 4);
   el.innerHTML = `<div class="mem-c"><span class="last-l">Kilas balik · ${esc(fmtDate(today).replace(/ \d{4}$/, ''))}</span>` + shown.map(i => `
-    <div class="mem-i">${i.ph ? `<img src="${esc(thumbOf(i.ph))}" data-full="${esc(i.ph)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="Foto kilas balik" decoding="async">` : ''}
+    <div class="mem-i">${i.ph ? `<img src="${esc(thumbOf(i.ph))}" data-full="${esc(i.ph)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="Foto kilas balik" data-cap="${esc(i.t)}" data-sub="${esc(when(i.y) + (i.sub ? ' · ' + i.sub : ''))}" decoding="async">` : ''}
       <div class="mem-b"><b>${esc(i.t)}</b><span>${when(i.y)}${i.sub ? ' · ' + esc(i.sub) : ''}${i.seat ? ` · Kursi <button type="button" class="seat-badge tl-s" data-seat="${esc(i.seat)}">${esc(i.seat)}</button>` : ''}</span></div></div>`).join('')
     + (items.length > shown.length ? `<span class="mem-more">+${items.length - shown.length} lainnya di tanggal ini</span>` : '') + '</div>';
 }
@@ -1675,11 +1797,11 @@ function memberStats(name) {
     const x = extras(r).filter(e => e.member === name);
     if (!x.length) return;
     m.shows.push(r);
-    x.forEach(e => { m[e.k]++; m.dates.push(r.date); if (e.photo) m.photos.push({src: e.photo, date: r.date, label: e.label}); });
+    x.forEach(e => { m[e.k]++; m.dates.push(r.date); if (e.photo) m.photos.push({src: e.photo, date: r.date, label: e.label, setlist: r.setlist, seat: r.seat, sesi: r.sesi}); });
   });
   solo.filter(w => w.member === name).forEach(w => {
     m[w.kind]++; m.solo++; m.dates.push(w.date);
-    if (w.photo) m.photos.push({src: w.photo, date: w.date, label: w.kind === 'ts' ? '2-Shot' : 'Chekicha'});
+    if (w.photo) m.photos.push({src: w.photo, date: w.date, label: w.kind === 'ts' ? '2-Shot' : 'Chekicha', setlist: w.setlist || 'Di luar show'});
     if (w.setlist) m.shows.push({setlist: w.setlist, seat: '', date: w.date, solo: 1});
   });
   m.ev = tickets.filter(t => t.type !== 'SHOW' && t.used > 0 && t.member === name).length;
@@ -1689,6 +1811,7 @@ function memberStats(name) {
   m.hasLineup = records.some(r => (r.lineup || []).length);
   m.appSeats = Object.entries(m.appear.reduce((o, r) => (r.seat && (o[r.seat] = (o[r.seat] || 0) + 1), o), {})).sort((a, b) => b[1] - a[1] || seatTie(a[0], b[0]));
   m.appSetlists = Object.entries(m.appear.reduce((o, r) => (r.setlist && (o[r.setlist] = (o[r.setlist] || 0) + 1), o), {})).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  m.span = [...m.dates, ...m.appear.map(r => r.date)].filter(Boolean).sort();
   m.dates.sort(); m.photos.sort((a, b) => b.date.localeCompare(a.date));
   m.setlists = Object.entries(m.shows.reduce((o, r) => (r.setlist && (o[r.setlist] = (o[r.setlist] || 0) + 1), o), {})).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
   m.seats = Object.entries(m.shows.reduce((o, r) => (r.seat && (o[r.seat] = (o[r.seat] || 0) + 1), o), {})).sort((a, b) => b[1] - a[1] || seatTie(a[0], b[0]));
@@ -1736,26 +1859,27 @@ function renderMembers() {
   }).join('')
     : `<div class="empty">${all.length ? 'Tidak ada member yang cocok' : 'Belum ada data member'}</div>`;
 }
+const memSwap = () => { if (window.liquid && window.liquid.swap) window.liquid.swap($('mem-list'), '.mem-chip'); }; // chip masuk bertahap dengan pegas (liquid.js)
 $('mem-q').addEventListener('input', e => { memQ = e.target.value; renderMembers(); });
-$('mem-mode').addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if (b) { memMode = b.dataset.mode; renderMembers(); } });
-$('mem-sort').addEventListener('click', () => { memSort = memSort === 'az' ? 'top' : 'az'; renderMembers(); });
+$('mem-mode').addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if (b && b.dataset.mode !== memMode) { memMode = b.dataset.mode; renderMembers(); memSwap(); } });
+$('mem-sort').addEventListener('click', () => { memSort = memSort === 'az' ? 'top' : 'az'; renderMembers(); memSwap(); });
 $('lightbox').insertAdjacentHTML('beforebegin', `<div class="overlay" id="mem-modal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mem-title">
   <button class="x" id="mem-close" aria-label="Tutup">&times;</button><h3 id="mem-title" style="margin:0"></h3><div class="mem-body" id="mem-body"></div></div></div>`);
-const seatBlock = (title, list) => list.length ? `<h4 class="mem-h">${title}</h4><div class="mem-seats">${list.slice(0, 10).map(([n, c]) => `<button type="button" class="seat-badge tl-s" data-seat="${esc(n)}">${esc(n)}${c > 1 ? ` ×${c}` : ''}</button>`).join('')}${list.length > 10 ? `<span class="mem-more">+${list.length - 10} lainnya</span>` : ''}</div>` : '';
+const seatBlock = (title, list) => list.length ? `<h4 class="mem-h">${title}</h4><div class="mem-seats">${list.map(([n, c], i) => `<button type="button" class="seat-badge tl-s" data-seat="${esc(n)}"${i >= 10 ? ' data-x hidden' : ''}>${esc(n)}${c > 1 ? ` ×${c}` : ''}</button>`).join('')}${list.length > 10 ? `<button type="button" class="mem-more" data-more aria-expanded="false">+${list.length - 10} lainnya</button>` : ''}</div>` : '';
 function openMember(name) {
   const m = memberStats(name);
   if (!m.ts && !m.ck && !m.ev && !m.appear.length) return;
-  const met = m.ts + m.ck, span = m.dates.length ? (m.dates[0] === m.dates[m.dates.length - 1] ? fmtDate(m.dates[0]) : `${fmtDate(m.dates[0])} – ${fmtDate(m.dates[m.dates.length - 1])}`) : '';
+  const met = m.ts + m.ck, sd = m.span, span = sd.length ? (sd[0] === sd[sd.length - 1] ? fmtDate(sd[0]) : `${fmtDate(sd[0])} – ${fmtDate(sd[sd.length - 1])}`) : '';
   const cell = (l, v, sub) => `<div class="stat"><div class="sv" data-cu="${v}">${v}</div><div class="sl">${l}</div>${sub ? `<div class="ss">${esc(sub)}</div>` : ''}</div>`;
   const cells = [...(m.hasLineup ? [cell('Ditonton tampil', m.appear.length, m.appear.length && met ? `${met} dengan 2-Shot/Chekicha` : '')] : []), cell('2-Shot', m.ts), cell('Chekicha', m.ck), ...(m.hasLineup ? [] : [cell('Total pertemuan', met)]), ...(m.ev ? [cell('Hadir di event', m.ev)] : [])];
   const av = m.photos[0];
-  $('mem-title').innerHTML = (av ? `<img class="mem-av" src="${esc(thumbOf(av.src))}" data-full="${esc(av.src)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="" decoding="async">` : '')
-    + `<span class="mem-nm"><span>${esc(name)}</span>${span ? `<small>${esc(span)}</small>` : ''}</span>`;
+  $('mem-title').innerHTML = (av ? `<img class="mem-av" src="${esc(thumbOf(av.src))}" data-full="${esc(av.src)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="" data-cap="${esc(name)}" data-sub="${esc([av.label, av.setlist, fmtDate(av.date)].filter(Boolean).join(' · '))}" decoding="async">` : '')
+    + `<span class="mem-nm"><span>${esc(name)}</span>${span ? `<small title="Dari show pertama sampai terakhir yang tercatat bersama dia (tampil atau ketemu)">${esc(span)}</small>` : ''}</span>`;
   $('mem-body').innerHTML = `<div class="mem-grid c${cells.length}">${cells.join('')}</div>`
     + ((sl => sl.length ? `<h4 class="mem-h">Setlist yang paling sering bareng</h4>` + sl.slice(0, 3).map(([n, c]) => `<div class="mem-r"><span class="mem-rn">${esc(n)}</span><i class="mem-rb"><u style="width:${c / sl[0][1] * 100}%"></u></i><b>${c}×</b></div>`).join('') : '')(m.hasLineup ? m.appSetlists : m.setlists))
     + seatBlock('Kursi saat 2-Shot / Chekicha', m.seats)
     + (m.hasLineup ? seatBlock('Kursi saat dia tampil', m.appSeats) : '')
-    + (m.photos.length ? `<h4 class="mem-h">Foto</h4><div class="mem-ph">${m.photos.slice(0, 6).map(p => `<img src="${esc(thumbOf(p.src))}" data-full="${esc(p.src)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="${esc(p.label)} dengan ${esc(name)}, ${esc(fmtDate(p.date))}" decoding="async" loading="lazy">`).join('')}</div>` : '');
+    + (m.photos.length ? `<h4 class="mem-h">Foto · ${m.photos.length}</h4><div class="mem-ph">${m.photos.map(p => `<img src="${esc(thumbOf(p.src))}" data-full="${esc(p.src)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="${esc(p.label)} dengan ${esc(name)}, ${esc(fmtDate(p.date))}" data-cap="${esc(p.label)} dengan ${esc(name)}" data-sub="${esc([p.setlist, fmtDate(p.date), p.sesi, p.seat ? 'Kursi ' + p.seat : ''].filter(Boolean).join(' · '))}" decoding="async" loading="lazy">`).join('')}</div>` : '');
   $('mem-body').scrollTop = 0;
   openEl('mem-modal');
   countUp($('mem-body'), true);
@@ -1764,6 +1888,13 @@ function openMember(name) {
 $('mem-close').addEventListener('click', () => closeEl('mem-modal'));
 $('mem-modal').addEventListener('click', e => {
   if (e.target.id === 'mem-modal') return closeEl('mem-modal');
+  const mo = e.target.closest('button[data-more]'); // "+8 lainnya": tampilkan semua kursi
+  if (mo) {
+    const xs = [...mo.parentElement.querySelectorAll('[data-x]')];
+    mo.remove();
+    xs.forEach((x, i) => { x.hidden = false; if (!calm()) x.animate([{opacity: 0, transform: 'scale(.6)'}, {opacity: 1, transform: 'none'}], {duration: 520, delay: Math.min(i, 14) * 30, easing: lbEase, fill: 'backwards'}); });
+    return;
+  }
   const b = e.target.closest('[data-seat]'); // ketuk kursi: tutup statistik member lalu buka riwayat kursi
   if (b) { closeEl('mem-modal'); openSeat(b.dataset.seat); }
 });
