@@ -36,6 +36,26 @@
 .lu-pick button{background:#181115;color:#e4e4e7;border:1px dashed #3d222e;border-radius:9999px;padding:4px 10px;font-size:12.5px;cursor:pointer}
 .lu-pick button:hover{border-color:#ff2a5f;color:#ff2a5f}
 .lu-n{color:#a1a1aa;font-size:12px}
+.lu-foot{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.lu-clear{padding:4px 10px!important;font-size:12px!important;white-space:nowrap;flex-shrink:0}
+.lu-clear[hidden],.lu-fb[hidden]{display:none}
+.lu-fb{font-size:12.5px;color:#ffe9a0;background:rgba(255,210,63,.08);border:1px solid rgba(255,210,63,.3);border-radius:8px;padding:6px 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px}
+.lu-fb .btn-s{padding:3px 10px;font-size:12px}
+.m-pick{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px;max-height:112px;overflow-y:auto}
+.m-pick[hidden]{display:none}
+.m-pick-b{background:#181115;color:#e4e4e7;border:1px solid #3d222e;border-radius:9999px;padding:5px 11px;font-size:12.5px;cursor:pointer;min-height:30px}
+.m-pick-b:hover{border-color:#ff2a5f}
+.m-pick-b.on{background:rgba(255,42,95,.2);border-color:#ff2a5f;color:#ff9db3}
+.lu-open{background:none;border:0;color:#a1a1aa;font-size:11.5px;cursor:pointer;padding:2px 0;text-decoration:underline dotted;text-underline-offset:3px}
+.lu-open:hover{color:#ff8fa8}
+.lu-list{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;max-width:260px}
+.lu-list[hidden]{display:none}
+.lu-list span{background:rgba(255,140,0,.14);border:1px solid rgba(255,140,0,.35);color:#ffd9b0;border-radius:9999px;padding:2px 8px;font-size:11.5px}
+.lu-list span.met{border-color:#ff2a5f;box-shadow:inset 3px 0 0 #ff2a5f}
+.sync-bn{background:rgba(255,140,0,.1);border:1px solid rgba(255,140,0,.5);border-radius:12px;padding:12px 14px;margin:4px 0 12px}
+.sync-bn[hidden]{display:none}
+.sync-bn p{margin:0 0 10px;font-size:13px;line-height:1.5;color:#ffd9b0}
+.sync-act{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 input,textarea,select{background:#1d1318;border:1px solid #3d222e;border-radius:8px;padding:10px 12px;color:#fff;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;width:100%}
 input:focus,textarea:focus,select:focus{border-color:#ff2a5f}
 #msg{font-size:13px;margin-top:10px;min-height:16px;color:#f87171}
@@ -432,9 +452,14 @@ body.adm #ex:not([hidden]),body.adm #away:not([hidden]),body.adm #misc:not([hidd
               <input id="lu-in" list="dl-lineup" placeholder="Ketik nama + Enter, atau tempel banyak" autocomplete="off"><datalist id="dl-lineup"></datalist></div>
             <div id="lu-copy" class="lu-copy" hidden><select id="lu-src" aria-label="Salin lineup dari show lain"></select><button type="button" class="btn-s" id="lu-cp">Salin lineup</button></div>
             <details id="lu-pick" class="lu-pick"><summary id="lu-pick-s">Pilih dari daftar member</summary><div id="lu-pick-l" class="lu-chips"></div></details>
-            <small id="lu-n" class="lu-n"></small>
+            <div class="lu-foot"><small id="lu-n" class="lu-n"></small><button type="button" class="btn-s lu-clear" id="lu-clear" hidden>Kosongkan lineup</button></div>
+            <div id="lu-fb" class="lu-fb" role="status" aria-live="polite" hidden></div>
           </div>
           <div id="extras"></div>
+          <div id="sync-bn" class="sync-bn" role="alertdialog" aria-labelledby="sync-msg" hidden>
+            <p id="sync-msg"></p>
+            <div class="sync-act"><button type="button" class="btn" id="sync-no">Hanya kursi ini</button><button type="button" class="btn main" id="sync-ok">Samakan lineup</button></div>
+          </div>
           <div id="msg" role="alert"></div>
           <div class="actions">
             <button type="submit" class="btn main" id="btn-submit">+ Simpan Data</button>
@@ -725,6 +750,20 @@ async function showStorage() {
 let askDone = null;
 escHooks.push(() => askDone ? (askDone(false), true) : false);
 
+// banner di dalam form (bukan modal): form dikunci sementara supaya isiannya tidak berubah selagi menunggu jawaban
+function askInline(msg) {
+  return new Promise(res => {
+    const bn = $('sync-bn'), others = [...$('form').children].filter(c => c !== bn);
+    $('sync-msg').textContent = msg;
+    bn.hidden = false;
+    others.forEach(c => { c.inert = true; });
+    bn.scrollIntoView({block: 'center', behavior: 'smooth'}); // 'center': di HP, bilah simpan & tab bawah menutupi tepi layar
+    $('sync-ok').focus({preventScroll: true});
+    const done = v => { bn.hidden = true; others.forEach(c => { c.inert = false; }); bn.onkeydown = $('sync-ok').onclick = $('sync-no').onclick = null; res(v); };
+    $('sync-ok').onclick = () => done(true); $('sync-no').onclick = () => done(false);
+    bn.onkeydown = e => { if (e.key === 'Escape') done(false); };
+  });
+}
 function ask(msg, okLabel = 'Ya') {
   return new Promise(res => {
     $('ask-msg').textContent = msg;
@@ -754,7 +793,7 @@ function renderTable() {
   $('tbody').innerHTML = list.length ? list.slice((page - 1) * PER, page * PER).map(r => `
     <tr data-rid="${r.id}"${r.id === focusId ? ' class="flash"' : ''}>
       <td data-l="Kursi"><span class="seat-badge${SEATS.has(r.seat) ? '' : ' bad'}" ${SEATS.has(r.seat) ? '' : 'title="Kursi tidak ada di peta — edit supaya muncul"'}>${esc(r.seat)}</span></td>
-      <td data-l="Setlist"><b>${esc(r.setlist)}</b>${(r.lineup || []).length ? `<br><small title="${esc(r.lineup.join(', '))}">${r.lineup.length} member tampil</small>` : ''}</td>
+      <td data-l="Setlist"><b>${esc(r.setlist)}</b>${(r.lineup || []).length ? luCell(r) : ''}</td>
       <td data-l="Tanggal">${esc(r.date)}${r.sesi ? ' · ' + r.sesi : ''}</td>
       <td data-l="Harga"${r.harga ? '' : ' class="nil"'}>${r.harga ? esc(rupiah(r.harga)) + (r.tiket ? '<br><small>' + esc(r.tiket) + '</small>' : '') : '-'}</td><td data-l="Keterangan"${r.note ? '' : ' class="nil"'}>${esc(r.note) || '-'}</td>
       <td data-l="2-Shot / Chekicha"${extras(r).length ? '' : ' class="nil"'}>${exCell(r)}</td>
@@ -932,15 +971,32 @@ const setMsg = t => { const m = $('msg'); m.textContent = t || ''; m.classList.r
 let lineup = [];
 const knownMembers = () => [...new Set([...records.flatMap(r => [...(r.lineup || []), r.member, r.ckMember]), ...solo.map(w => w.member), ...tickets.map(t => t.member)].filter(Boolean))].sort((a, b) => a.localeCompare(b));
 const luCanon = n => knownMembers().find(k => k.toLowerCase() === n.toLowerCase()) || n; // samakan huruf besar/kecil dengan nama yang sudah ada
+let luUndo = null, luFbT = 0;
+function luFb(text, undo) { // umpan balik kecil di bawah kolom lineup; "Urungkan" mengembalikan keadaan sebelum perubahan massal
+  const el = $('lu-fb');
+  clearTimeout(luFbT);
+  if (!text) { el.hidden = true; el.textContent = ''; return; }
+  el.innerHTML = esc(text) + (undo ? ' <button type="button" class="btn-s" id="lu-undo">Urungkan</button>' : '');
+  el.hidden = false;
+  luFbT = setTimeout(() => { el.hidden = true; }, 15000);
+}
 function luAdd(raw) {
+  const snap = lineup.slice(), known = new Set(knownMembers());
+  let added = 0, dup = 0, fresh = 0;
   String(raw || '')
     .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')            // [Nama](url) -> Nama
     .replace(/^\s*anggota yang tampil\s*:?\s*$/gim, '')  // buang baris judul dari jkt48.com
     .split(/[,\n;]+/).map(x => x.trim().replace(/\s+/g, ' ')).filter(Boolean).forEach(n => {
-    n = luCanon(n);
-    if (!lineup.some(x => x.toLowerCase() === n.toLowerCase())) lineup.push(n);
-  });
+      n = luCanon(n);
+      if (lineup.some(x => x.toLowerCase() === n.toLowerCase())) { dup++; return; }
+      lineup.push(n); added++;
+      if (known.size && !known.has(n)) fresh++;
+    });
   renderLineup();
+  if (added > 1 || fresh || dup) { // satu nama biasa yang sudah dikenal tidak perlu diumumkan
+    if (added > 1) luUndo = snap;
+    luFb([added ? `${added} ditambahkan` : '', fresh ? `${fresh} nama baru (kuning, cek ejaannya)` : '', dup ? `${dup} sudah ada` : ''].filter(Boolean).join(' · '), added > 1);
+  }
 }
 function luFormSrc() { // show lain yang sudah punya lineup, diurutkan: setlist sama + tanggal sama dulu
   const id = Number($('f-id').value) || 0, sl = $('f-setlist').value.trim().toLowerCase(), d = $('f-date').value, se = $('f-sesi').value;
@@ -951,6 +1007,10 @@ function luFormSrc() { // show lain yang sudah punya lineup, diurutkan: setlist 
   });
   const score = r => (r.date === d && r.sesi === se ? 4 : r.date === d ? 3 : 0) + (r.setlist.toLowerCase() === sl ? 2 : 0);
   return [...seen.values()].sort((a, b) => score(b) - score(a) || cmp(a, b));
+}
+function luCell(r) { // "12 member tampil" yang bisa diketuk (tooltip tidak ada di layar sentuh); member yang kamu temui ditandai
+  const met = new Set(extras(r).map(x => x.member));
+  return `<br><button type="button" class="lu-open" data-lu-open="${r.id}" aria-expanded="false">${r.lineup.length} member tampil ▾</button><div class="lu-list" hidden>${r.lineup.map(n => `<span${met.has(n) ? ' class="met" title="Kamu 2-Shot / Chekicha dengannya"' : ''}>${esc(n)}</span>`).join('')}</div>`;
 }
 function renderLineup() {
   const known = new Set(knownMembers()); // nama yang pernah tersimpan; kosong = data masih baru, tidak ditandai
@@ -963,12 +1023,24 @@ function renderLineup() {
   $('lu-pick-l').innerHTML = rest.map(n => `<button type="button" data-lu-add="${esc(n)}">+ ${esc(n)}</button>`).join('') || '<small class="lu-n">Tidak ada lagi.</small>';
   $('lu-pick-s').textContent = `Pilih dari daftar member (${rest.length})`;
   $('lu-n').textContent = lineup.length ? `${lineup.length} member tampil` + (lineup.length ? ' · ketuk × untuk menghapus' : '') : 'Belum diisi. Show ini akan masuk daftar "belum ada lineup".';
+  $('lu-clear').hidden = lineup.length < 2;
+  renderMPick();
   const src = luFormSrc();
   $('lu-copy').hidden = !src.length;
   if (src.length) {
     const cur = $('lu-src').value;
     $('lu-src').innerHTML = src.slice(0, 40).map(r => `<option value="${r.id}">${esc(fmtDate(r.date))}${r.sesi ? ' · ' + r.sesi : ''} · ${esc(r.setlist)} (${r.lineup.length} member)</option>`).join('');
     if (cur && src.some(r => String(r.id) === cur)) $('lu-src').value = cur;
+  }
+}
+// chip pilih cepat di bawah kolom "2-Shot / Chekicha dengan": ketuk nama dari lineup, tanpa mengetik
+function renderMPick() {
+  for (const K of KINDS) {
+    const box = $('mp-' + K.k), inp = $('m-' + K.k);
+    if (!box || !inp) continue; // form tambahan belum dibuat
+    const v = inp.value.trim().toLowerCase();
+    box.hidden = !lineup.length;
+    box.innerHTML = lineup.length ? '<small class="lu-n">Dari lineup:</small>' + lineup.map(n => `<button type="button" class="m-pick-b${n.toLowerCase() === v ? ' on' : ''}" data-mp="${K.k}" data-n="${esc(n)}">${esc(n)}</button>`).join('') : '';
   }
 }
 // otomatis: kalau lineup masih kosong dan sudah ada show lain di tanggal + sesi + setlist yang sama (mis. kursi lain), lineup-nya dipakai
@@ -995,6 +1067,8 @@ $('lu-fg').addEventListener('click', e => {
   const del = e.target.closest('[data-lu-del]'), add = e.target.closest('[data-lu-add]');
   if (del) { lineup.splice(+del.dataset.luDel, 1); renderLineup(); }
   else if (add) luAdd(add.dataset.luAdd);
+  else if (e.target.closest('#lu-clear')) { luUndo = lineup.slice(); lineup = []; renderLineup(); luFb('Lineup dikosongkan.', true); }
+  else if (e.target.closest('#lu-undo') && luUndo) { lineup = luUndo; luUndo = null; renderLineup(); luFb(''); }
 });
 $('lu-cp').addEventListener('click', () => {
   const r = records.find(x => String(x.id) === $('lu-src').value);
@@ -1011,11 +1085,20 @@ $('extras').innerHTML = KINDS.map(K => `
     <div class="fg"><label for="t-${K.k}">Jenis ${K.name}</label>
       <select id="t-${K.k}">${K.types.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select></div>
     <div class="fg"><label for="m-${K.k}">${K.name} dengan</label>
-      <input id="m-${K.k}" list="dl-member" placeholder="Nama Member" autocomplete="off"></div>
+      <input id="m-${K.k}" list="dl-member" placeholder="Nama Member" autocomplete="off"><div class="m-pick" id="mp-${K.k}" hidden></div></div>
     <div class="fg"><label for="p-${K.k}">Foto ${K.name} (Opsional)</label>
       <input type="file" id="p-${K.k}" accept="image/*">
       <div class="pprev" id="pv-${K.k}"><img id="pi-${K.k}" alt="Preview foto"><button type="button" class="btn" id="pr-${K.k}">Hapus foto</button></div></div>
   </div>`).join('');
+
+$('extras').addEventListener('click', e => {
+  const b = e.target.closest('[data-mp]');
+  if (!b) return;
+  const inp = $('m-' + b.dataset.mp);
+  inp.value = b.dataset.n; inp.dispatchEvent(new Event('input', {bubbles: true}));
+  renderMPick();
+});
+$('extras').addEventListener('input', e => { if (/^m-/.test(e.target.id || '')) renderMPick(); });
 
 const cur = { ts: '', ck: '' };
 function setPhoto(k, d) {
@@ -1044,6 +1127,7 @@ function toggleBox(k) {
   const on = $('f-' + k).value === 'Ya';
   $('box-' + k).style.display = on ? 'block' : 'none';
   if (!on) { $('m-' + k).value = ''; $('t-' + k).selectedIndex = 0; setPhoto(k, ''); }
+  renderMPick();
 }
 const toggleAll = () => KINDS.forEach(K => toggleBox(K.k));
 KINDS.forEach(K => {
@@ -1076,6 +1160,7 @@ function resetForm(keep) { // keep === true: kosongkan kursi & keterangan saja, 
   $('btn-again').style.display = '';
   setMsg('');
   toggleAll();
+  luFb(keep === true && kl.length ? `Lineup dari kursi sebelumnya dipakai lagi (${kl.length} member). Ubah kalau show ini berbeda.` : '');
   if (k) k.forEach(([id, v]) => { $(id).value = v; });
 }
 
@@ -1148,7 +1233,7 @@ $('form').addEventListener('submit', async e => {
   let synced = 0;
   if (differ.length) {
     const seats = differ.slice(0, 6).map(r => r.seat).join(', ') + (differ.length > 6 ? ', …' : '');
-    if (await ask(`Lineup kursi ${seat} berbeda dengan ${differ.length} kursi lain di show yang sama (${seats}). Samakan lineup-nya? Batal = hanya kursi ini yang disimpan.`, 'Samakan')) {
+    if (await askInline(`Lineup kursi ${seat} berbeda dengan ${differ.length} kursi lain di show yang sama (${seats}). Samakan lineup-nya?`)) {
       differ.forEach(r => { r.lineup = [...rec.lineup]; });
       synced = differ.length;
     }
@@ -1168,6 +1253,13 @@ $('form').addEventListener('submit', async e => {
 });
 
 // ---------- Aksi tabel & peta ----------
+$('tbody').addEventListener('click', e => {
+  const b = e.target.closest('[data-lu-open]');
+  if (!b) return;
+  const l = b.nextElementSibling;
+  l.hidden = !l.hidden; b.setAttribute('aria-expanded', String(!l.hidden));
+  b.textContent = b.textContent.replace(/[▾▴]$/, l.hidden ? '▾' : '▴');
+});
 $('tbody').addEventListener('click', async e => {
   const btn = e.target.closest('[data-act]');
   if (!btn) return;
