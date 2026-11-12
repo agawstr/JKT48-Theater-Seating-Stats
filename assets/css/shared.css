@@ -1268,3 +1268,59 @@ html[data-glass=on] .mem-mode{-webkit-backdrop-filter:blur(14px) saturate(160%);
 #mem-q,#mem-q:focus{box-shadow:none}
 /* tablet / laptop (jendela tidak penuh): bagian member selebar kolom halaman, jadi daftar jadi beberapa kolom, bukan satu lajur sempit */
 #mem-sec{width:100%;max-width:var(--col-w);box-sizing:border-box}
+
+/* ================= Lembar bagikan (kartu show & Wrapped) =================
+   HP: lembar bawah seperti detail kursi. Laptop: dialog dua kolom (pratinjau kiri, tujuan kanan). */
+#share-sheet{z-index:150}
+#share-sheet .modal{max-width:460px;max-height:92vh;max-height:92dvh;overflow-y:auto;overscroll-behavior:contain;padding:22px 20px 20px}
+.sh-title{margin:0 40px 14px 0;font-size:19px;font-weight:800;letter-spacing:-.2px}
+.sh-body{display:flex;flex-direction:column;gap:16px}
+.sh-left{display:flex;flex-direction:column;align-items:center;gap:12px}
+.sh-seg{display:inline-flex;padding:3px;border-radius:99px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14)}
+.sh-seg[hidden]{display:none}
+.sh-seg button{border:0;background:none;color:#c9c9d1;font-family:inherit;font-size:12.5px;font-weight:700;padding:7px 15px;border-radius:99px;cursor:pointer;transition:background .25s var(--ios),color .25s,box-shadow .25s}
+.sh-seg button.on{background:#ff2a5f;color:#fff;box-shadow:0 4px 14px rgba(255,42,95,.45)}
+.sh-prev{--ar:4 / 5;height:min(38vh,360px);aspect-ratio:var(--ar);max-width:100%;border-radius:18px;overflow:hidden;position:relative;
+  background:linear-gradient(90deg,#2a1520 25%,#3a1d2b 50%,#2a1520 75%);background-size:200% 100%;animation:shimmer 1.3s linear infinite;
+  border:1px solid rgba(255,255,255,.14);box-shadow:0 14px 40px rgba(0,0,0,.5);transition:aspect-ratio .3s var(--ios)}
+.sh-prev.ld{animation:none;background:#150a10}
+.sh-prev img{display:block;width:100%;height:100%;object-fit:contain;opacity:0;transform:scale(1.03);transition:opacity .45s var(--ios),transform .6s var(--ios)}
+.sh-prev img.ok{opacity:1;transform:none}
+.sh-list{display:flex;flex-direction:column;gap:8px;transition:opacity .2s}
+.sh-list[aria-busy=true]{opacity:.45;pointer-events:none}
+.sh-row{display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box;padding:9px 12px 9px 9px;border-radius:18px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#fff;text-align:left;font-family:inherit;transition:transform .25s var(--ios),background .2s,border-color .2s}
+button.sh-row{cursor:pointer}
+button.sh-row:hover{background:rgba(255,255,255,.13);border-color:rgba(255,42,95,.65)}
+button.sh-row:active{transform:scale(.98)}
+.sh-ic{flex:none;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 4px 12px rgba(0,0,0,.3)}
+.sh-ic svg{width:24px;height:24px}
+.sh-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.sh-tx b{font-size:15px;font-weight:700}
+.sh-tx span{font-size:12px;color:#a1a1aa}
+.sh-chips{display:flex;gap:6px;flex:none}
+.sh-chip{border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.1);color:#fff;font-family:inherit;font-size:12.5px;font-weight:700;padding:8px 14px;border-radius:99px;cursor:pointer;transition:transform .2s var(--ios),background .2s,border-color .2s}
+.sh-chip:hover{background:#ff2a5f;border-color:#ff2a5f}
+.sh-chip:active{transform:scale(.94)}
+.sh-more{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.sh-more [hidden]{display:none}
+.sh-hint{margin:12px 2px 0;min-height:2.8em;font-size:12.5px;line-height:1.45;color:#a1a1aa}
+@media(min-width:760px){
+  #share-sheet .modal{max-width:800px}
+  .sh-body{flex-direction:row;gap:26px;align-items:flex-start}
+  .sh-left{flex:none;width:300px}
+  .sh-prev{height:auto;width:100%;max-height:62vh}
+  .sh-right{flex:1;min-width:0}
+}
+.sheet-grip{display:none}
+@media(max-width:600px){
+  #share-sheet{align-items:flex-end;padding:0}
+  #share-sheet .modal{max-width:none;width:100%;border-radius:28px 28px 0 0;padding:8px 16px calc(16px + env(safe-area-inset-bottom));animation:sheet-in .8s var(--ios);transition:transform .5s var(--ios);will-change:transform}
+  #share-sheet .sheet-grip{display:block;width:40px;height:5px;margin:2px auto 12px;border-radius:3px;background:rgba(255,255,255,.3);touch-action:none}
+  #share-sheet .sh-title{touch-action:none;padding:2px 0}
+  #share-sheet .x{top:12px}
+  #share-sheet.closing>.modal{animation:none;transform:translate3d(0,105%,0);transition:transform .42s cubic-bezier(.4,0,.2,1)}
+  #share-sheet.closing{animation:fade-out .42s cubic-bezier(.4,0,.2,1) forwards}
+  .sh-prev{height:min(30vh,250px)}
+}
+@media(prefers-reduced-motion:reduce){.sh-prev,.sh-prev img,.sh-row,.sh-chip,#share-sheet .modal{transition:none!important;animation:none!important}.sh-prev img.ok{opacity:1}}
