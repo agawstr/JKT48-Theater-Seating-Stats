@@ -276,3 +276,15 @@ html #seat-modal.docked.over.open.open.open.closing::before{animation:ovb-out .4
 @keyframes ovb-in{from{opacity:0}}
 @keyframes ovb-out{to{opacity:0}}
 @media(prefers-reduced-motion:reduce){.overlay.open:not(.docked):not(#lightbox)::before,html #seat-modal.docked.over.open.open.open::before{animation:none}}
+
+
+/* ---------- HP: chip lompat + bar cari member tidak lagi menumpuk layar ----------
+   1) latar gradasi gelap supaya teks kartu di belakangnya tidak tembus ke belakang pil / kolom cari
+   2) saat menggulung ke bawah keduanya menyingkir (layar penuh untuk daftar), muncul lagi begitu menggulung ke atas */
+@media(max-width:768px){
+  .jump,#mem-bar{background:linear-gradient(180deg,rgba(13,9,13,.96) 72%,rgba(13,9,13,0));
+    transition:transform .45s var(--ios),opacity .3s}
+  html.bars-hide .jump{transform:translate3d(0,calc(-100% - var(--stick)),0);opacity:0;pointer-events:none}
+  html.bars-hide #mem-bar{transform:translate3d(0,calc(-100% - var(--stick) - var(--jh)),0);opacity:0;pointer-events:none}
+}
+@media(prefers-reduced-motion:reduce){.jump,#mem-bar{transition:none}}
