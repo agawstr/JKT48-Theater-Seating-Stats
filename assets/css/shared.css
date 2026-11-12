@@ -1233,8 +1233,7 @@ html[data-glass=on] .mem-mode{-webkit-backdrop-filter:blur(14px) saturate(160%);
 /* ---- chip lompat + bar member menempel + avatar chip member ---- */
 :root{--jh:48px}
 .jump{position:sticky;top:var(--stick);z-index:6;display:flex;gap:8px;margin:0 0 -2px;padding:6px 0 14px;overflow-x:auto;scrollbar-width:none}
-/* tanpa latar: chip & kolom cari melayang sebagai pil, bayangan lembut menjaga keterbacaan di atas isi yang lewat */
-.jump .btn-s,#mem-bar #mem-q,#mem-bar #mem-sort{box-shadow:0 6px 16px rgba(0,0,0,.5)}
+/* tanpa latar dan tanpa bayangan: hanya pil-nya yang melayang */
 .jump{padding:6px 2px 14px;margin-left:-2px;margin-right:-2px}
 .jump::-webkit-scrollbar{display:none}
 .jump .btn-s{flex:1 0 auto;padding:7px 14px;white-space:nowrap}
