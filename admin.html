@@ -1139,6 +1139,20 @@ $('form').addEventListener('submit', async e => {
     if (n && !lineup.some(x => x.toLowerCase() === n.toLowerCase()) && !addedLu.includes(n)) { lineup.push(n); addedLu.push(n); }
   }
   const rec = { id: id || Date.now(), seat, setlist, date, sesi, note, harga, tiket, ...ex, lineup: [...lineup] };
+
+  // kursi lain di show yang sama (tanggal + sesi + setlist) harus punya lineup yang sama; kalau beda, tawarkan menyamakan.
+  // Lineup kosong tidak pernah menimpa lineup yang sudah terisi.
+  const luKey = a => (a || []).map(x => String(x).toLowerCase()).sort().join('|');
+  const differ = !rec.lineup.length ? [] : records.filter(r => r.id !== rec.id && r.date === date && (r.sesi || '') === (sesi || '')
+    && r.setlist.toLowerCase() === setlist.toLowerCase() && luKey(r.lineup) !== luKey(rec.lineup));
+  let synced = 0;
+  if (differ.length) {
+    const seats = differ.slice(0, 6).map(r => r.seat).join(', ') + (differ.length > 6 ? ', …' : '');
+    if (await ask(`Lineup kursi ${seat} berbeda dengan ${differ.length} kursi lain di show yang sama (${seats}). Samakan lineup-nya? Batal = hanya kursi ini yang disimpan.`, 'Samakan')) {
+      differ.forEach(r => { r.lineup = [...rec.lineup]; });
+      synced = differ.length;
+    }
+  }
   if (id) {
     const i = records.findIndex(r => r.id === id);
     if (i !== -1) records[i] = rec; else records.push(rec);
@@ -1149,7 +1163,7 @@ $('form').addEventListener('submit', async e => {
   if (keep && !id) $('f-seat').focus();
   focusId = rec.id; // baris ini menyala sebentar & halamannya dibuka
   renderAll();
-  toast((id ? 'Diperbarui: ' : 'Tersimpan: ') + rec.seat + ' · ' + rec.setlist + (addedLu.length ? ' · masuk lineup: ' + addedLu.join(', ') : ''),
+  toast((id ? 'Diperbarui: ' : 'Tersimpan: ') + rec.seat + ' · ' + rec.setlist + (addedLu.length ? ' · masuk lineup: ' + addedLu.join(', ') : '') + (synced ? ' · lineup disamakan ke ' + synced + ' kursi lain' : ''),
     {label: 'Lihat', fn: () => { const tr = $('tbody').querySelector(`tr[data-rid="${rec.id}"]`); if (!tr) return; tr.scrollIntoView({behavior: 'smooth', block: 'center'}); tr.classList.remove('flash'); void tr.offsetWidth; tr.classList.add('flash'); }});
 });
 
