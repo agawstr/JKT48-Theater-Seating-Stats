@@ -98,7 +98,7 @@ const closeEl = id => {
   const el = $(id);
   if (!el.classList.contains('open') || el.classList.contains('closing')) return;
   el.classList.add('closing'); // animasi tutup dulu, baru disembunyikan
-  timers[id] = setTimeout(() => { el.classList.remove('open', 'closing'); if (id === 'seat-modal') el.classList.remove('over'); ovLock(); try { lastFocus[id]?.focus?.({preventScroll: true}); } catch (e) {} }, 420);
+  timers[id] = setTimeout(() => { el.classList.remove('open', 'closing'); if (id === 'seat-modal') el.classList.remove('over'); ovLock(); try { lastFocus[id]?.focus?.({preventScroll: true}); } catch (e) {} }, 520);
   histSync();
 };
 
