@@ -46,7 +46,7 @@ h1{font-size:42px;font-weight:900;color:#ff2a5f;margin:0 0 8px;letter-spacing:-.
 
 /* animasi saat modal / lightbox dibuka */
 @keyframes fade{from{opacity:0}}
-.overlay.open{animation:fade .18s ease-out}
+
 .overlay.open>.modal,#lightbox.open>img{animation:pop-in .22s cubic-bezier(.2,.8,.2,1)}
 .seat:active{transform:scale(.94)}
 @media(prefers-reduced-motion:reduce){.overlay.open,.overlay.open>.modal,#lightbox.open>img{animation:none}}
@@ -69,8 +69,7 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 .stage{font-size:12px;letter-spacing:3px}}
 
 /* animasi tutup */
-.overlay.closing{animation:fade-out .15s ease-in forwards}
-.overlay.closing>.modal,#lightbox.closing>img{animation:pop-out .15s ease-in forwards}
+
 @media(prefers-reduced-motion:reduce){.overlay.closing,.overlay.closing>.modal,#lightbox.closing>img{animation:none}}
 
 /* statistik, filter, legenda, grafik setlist */
@@ -112,10 +111,10 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 
 /* animasi masuk & skeleton */
 @keyframes shimmer{to{background-position:-200% 0}}
-.intro .seat-row{animation:rise .45s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--r) * 45ms)}
+
 .sk{background:linear-gradient(90deg,#181115 25%,#2a1a22 50%,#181115 75%);background-size:200% 100%;animation:shimmer 1.2s linear infinite;border-radius:12px}
 .stat.sk{min-height:72px;border-color:transparent}
-@media(prefers-reduced-motion:reduce){.intro .seat-row,.sk{animation:none}}
+@media(prefers-reduced-motion:reduce){.sk{animation:none}}
 
 /* tab, kalender, galeri */
 [hidden]{display:none!important}
@@ -270,8 +269,9 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 @keyframes growx{from{transform:scaleX(0)}}
 @keyframes growy{from{transform:scaleY(0)}}
 @keyframes pop{from{opacity:0;transform:scale(.3)}}
-#view-main,#view-gal,#view-tl,#view-ev{animation:tabin .28s ease-out}
-.enter .tl-i,.enter .gi,.enter .ev-g,.enter .ev-c,.shown .sl-row,.shown .rk{animation:rise .4s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0) * 35ms)}
+
+.shown .sl-row,
+.shown .rk{animation:rise .4s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0) * 35ms)}
 .shown .sl-bar i{transform-origin:left;animation:growx .7s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0) * 45ms + .15s)}
 .shown .mc-b i{transform-origin:bottom;animation:growy .7s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0) * 40ms + .15s)}
 .shown .cd.on1,.shown .cd.on2,.shown .cd.on3{animation:pop .4s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--d,0) * 20ms + .3s)}
@@ -279,9 +279,16 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 .ev-g{interpolate-size:allow-keywords}
 .ev-g::details-content{block-size:0;overflow:hidden;transition:block-size .3s ease,content-visibility .3s allow-discrete}
 .ev-g[open]::details-content{block-size:auto}
-.ev-g[open] .ev-d{animation:fade .25s ease-out}
+
 @media(prefers-reduced-motion:reduce){
-#view-main,#view-gal,#view-tl,#view-ev,.enter .tl-i,.enter .gi,.enter .ev-g,.enter .ev-c,.enter .sl-row,.enter .rk,.enter .sl-bar i,.enter .mc-b i,.enter .cd.on1,.enter .cd.on2,.enter .cd.on3,.ev-g[open] .ev-d{animation:none}
+.enter .sl-row,
+.enter .rk,
+.enter .sl-bar i,
+.enter .mc-b i,
+.enter .cd.on1,
+.enter .cd.on2,
+.enter .cd.on3,
+.ev-g[open] .ev-d{animation:none}
 .ev-g::details-content{transition:none}}
 
 /* grafik & kalender yang bisa diklik untuk memfilter peta */
@@ -299,13 +306,12 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 .cd[role=button]:active{transform:scale(.7)}
 .sl-row:active,.rk:active,.ev-c:active{transform:scale(.98)}
 .tab:active,.btn-s:active{transform:scale(.96)}
-.flash .seat.visited{animation:seatflash .8s ease-out .35s}
+
 @media(prefers-reduced-motion:reduce){.sl-bar i,.mc-b i{transition:none}.flash .seat.visited{animation:none}
 .mc[role=button]:active .mc-b,.cd[role=button]:active,.sl-row:active,.rk:active,.ev-c:active,.tab:active,.btn-s:active{transform:none}}
 
 /* animasi klik & perubahan data */
-.refresh .seat.visited{animation:seatpop .45s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--r,0) * 28ms)}
-.mc.on .mc-b,.rk.on,.sl-row.on,.ev-c.on,.cd.sel{animation:selpulse .6s ease-out}
+
 .mc[role=button]:active,.sl-row:active,.rk:active,.ev-c:active,.tab:active{transform:scale(.97)}
 .cd[role=button]:active{transform:scale(.8)}
 .mc,.rk,.sl-row,.ev-c,.tab,.cd{transition:transform .15s,border-color .2s,background .2s}
@@ -345,7 +351,7 @@ h1,.sec,.sec2{text-wrap:balance}
 /* penanda tab meluncur & pil filter aktif & percikan */
 .tab{position:relative;z-index:1}
 .tab.on{background:transparent;border-color:transparent;box-shadow:none}
-.tab-ind{position:absolute;left:0;top:0;box-sizing:border-box;border-radius:9999px;background:#881337;border:1px solid #f43f5e;box-shadow:0 0 15px rgba(244,63,94,.3);transition:transform .35s cubic-bezier(.2,.8,.2,1),width .35s cubic-bezier(.2,.8,.2,1);pointer-events:none}
+.tab-ind{position:absolute;left:0;top:0;box-sizing:border-box;border-radius:9999px;background:#881337;border:1px solid #f43f5e;box-shadow:0 0 15px rgba(244,63,94,.3);pointer-events:none}
 #fbar{position:fixed;left:50%;bottom:18px;z-index:40;display:flex;align-items:center;gap:12px;max-width:calc(100vw - 24px);padding:9px 10px 9px 16px;border-radius:99px;background:rgba(24,17,21,.94);border:1px solid #ff2a5f;box-shadow:0 8px 28px rgba(0,0,0,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);font-size:13px;color:#e4e4e7;transform:translate(-50%,24px);opacity:0;pointer-events:none;transition:transform .3s cubic-bezier(.2,.8,.2,1),opacity .25s}
 #fbar.on{transform:translate(-50%,0);opacity:1;pointer-events:auto}
 #fbar span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -354,8 +360,8 @@ h1,.sec,.sec2{text-wrap:balance}
 @media(prefers-reduced-motion:reduce){.shown .rf,.shown .sl-bar i,.shown .mc-b i,.shown .cd.on1,.shown .cd.on2,.shown .cd.on3,.shown .sl-row,.shown .rk{animation:none}.tab-ind,#fbar{transition:none}}
 
 /* alur OFC -> General: tahap mengalir berurutan */
-.shown .lot-r.fl{animation:rise .45s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0) * .55s)}
-.shown .lot-r.fl .sl-bar i{transform-origin:left;animation:growx .9s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0) * .55s + .15s)}
+
+.shown .lot-r.fl .sl-bar i{transform-origin:left;}
 .lot-r.fl b{font-variant-numeric:tabular-nums}
 @media(prefers-reduced-motion:reduce){.shown .lot-r.fl,.shown .lot-r.fl .sl-bar i{animation:none}}
 
@@ -393,25 +399,14 @@ html{scroll-behavior:smooth}
 .head .badge{animation:drop .7s var(--ease) .16s both}
 .tabbar{transition:box-shadow .3s}
 .tabbar.stuck{box-shadow:0 10px 28px rgba(0,0,0,.5)}
-.leave{animation:tabout .12s ease-in both}
-#pop.on{animation:popin .16s var(--ease)}
+
 .btn-s,.btn,.todo-c,.tt-y,.tab,.info-btn{transition:transform .18s var(--ease),background .2s,border-color .2s,color .2s,box-shadow .2s}
 .btn-s:active,.btn:active,.todo-c:active,.tt-y:active{transform:scale(.96)}
 .stat:not(.sk),.tt-c,.ev-c,.last-c{transition:transform .25s var(--ease),border-color .25s,box-shadow .25s,background .25s}
 .stat:not(.sk):hover,.tt-c:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,.4)}
 .ev-g,.tl-i{transition:border-color .25s,background .25s,transform .25s var(--ease)}
 .ev-g:hover,.tl-i:hover{transform:translateX(3px)}
-.gi img,.hi img,.last-c img{animation:fade .5s ease-out}
-.enter #story,.enter .last-c,.enter #cover,.enter #filters,.enter #stats .stat{animation:rise .55s var(--ease) both}
-.enter #stats .stat:nth-child(2){animation-delay:60ms}
-.enter #stats .stat:nth-child(3){animation-delay:120ms}
-.enter #stats .stat:nth-child(4){animation-delay:180ms}
-.enter #stats .stat:nth-child(5){animation-delay:240ms}
-.enter #stats .stat:nth-child(6){animation-delay:300ms}
-.enter #stats .stat:nth-child(7){animation-delay:360ms}
-.enter #stats .stat:nth-child(8){animation-delay:420ms}
-.enter #cover{animation-delay:.24s}
-.enter #filters{animation-delay:.3s}
+
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 
 /* sub-tab Galeri & keterangan sesi lepas */
@@ -545,12 +540,11 @@ body::before{content:'';position:fixed;inset:-10%;z-index:-1;pointer-events:none
 /* animasi lebih halus: easing & durasi lebih lembut, pegas ala iOS */
 :root{--ease:cubic-bezier(.22,1,.36,1);--spring:cubic-bezier(.34,1.45,.64,1)}
 @keyframes pop-in{from{opacity:0;transform:translateY(22px) scale(.93)}}
-.enter .tl-i,.enter .gi,.enter .ev-g,.enter .ev-c,.shown .sl-row,.shown .rk,.enter #story,.enter .last-c,.enter #cover,.enter #filters,.enter #stats .stat{animation-duration:.7s;animation-timing-function:var(--ease)}
-.intro .seat-row{animation-duration:.75s;animation-timing-function:var(--ease)}
-#view-main,#view-gal,#view-tl,#view-ev{animation-duration:.5s;animation-timing-function:var(--ease)}
-.overlay.open{animation-duration:.3s}
+.shown .sl-row,
+.shown .rk{animation-duration:.7s;animation-timing-function:var(--ease)}
+
 .overlay.open>.modal,#lightbox.open>img{animation-duration:.45s;animation-timing-function:var(--spring)}
-.tab-ind{transition:transform .6s var(--spring),width .6s var(--spring)}
+
 #fbar{transition:transform .5s var(--spring),opacity .3s}
 
 /* hover/klik: hanya properti yang perlu, dengan pegas */
@@ -562,8 +556,6 @@ body::before{content:'';position:fixed;inset:-10%;z-index:-1;pointer-events:none
 .shown .sl-bar i,.shown .mc-b i{animation-duration:1s;animation-timing-function:var(--ease)}
 
 /* galeri: foto selalu muncul bertahap (juga saat ganti sub-tab / filter member), tab tanpa memantul */
-#gallery .gi{animation:rise .7s var(--ease) backwards;animation-delay:calc(var(--i,0) * 45ms)}
-.tab-ind{transition:transform .5s var(--ease),width .5s var(--ease)}
 
 /* tanpa mantul: semua "pegas" jadi easing halus tanpa overshoot */
 :root{--spring:cubic-bezier(.22,1,.36,1)}
@@ -642,18 +634,15 @@ body::before{inset:0;contain:strict}
 
 /* ---- 3) animasi pindah tab: satu gerakan, halus, tanpa dobel ---- */
 @keyframes tabin{from{opacity:0;transform:translate3d(var(--tabx,0),0,0)}}
-@keyframes tabout{to{opacity:0;transform:translate3d(calc(var(--tabx,0px) * -.6),0,0)}}
+
 @keyframes rise{from{opacity:0;transform:translate3d(0,12px,0)}}
-#view-main,#view-gal,#view-tl,#view-ev{animation:tabin .32s var(--ease) both}
-.leave{animation:tabout .09s ease-in both}
-.enter .tl-i,.enter .ev-g,.enter .ev-c,.shown .sl-row,.shown .rk,.enter #story,.enter .last-c,.enter #cover,.enter #filters,.enter #stats .stat{
+
+.shown .sl-row,
+.shown .rk{
   animation:rise .45s var(--ease) both;animation-delay:calc(var(--i,0) * 28ms)}
-.enter #stats .stat,.enter #story,.enter .last-c,.enter #cover,.enter #filters{animation-delay:0ms}
-.enter #stats .stat:nth-child(n+2){animation-delay:40ms}.enter #stats .stat:nth-child(n+4){animation-delay:80ms}.enter #stats .stat:nth-child(n+7){animation-delay:110ms}
-.enter .gi{animation:none}
+
 /* galeri: foto "jatuh" ke tempatnya sedikit demi sedikit, hanya 10 pertama yang bertahap */
-@keyframes drop-pol{from{opacity:0;transform:translate3d(0,14px,0) rotate(calc(var(--t,0deg) * 1.6))}}
-#gallery .gi{animation:drop-pol .5s var(--ease) backwards;animation-delay:calc(var(--i,0) * 40ms)}
+
 .gi img,.hi img,.last-c img{animation:none}
 .gi-ph img{opacity:0;transition:opacity .35s ease}
 .gi-ph img.ld,.gi-ph img[complete]{opacity:1}
@@ -739,12 +728,12 @@ body::before{inset:0;contain:strict}
 /* ---- 6) hemat gerak di layar kecil ---- */
 @media(max-width:768px){
   .head h1,.head .sub,.head .badge{animation-duration:.5s}
-  .intro .seat-row{animation-duration:.5s;animation-delay:calc(var(--r) * 30ms)}
+  
   .stat:not(.sk),.ev-c,.last-c{transition:none}
   .sk{animation-duration:1.6s}
 }
 @media(prefers-reduced-motion:reduce){
-  #view-main,#view-gal,#view-tl,#view-ev,#gallery .gi,.leave{animation:none}
+  
 }
 @media(max-width:600px){
   #gallery{padding:12px 8px 4px}
@@ -840,26 +829,13 @@ img,canvas{max-width:100%}
 :root{--ios:cubic-bezier(.32,.72,0,1)}
 
 /* ---- pindah tab: tanpa animasi di wadah besar (itu yang bikin patah), gerak hanya di item yang masuk ---- */
-#view-main,#view-gal,#view-tl,#view-ev{animation:none}
-.enter .tl-i,.enter .gi{animation:none}
-.enter .tl-i.a{animation:rise .55s var(--ios) both;animation-delay:calc(var(--i,0) * 30ms)}
-.enter .ev-g:nth-child(-n+8),.enter .ev-c{animation:rise .55s var(--ios) both;animation-delay:calc(var(--i,0) * 30ms)}
-.enter .ev-g:nth-child(n+9){animation:none}
-#gallery .gi{animation:none}
-#gallery .gi.a{animation:drop-pol .6s var(--ios) backwards;animation-delay:calc(var(--i,0) * 45ms)}
-.enter #stats .stat,.enter #story,.enter .last-c,.enter #cover,.enter #filters{animation-duration:.6s;animation-timing-function:var(--ios)}
-.tab-ind{transition:transform .5s var(--ios),width .5s var(--ios)}
 
 /* ---- modal & lightbox: masuk dengan kurva iOS ---- */
-.overlay.open{animation:ov-in .35s var(--ios)}
-.overlay.open>.modal{animation:modal-in .5s var(--ios)}
+
 #lightbox.open>img{animation:none}
 #lb-img{will-change:transform;transition:none}
-.overlay.closing{animation:fade-out .28s ease-in forwards}
-.overlay.closing>.modal,#lightbox.closing>img{animation:pop-out .24s cubic-bezier(.4,0,1,1) forwards}
 
 /* kartu di dalam modal muncul bertahap */
-.overlay.open .hi{animation:hi-in .55s var(--ios) both;animation-delay:calc(var(--i,0) * 55ms + 120ms)}
 
 /* foto di modal: tempat sudah dipesan + skeleton, lalu memudar masuk */
 .hi-ph{position:relative;margin-top:10px;border-radius:12px;overflow:hidden;aspect-ratio:4/3;max-height:240px;width:100%;
@@ -874,14 +850,13 @@ img,canvas{max-width:100%}
 @media(max-width:600px){
   #seat-modal{align-items:flex-end;padding:0}
   #seat-modal .modal{max-width:none;width:100%;max-height:88vh;max-height:88dvh;display:flex;flex-direction:column;
-    border-radius:28px 28px 0 0;padding:8px 18px calc(18px + env(safe-area-inset-bottom));
-    animation:sheet-in .6s var(--ios);transition:transform .38s var(--ios);will-change:transform}
+    border-radius:28px 28px 0 0;padding:8px 18px calc(18px + env(safe-area-inset-bottom));transition:transform .38s var(--ios);will-change:transform}
   #seat-modal .sheet-grip{display:block;flex:none;width:40px;height:5px;margin:2px auto 14px;border-radius:3px;background:rgba(255,255,255,.3);touch-action:none}
   #seat-modal #modal-title{flex:none;padding:6px 0;touch-action:none}
   #seat-modal .x{top:12px}
   #seat-modal .hist{flex:1 1 auto;max-height:none;min-height:0;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-bottom:6px}
-  #seat-modal.closing>.modal{animation:none;transform:translate3d(0,105%,0);transition:transform .32s cubic-bezier(.4,0,1,1)}
-  #seat-modal.closing{animation:fade-out .32s ease-in forwards}
+  #seat-modal.closing>.modal{transform:translate3d(0,105%,0);transition:transform .32s cubic-bezier(.4,0,1,1)}
+  
 }
 
 /* ---- sentuhan iOS: tombol/kartu menekan dengan halus ---- */
@@ -924,7 +899,6 @@ img,canvas{max-width:100%}
 .shown .cd.on1,.shown .cd.on2,.shown .cd.on3{animation-duration:.7s;animation-timing-function:var(--ios)}
 .shown .lot-r.fl{animation:rise .85s var(--ios) both;animation-delay:calc(var(--i,0) * .26s)}
 .shown .lot-r.fl .sl-bar i{animation:growx 1.2s var(--ios) both;animation-delay:calc(var(--i,0) * .26s + .12s)}
-.intro .seat-row{animation-duration:.95s;animation-timing-function:var(--ios);animation-delay:calc(var(--r) * 60ms)}
 
 /* --- 3. Peta: kursi muncul tanpa memantul (sebelumnya melewati skala 1.12 lalu kembali = "mantul") --- */
 @keyframes seatpop{0%{transform:scale(.82);opacity:.4}100%{transform:none;opacity:1}}
