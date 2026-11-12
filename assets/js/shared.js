@@ -1837,7 +1837,7 @@ function memberNames() {
 let memQ = '', memSort = 'top', memMode = 'all'; // memMode: 'all' (semua yang tampil) | 'met' (pernah ketemu)
 $('mchart').insertAdjacentHTML('afterend', `<h2 class="sec" id="mem-h">Per member <small class="hint" style="display:inline">· ketuk nama untuk statistiknya</small></h2>
   <div id="mem-bar"><input type="search" id="mem-q" placeholder="Cari member…" aria-label="Cari member" autocomplete="off"><button type="button" class="btn-s" id="mem-sort" aria-label="Ubah urutan"></button></div>
-  <div id="mem-mode" class="mem-mode" role="group" aria-label="Member yang ditampilkan" hidden><button type="button" data-mode="all" aria-pressed="true">Semua yang tampil</button><button type="button" data-mode="met" aria-pressed="false">Pernah ketemu</button></div>
+  <div id="mem-mode" class="mem-mode" role="group" aria-label="Member yang ditampilkan" hidden><i class="seg-ind" aria-hidden="true"></i><button type="button" data-mode="all" aria-pressed="true">Semua member</button><button type="button" data-mode="met" aria-pressed="false">Pernah 2-Shot/Chekicha</button></div>
   <p id="mem-key" class="mem-key"></p><div id="mem-list"></div>`);
 function renderMembers() {
   const box = $('mem-list');
@@ -1852,19 +1852,33 @@ function renderMembers() {
   $('mem-mode').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
   $('mem-sort').textContent = memSort === 'az' ? 'A–Z' : 'Terbanyak';
   $('mem-key').innerHTML = hasLineup
-    ? '<span class="lg-i"><b class="lg-a">8</b> kali ditonton tampil</span><span class="lg-i"><b class="lg-m">3</b> kali ketemu (2-Shot / Chekicha)</span><span class="lg-i"><i class="mem-dot"></i> pernah ketemu · yang redup belum</span>'
+    ? '<span class="lg-i"><b class="lg-a">8</b> kali ditonton (tampil di show)</span><span class="lg-i"><b class="lg-m">3</b> di antaranya 2-Shot / Chekicha</span><span class="lg-i lg-n">Kotak berwarna = pernah 2-Shot/Chekicha · yang redup belum</span>'
     : 'Angka = jumlah 2-Shot + Chekicha. Isi lineup di admin untuk menghitung semua member yang tampil.';
   box.classList.toggle('lu', hasLineup);
   box.innerHTML = list.length ? list.map(([n, c, m]) => {
     const pct = c ? Math.min(100, Math.round(m / c * 100)) : 0;
-    const ttl = hasLineup ? ` title="${esc(`Tampil ${c}× · ketemu ${m}×` + (m ? ` (${pct}%)` : ''))}"` : '';
+    const ttl = hasLineup ? ` title="${esc(`Ditonton ${c}× · 2-Shot/Chekicha ${m}×` + (m ? ` (${pct}%)` : ''))}"` : '';
     return `<button type="button" class="mem-chip${m && hasLineup ? ' met' : ''}" data-mem="${esc(n)}"${ttl}><span class="mem-cn">${esc(n)}</span><span class="mem-nums"><b>${c}</b>${hasLineup && m ? `<b class="mm">${m}</b>` : ''}</span>${hasLineup && m ? `<span class="mem-rt" style="width:${pct}%"></span>` : ''}</button>`;
   }).join('')
     : `<div class="empty">${all.length ? 'Tidak ada member yang cocok' : 'Belum ada data member'}</div>`;
 }
+// pil geser di saklar "Semua member / Pernah 2-Shot/Chekicha": melar ke tujuan lalu mengecil (efek cair), seperti pil di tab bar
+function segMove(anim) {
+  const box = $('mem-mode'), ind = box.querySelector('.seg-ind'), on = box.querySelector('[aria-pressed=true]');
+  if (!ind || !on || !on.offsetWidth) return;
+  const x = on.offsetLeft, w = on.offsetWidth, prev = segMove.p, T = v => `translate3d(${v}px,0,0)`;
+  ind.style.top = on.offsetTop + 'px'; ind.style.height = on.offsetHeight + 'px';
+  segMove.p = {x, w};
+  ind.getAnimations().forEach(a => a.cancel());
+  ind.style.transform = T(x); ind.style.width = w + 'px';
+  if (!anim || !prev || calm() || (prev.x === x && prev.w === w)) return;
+  const lo = Math.min(prev.x, x), hi = Math.max(prev.x + prev.w, x + w);
+  ind.animate([{transform: T(prev.x), width: prev.w + 'px'}, {transform: T(lo), width: (hi - lo) + 'px', offset: .45}, {transform: T(x), width: w + 'px'}], {duration: 700, easing: lbEase});
+}
+if (window.ResizeObserver) new ResizeObserver(() => segMove(false)).observe($('mem-mode')); // muncul / ukuran berubah: pasang tanpa animasi
 const memSwap = () => { if (window.liquid && window.liquid.swap) window.liquid.swap($('mem-list'), '.mem-chip'); }; // chip masuk bertahap dengan pegas (liquid.js)
 $('mem-q').addEventListener('input', e => { memQ = e.target.value; renderMembers(); });
-$('mem-mode').addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if (b && b.dataset.mode !== memMode) { memMode = b.dataset.mode; renderMembers(); memSwap(); } });
+$('mem-mode').addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if (b && b.dataset.mode !== memMode) { memMode = b.dataset.mode; renderMembers(); segMove(true); memSwap(); } });
 $('mem-sort').addEventListener('click', () => { memSort = memSort === 'az' ? 'top' : 'az'; renderMembers(); memSwap(); });
 $('lightbox').insertAdjacentHTML('beforebegin', `<div class="overlay" id="mem-modal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mem-title">
   <button class="x" id="mem-close" aria-label="Tutup">&times;</button><h3 id="mem-title" style="margin:0"></h3><div class="mem-body" id="mem-body"></div></div></div>`);
@@ -1874,7 +1888,7 @@ function openMember(name) {
   if (!m.ts && !m.ck && !m.ev && !m.appear.length) return;
   const met = m.ts + m.ck, sd = m.span, span = sd.length ? (sd[0] === sd[sd.length - 1] ? fmtDate(sd[0]) : `${fmtDate(sd[0])} – ${fmtDate(sd[sd.length - 1])}`) : '';
   const cell = (l, v, sub) => `<div class="stat"><div class="sv" data-cu="${v}">${v}</div><div class="sl">${l}</div>${sub ? `<div class="ss">${esc(sub)}</div>` : ''}</div>`;
-  const cells = [...(m.hasLineup ? [cell('Ditonton tampil', m.appear.length, m.appear.length && met ? `${met} dengan 2-Shot/Chekicha` : '')] : []), cell('2-Shot', m.ts), cell('Chekicha', m.ck), ...(m.hasLineup ? [] : [cell('Total pertemuan', met)]), ...(m.ev ? [cell('Hadir di event', m.ev)] : [])];
+  const cells = [...(m.hasLineup ? [cell('Ditonton', m.appear.length, m.appear.length && met ? `${met} dengan 2-Shot/Chekicha` : '')] : []), cell('2-Shot', m.ts), cell('Chekicha', m.ck), ...(m.hasLineup ? [] : [cell('Total pertemuan', met)]), ...(m.ev ? [cell('Hadir di event', m.ev)] : [])];
   const av = m.photos[0];
   $('mem-title').innerHTML = (av ? `<img class="mem-av" src="${esc(thumbOf(av.src))}" data-full="${esc(av.src)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="" data-cap="${esc(name)}" data-sub="${esc([av.label, av.setlist, fmtDate(av.date)].filter(Boolean).join(' · '))}" decoding="async">` : '')
     + `<span class="mem-nm"><span>${esc(name)}</span>${span ? `<small title="Dari show pertama sampai terakhir yang tercatat bersama dia (tampil atau ketemu)">${esc(span)}</small>` : ''}</span>`;
