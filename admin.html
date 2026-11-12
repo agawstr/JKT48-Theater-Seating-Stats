@@ -19,6 +19,22 @@
 .card h3{margin:0 0 18px;font-size:18px;color:#ff2a5f}
 .fg{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
 .fg label{font-size:13px;color:#a1a1aa;font-weight:600}
+.lu-box{background:#0f0a0d;border:1px solid #3d222e;border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:8px}
+.lu-box:focus-within{border-color:#ff2a5f}
+.lu-box input{border:0!important;background:transparent!important;padding:4px 2px!important;box-shadow:none!important;outline:none}
+.lu-chips{display:flex;flex-wrap:wrap;gap:6px}
+.lu-chips:empty{display:none}
+.lu-chip{display:inline-flex;align-items:center;gap:6px;background:rgba(255,140,0,.16);border:1px solid rgba(255,140,0,.45);color:#ffd9b0;border-radius:9999px;padding:4px 6px 4px 10px;font-size:12.5px;font-weight:600}
+.lu-chip button{background:none;border:0;color:inherit;font-size:15px;line-height:1;cursor:pointer;padding:0 3px;opacity:.8}
+.lu-chip button:hover{opacity:1;color:#ff2a5f}
+.lu-copy{display:flex;gap:8px;align-items:center}
+.lu-copy select{flex:1;min-width:0}
+.lu-copy[hidden]{display:none}
+.lu-pick summary{cursor:pointer;font-size:12.5px;color:#a1a1aa}
+.lu-pick .lu-chips{margin-top:8px;max-height:180px;overflow-y:auto}
+.lu-pick button{background:#181115;color:#e4e4e7;border:1px dashed #3d222e;border-radius:9999px;padding:4px 10px;font-size:12.5px;cursor:pointer}
+.lu-pick button:hover{border-color:#ff2a5f;color:#ff2a5f}
+.lu-n{color:#a1a1aa;font-size:12px}
 input,textarea,select{background:#1d1318;border:1px solid #3d222e;border-radius:8px;padding:10px 12px;color:#fff;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;width:100%}
 input:focus,textarea:focus,select:focus{border-color:#ff2a5f}
 #msg{font-size:13px;margin-top:10px;min-height:16px;color:#f87171}
@@ -407,6 +423,14 @@ body.adm #ex:not([hidden]),body.adm #away:not([hidden]),body.adm #misc:not([hidd
             <datalist id="dl-tiket"><option value="Reguler"><option value="Lotre"><option value="Roulette"><option value="Birthday"><option value="Lainnya"></datalist></div>
           <div class="fg"><label for="f-note">Keterangan / Momen (Opsional)</label>
             <textarea id="f-note" rows="2" placeholder="STS / diwaro member"></textarea></div>
+          <div class="fg" id="lu-fg">
+            <label for="lu-in">Member yang tampil (lineup)</label>
+            <div id="lu-box" class="lu-box"><div id="lu-chips" class="lu-chips"></div>
+              <input id="lu-in" list="dl-lineup" placeholder="Ketik nama + Enter, atau tempel banyak" autocomplete="off"><datalist id="dl-lineup"></datalist></div>
+            <div id="lu-copy" class="lu-copy" hidden><select id="lu-src" aria-label="Salin lineup dari show lain"></select><button type="button" class="btn-s" id="lu-cp">Salin lineup</button></div>
+            <details id="lu-pick" class="lu-pick"><summary id="lu-pick-s">Pilih dari daftar member</summary><div id="lu-pick-l" class="lu-chips"></div></details>
+            <small id="lu-n" class="lu-n"></small>
+          </div>
           <div id="extras"></div>
           <div id="msg" role="alert"></div>
           <div class="actions">
@@ -718,7 +742,7 @@ function renderTable() {
   const list = [...records]
     .sort(cmp)
     .filter(r => !taskF || TASKS[taskF].f(r))
-    .filter(r => [r.seat, r.setlist, r.note, r.member, r.ckMember, r.date, r.sesi, r.tiket].some(v => v.toLowerCase().includes(q)));
+    .filter(r => [r.seat, r.setlist, r.note, r.member, r.ckMember, r.date, r.sesi, r.tiket, (r.lineup || []).join(' ')].some(v => v.toLowerCase().includes(q)));
   if (focusId) { const fi = list.findIndex(r => r.id === focusId); if (fi >= 0) page = Math.floor(fi / PER) + 1; } // tampilkan halaman yang memuat data yang baru disimpan
   const pages = Math.max(1, Math.ceil(list.length / PER));
   page = Math.min(page, pages);
@@ -727,7 +751,7 @@ function renderTable() {
   $('tbody').innerHTML = list.length ? list.slice((page - 1) * PER, page * PER).map(r => `
     <tr data-rid="${r.id}"${r.id === focusId ? ' class="flash"' : ''}>
       <td data-l="Kursi"><span class="seat-badge${SEATS.has(r.seat) ? '' : ' bad'}" ${SEATS.has(r.seat) ? '' : 'title="Kursi tidak ada di peta — edit supaya muncul"'}>${esc(r.seat)}</span></td>
-      <td data-l="Setlist"><b>${esc(r.setlist)}</b></td>
+      <td data-l="Setlist"><b>${esc(r.setlist)}</b>${(r.lineup || []).length ? `<br><small title="${esc(r.lineup.join(', '))}">${r.lineup.length} member tampil</small>` : ''}</td>
       <td data-l="Tanggal">${esc(r.date)}${r.sesi ? ' · ' + r.sesi : ''}</td>
       <td data-l="Harga"${r.harga ? '' : ' class="nil"'}>${r.harga ? esc(rupiah(r.harga)) + (r.tiket ? '<br><small>' + esc(r.tiket) + '</small>' : '') : '-'}</td><td data-l="Keterangan"${r.note ? '' : ' class="nil"'}>${esc(r.note) || '-'}</td>
       <td data-l="2-Shot / Chekicha"${extras(r).length ? '' : ' class="nil"'}>${exCell(r)}</td>
@@ -746,7 +770,8 @@ function renderTable() {
 function renderLists() {
   const dl = (id, vals) => $(id).innerHTML = [...new Set(vals.filter(Boolean))].sort().map(v => `<option value="${esc(v)}">`).join('');
   dl('dl-setlist', records.map(r => r.setlist));
-  dl('dl-member', records.flatMap(r => extras(r).map(x => x.member)));
+  dl('dl-member', records.flatMap(r => [...extras(r).map(x => x.member), ...(r.lineup || [])]));
+  renderLineup();
 }
 const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTodo(); renderTotals(); renderExpense(); renderAway(); renderSolo(); renderTsEv(); };
 
@@ -900,6 +925,75 @@ const undoToast = (what, restore) => toast('Dihapus: ' + what, {label: 'Urungkan
 // ---------- Form ----------
 const setMsg = t => { const m = $('msg'); m.textContent = t || ''; m.classList.remove('pulse'); if (t) { void m.offsetWidth; m.classList.add('pulse'); } };
 
+// ---------- Lineup: member yang tampil di show ini ----------
+let lineup = [];
+const knownMembers = () => [...new Set([...records.flatMap(r => [...(r.lineup || []), r.member, r.ckMember]), ...solo.map(w => w.member), ...tickets.map(t => t.member)].filter(Boolean))].sort((a, b) => a.localeCompare(b));
+const luCanon = n => knownMembers().find(k => k.toLowerCase() === n.toLowerCase()) || n; // samakan huruf besar/kecil dengan nama yang sudah ada
+function luAdd(raw) {
+  String(raw || '').split(/[,\n;]+/).map(x => x.trim().replace(/\s+/g, ' ')).filter(Boolean).forEach(n => {
+    n = luCanon(n);
+    if (!lineup.some(x => x.toLowerCase() === n.toLowerCase())) lineup.push(n);
+  });
+  renderLineup();
+}
+function luFormSrc() { // show lain yang sudah punya lineup, diurutkan: setlist sama + tanggal sama dulu
+  const id = Number($('f-id').value) || 0, sl = $('f-setlist').value.trim().toLowerCase(), d = $('f-date').value, se = $('f-sesi').value;
+  const seen = new Map();
+  records.filter(r => r.id !== id && (r.lineup || []).length).forEach(r => {
+    const k = r.date + '|' + r.sesi + '|' + r.setlist.toLowerCase();
+    if (!seen.has(k)) seen.set(k, r);
+  });
+  const score = r => (r.date === d && r.sesi === se ? 4 : r.date === d ? 3 : 0) + (r.setlist.toLowerCase() === sl ? 2 : 0);
+  return [...seen.values()].sort((a, b) => score(b) - score(a) || cmp(a, b));
+}
+function renderLineup() {
+  $('lu-chips').innerHTML = lineup.map((n, i) => `<span class="lu-chip">${esc(n)}<button type="button" data-lu-del="${i}" aria-label="Hapus ${esc(n)}">&times;</button></span>`).join('');
+  $('dl-lineup').innerHTML = knownMembers().filter(n => !lineup.includes(n)).map(n => `<option value="${esc(n)}">`).join('');
+  const q = $('lu-in').value.trim().toLowerCase(), rest = knownMembers().filter(n => !lineup.some(x => x === n) && (!q || n.toLowerCase().includes(q)));
+  $('lu-pick-l').innerHTML = rest.map(n => `<button type="button" data-lu-add="${esc(n)}">+ ${esc(n)}</button>`).join('') || '<small class="lu-n">Tidak ada lagi.</small>';
+  $('lu-pick-s').textContent = `Pilih dari daftar member (${rest.length})`;
+  $('lu-n').textContent = lineup.length ? `${lineup.length} member tampil` + (lineup.length ? ' · ketuk × untuk menghapus' : '') : 'Belum diisi. Show ini akan masuk daftar "belum ada lineup".';
+  const src = luFormSrc();
+  $('lu-copy').hidden = !src.length;
+  if (src.length) {
+    const cur = $('lu-src').value;
+    $('lu-src').innerHTML = src.slice(0, 40).map(r => `<option value="${r.id}">${esc(fmtDate(r.date))}${r.sesi ? ' · ' + r.sesi : ''} · ${esc(r.setlist)} (${r.lineup.length} member)</option>`).join('');
+    if (cur && src.some(r => String(r.id) === cur)) $('lu-src').value = cur;
+  }
+}
+// otomatis: kalau lineup masih kosong dan sudah ada show lain di tanggal + sesi + setlist yang sama (mis. kursi lain), lineup-nya dipakai
+function luAuto() {
+  if (lineup.length || Number($('f-id').value)) return;
+  const d = $('f-date').value, se = $('f-sesi').value, sl = $('f-setlist').value.trim().toLowerCase();
+  if (!d || !sl) return;
+  const m = luFormSrc().find(r => r.date === d && r.sesi === se && r.setlist.toLowerCase() === sl);
+  if (m) { lineup = [...m.lineup]; renderLineup(); setMsg(`Lineup diisi otomatis dari show yang sama (${m.lineup.length} member).`); }
+}
+$('lu-in').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); luAdd($('lu-in').value); $('lu-in').value = ''; renderLineup(); } else if (e.key === 'Backspace' && !$('lu-in').value && lineup.length) { lineup.pop(); renderLineup(); } });
+$('lu-in').addEventListener('input', e => {
+  const v = $('lu-in').value;
+  if (/[,\n;]/.test(v)) { luAdd(v); $('lu-in').value = ''; renderLineup(); } // tempel banyak nama sekaligus
+  else if (e.inputType === 'insertReplacementText' || (!e.inputType && v)) { luAdd(v); $('lu-in').value = ''; renderLineup(); } // memilih dari saran
+  else renderLineup();
+});
+$('lu-in').addEventListener('paste', e => { // kolom satu baris membuang baris baru saat menempel, jadi dibaca langsung dari clipboard
+  const t = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+  if (/[,\n;]/.test(t)) { e.preventDefault(); luAdd($('lu-in').value + ',' + t); $('lu-in').value = ''; renderLineup(); }
+});
+$('lu-in').addEventListener('change', () => { if ($('lu-in').value.trim()) { luAdd($('lu-in').value); $('lu-in').value = ''; renderLineup(); } });
+$('lu-fg').addEventListener('click', e => {
+  const del = e.target.closest('[data-lu-del]'), add = e.target.closest('[data-lu-add]');
+  if (del) { lineup.splice(+del.dataset.luDel, 1); renderLineup(); }
+  else if (add) luAdd(add.dataset.luAdd);
+});
+$('lu-cp').addEventListener('click', () => {
+  const r = records.find(x => String(x.id) === $('lu-src').value);
+  if (!r) return;
+  const before = lineup.length; luAdd(r.lineup.join(','));
+  setMsg(`${lineup.length - before} member ditambahkan dari ${fmtDate(r.date)}.`);
+});
+['f-setlist', 'f-date', 'f-sesi'].forEach(id => $(id).addEventListener('change', () => { renderLineup(); luAuto(); }));
+
 $('extras').innerHTML = KINDS.map(K => `
   <div class="fg"><label for="f-${K.k}">${K.q}</label>
     <select id="f-${K.k}"><option value="Tidak">Tidak</option><option value="Ya">Ya</option></select></div>
@@ -961,8 +1055,10 @@ const exCell = r => {
 
 function resetForm(keep) { // keep === true: kosongkan kursi & keterangan saja, tanggal/setlist/sesi/harga/jenis tiket dipertahankan
   const k = keep === true ? ['f-setlist', 'f-date', 'f-sesi', 'f-harga', 'f-tiket'].map(id => [id, $(id).value]) : null;
+  const kl = keep === true ? lineup.slice() : []; // "Simpan & lanjut": lineup sama dipakai untuk kursi berikutnya
   clearErrs();
   $('form').reset();
+  lineup = kl; $('lu-in').value = ''; renderLineup();
   $('f-id').value = '';
   $('form-title').textContent = 'Tambah Riwayat Show';
   $('btn-submit').textContent = '+ Simpan Data';
@@ -999,6 +1095,7 @@ $('form').addEventListener('submit', async e => {
   const keep = keepNext; keepNext = false;
   setMsg(''); clearErrs();
   const id = Number($('f-id').value) || 0;
+  if ($('lu-in').value.trim()) { luAdd($('lu-in').value); $('lu-in').value = ''; } // nama yang masih diketik ikut disimpan
   const seat = normSeat($('f-seat').value);
   const setlist = $('f-setlist').value.trim();
   const date = $('f-date').value;
@@ -1023,7 +1120,7 @@ $('form').addEventListener('submit', async e => {
     r.setlist.toLowerCase() === setlist.toLowerCase() && r.sesi === sesi);
   if (dup && !await ask('Data dengan kursi, setlist, tanggal, dan sesi yang sama sudah ada. Tetap simpan?', 'Tetap simpan')) return;
 
-  const rec = { id: id || Date.now(), seat, setlist, date, sesi, note, harga, tiket, ...ex };
+  const rec = { id: id || Date.now(), seat, setlist, date, sesi, note, harga, tiket, ...ex, lineup: [...lineup] };
   if (id) {
     const i = records.findIndex(r => r.id === id);
     if (i !== -1) records[i] = rec; else records.push(rec);
@@ -1055,6 +1152,7 @@ $('tbody').addEventListener('click', async e => {
     $('f-note').value = rec.note;
     $('f-harga').value = rec.harga || '';
     $('f-tiket').value = rec.tiket || '';
+    lineup = [...(rec.lineup || [])]; $('lu-in').value = ''; renderLineup();
     KINDS.forEach(K => {
       $('f-' + K.k).value = rec[K.f];
       toggleBox(K.k);
@@ -1150,6 +1248,7 @@ $('btn-zip').addEventListener('click', async () => {
   const pub = [];
   for (const r of records) {
     const o = {...r};
+    if (opt.mask) o.lineup = (o.lineup || []).map(mask);
     for (const K of KINDS) {
       if (opt.mask) o[K.m] = mask(o[K.m]);
       if (!opt.photos) { o[K.p] = ''; continue; }
@@ -1365,6 +1464,7 @@ const TASKS = {
   noSeat: {label: n => `${n} show belum punya kursi`, f: r => !SEATS.has(r.seat)},
   noSesi: {label: n => `${n} show tanpa sesi (siang/malam)`, f: r => !r.sesi},
   noPhoto: {label: n => `${n} 2-Shot/Chekicha tanpa foto`, f: r => (r.twoshot === 'Ya' && !r.photo) || (r.chekicha === 'Ya' && !r.ckPhoto)},
+  noLineup: {label: n => `${n} show belum ada lineup`, f: r => !(r.lineup || []).length},
   noMember: {label: n => `${n} 2-Shot/Chekicha tanpa nama member`, f: r => (r.twoshot === 'Ya' && !r.member) || (r.chekicha === 'Ya' && !r.ckMember)}
 };
 function renderTodo() {
