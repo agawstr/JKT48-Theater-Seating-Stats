@@ -282,12 +282,12 @@ html #seat-modal.docked.over.open.open.open.closing::before{animation:ovb-out .4
    Tablet/jendela sempit: panel kartu melayang di bawah tab bar, selebar kolom konten. Tanpa animasi masuk/keluar. */
 .jump{padding:8px 2px 6px;margin:0 -2px;top:var(--stick)}
 #mem-bar{padding:4px 0 12px;margin:0 0 -8px}
-#bars-bg{display:none;position:fixed;left:var(--bl,0px);width:var(--bw,100%);top:var(--bt,var(--stick));height:var(--bh,0px);z-index:4;pointer-events:none;
-  transition:left .5s var(--ios),width .5s var(--ios),top .5s var(--ios),height .5s var(--ios),border-radius .5s var(--ios);
+#bars-bg{display:block;opacity:0;visibility:hidden;transform:translateY(-8px) scale(.96);transform-origin:50% 0;position:fixed;left:var(--bl,0px);width:var(--bw,100%);top:var(--bt,var(--stick));height:var(--bh,0px);z-index:4;pointer-events:none;
+  transition:left .5s var(--ios),width .5s var(--ios),top .5s var(--ios),height .5s var(--ios),border-radius .5s var(--ios),opacity .4s ease,transform .55s var(--ios),visibility 0s linear .4s;
   background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02)),rgba(22,13,19,.5);
   -webkit-backdrop-filter:blur(26px) saturate(185%);backdrop-filter:blur(26px) saturate(185%);
   border-radius:var(--br,22px);box-shadow:0 14px 30px -16px rgba(0,0,0,.75),inset 0 1px 0 rgba(255,255,255,.2),inset 0 0 0 1px rgba(255,255,255,.08)}
-html.bars-on #bars-bg{display:block}
+html.bars-on #bars-bg{opacity:1;visibility:visible;transform:none;transition:left .5s var(--ios),width .5s var(--ios),top .5s var(--ios),height .5s var(--ios),border-radius .5s var(--ios),opacity .4s ease,transform .55s var(--ios),visibility 0s}
 html[data-glass=off] #bars-bg{background:rgba(13,9,13,.97);-webkit-backdrop-filter:none;backdrop-filter:none}
 /* isi panel ikut kaca: pil & kolom cari tembus-pandang (blur panel di belakangnya yang menutup teks kartu) */
 html[data-glass=on] .jump .btn-s,html[data-glass=on] .jump .btn-s:hover,html[data-glass=on] #mem-sort,html[data-glass=on] #mem-sort:hover{background:rgba(255,255,255,.08)}
