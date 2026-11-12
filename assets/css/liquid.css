@@ -278,19 +278,22 @@ html #seat-modal.docked.over.open.open.open.closing::before{animation:ovb-out .4
 @media(prefers-reduced-motion:reduce){.overlay.open:not(.docked):not(#lightbox)::before,html #seat-modal.docked.over.open.open.open::before{animation:none}}
 
 
-/* ---------- HP: header + chip lompat + bar cari = SATU panel kaca ----------
-   Chip & kolom cari polos (tanpa latar sendiri); latar kacanya satu elemen #bars-bg (dipasang shared.js) yang menyambung
-   langsung di bawah header dan berujung melengkung di bawah baris terakhir yang menempel. Tanpa animasi masuk/keluar. */
+/* ---------- Chip lompat + bar cari = SATU panel kaca (semua lebar layar kecuali laptop #split) ----------
+   Chip & kolom cari polos (tanpa latar sendiri); latar kacanya satu elemen #bars-bg (dipasang shared.js).
+   HP: panel selebar layar, menyambung langsung di bawah header, ujung bawah melengkung.
+   Tablet/jendela sempit: panel kartu melayang di bawah tab bar, selebar kolom konten. Tanpa animasi masuk/keluar. */
+.jump{padding:8px 2px 6px;margin:0 -2px;top:var(--stick)}
+#mem-bar{padding:4px 0 12px;margin:0 0 -8px}
+#bars-bg{display:none;position:fixed;left:var(--bl,0px);width:var(--bw,100%);top:var(--stick);height:var(--bh,0px);z-index:4;pointer-events:none;
+  background:rgba(13,9,13,.66);-webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);
+  border-radius:22px;box-shadow:0 12px 24px -14px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.1)}
+html.bars-on #bars-bg{display:block}
+html[data-glass=off] #bars-bg{background:rgba(13,9,13,.97);-webkit-backdrop-filter:none;backdrop-filter:none}
 @media(max-width:768px){
   #appbar{display:flex;justify-content:center;align-items:baseline;gap:10px;border-radius:0 0 26px 26px;
     background:rgba(13,9,13,.66);-webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%)}
   #appbar::before{display:none}
   html.bars-on #appbar{border-radius:0;border-bottom-color:transparent}
-  .jump{padding:8px 2px 6px;margin:0 -2px;top:var(--stick)}
-  #mem-bar{padding:4px 0 12px;margin:0 0 -8px;top:calc(var(--stick) + var(--jh))}
-  #bars-bg{display:none;position:fixed;left:0;right:0;top:var(--stick);height:var(--bh,0px);z-index:4;pointer-events:none;
-    background:rgba(13,9,13,.66);-webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);
-    border-radius:0 0 26px 26px;box-shadow:0 12px 24px -14px rgba(0,0,0,.7),inset 0 -1px 0 rgba(255,255,255,.1)}
-  html.bars-on #bars-bg{display:block}
-  html[data-glass=off] #bars-bg,html[data-glass=off] #appbar{background:rgba(13,9,13,.97);-webkit-backdrop-filter:none;backdrop-filter:none}
+  #bars-bg{left:0;width:auto;right:0;border-radius:0 0 26px 26px;box-shadow:0 12px 24px -14px rgba(0,0,0,.7),inset 0 -1px 0 rgba(255,255,255,.1)}
+  html[data-glass=off] #appbar{background:rgba(13,9,13,.97);-webkit-backdrop-filter:none;backdrop-filter:none}
 }
