@@ -1132,3 +1132,21 @@ html[data-perf=lite] .gi .gi-ph:not(.ok):not(.bad)::before,
 
 /* per member: di desktop induknya (.col-map) flex-column rata tengah, jadi daftar menyusut jadi satu kolom sempit; paksa selebar induk */
 #mem-bar,#mem-key,#mem-list{align-self:stretch;width:100%;box-sizing:border-box}
+
+/* ---------- Per member: mode lineup (saklar, angka ketemu, rasio, legenda) ---------- */
+.mem-mode{display:flex;gap:4px;margin:0 0 10px;padding:3px;background:#181115;border:1px solid #3d222e;border-radius:9999px;width:fit-content;max-width:100%}
+.mem-mode[hidden]{display:none}
+.mem-mode button{background:none;border:0;color:#a1a1aa;font:inherit;font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:9999px;cursor:pointer;min-height:34px}
+.mem-mode button[aria-pressed=true]{background:rgba(255,42,95,.2);color:#ff9db3}
+.mem-key{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center}
+.mem-key .lg-i{display:inline-flex;align-items:center;gap:6px}
+.mem-key b{font-size:11px;padding:1px 7px;border-radius:9999px;font-variant-numeric:tabular-nums}
+.mem-key .lg-a{background:rgba(255,140,0,.16);color:#ff8c00}
+.mem-key .lg-m{background:rgba(255,42,95,.2);color:#ff9db3}
+.mem-chip{position:relative;overflow:hidden}
+.mem-nums{display:inline-flex;gap:4px;flex-shrink:0}
+.mem-chip b.mm{background:rgba(255,42,95,.2);color:#ff9db3}
+.mem-rt{position:absolute;left:0;bottom:0;height:3px;background:#ff2a5f;border-radius:0 3px 3px 0;opacity:.9;pointer-events:none}
+#mem-list.lu .mem-chip:not(.met){opacity:.6}
+#mem-list.lu .mem-chip:not(.met):hover,#mem-list.lu .mem-chip:not(.met):focus-visible{opacity:1}
+@media(min-width:481px){#mem-list.lu{grid-template-columns:repeat(auto-fill,minmax(178px,1fr))}} /* dua angka di chip butuh kolom sedikit lebih lebar */
