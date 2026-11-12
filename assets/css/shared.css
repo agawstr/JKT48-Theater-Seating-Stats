@@ -1088,3 +1088,30 @@ html[data-perf=lite] .gi .gi-ph:not(.ok):not(.bad)::before,
 .mem-seats .seat-badge{border:0;cursor:pointer}
 .mem-ph{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .mem-ph img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;cursor:zoom-in}
+
+/* ---- v5.1: rapikan modal member & daftar chip ---- */
+#mem-modal .modal{max-width:420px;padding:22px 20px 20px;overflow:hidden}
+#mem-title{display:flex;align-items:center;gap:12px;padding-right:34px}
+.mem-av{width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;cursor:zoom-in;border:2px solid rgba(255,140,0,.7)}
+.mem-nm{display:flex;flex-direction:column;min-width:0;line-height:1.2;font-size:18px}
+.mem-nm small{font-size:12px;font-weight:500;color:#a1a1aa;margin-top:3px}
+.mem-body{box-sizing:border-box;width:100%;min-width:0;overflow-x:hidden;overflow-y:auto;scrollbar-width:none;padding-bottom:4px;max-height:min(70vh,560px)}
+.mem-body::-webkit-scrollbar{display:none}
+.mem-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.mem-grid .stat{padding:10px 6px;border-radius:16px}
+.mem-grid .sv{font-size:24px}
+.mem-grid .sl{font-size:11px}
+.mem-r{display:grid;grid-template-columns:minmax(0,1fr) 56px auto;align-items:center;gap:10px;font-size:14px}
+.mem-rn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mem-rb{display:block;height:6px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}
+.mem-rb u{display:block;height:100%;background:linear-gradient(90deg,#c96a00,#ffd23f);border-radius:99px}
+.mem-r b{min-width:24px;text-align:right}
+.mem-h{margin:18px 0 6px}
+.mem-ph{gap:6px}
+.mem-ph img{display:block;min-width:0}
+/* daftar chip: dua kolom sejajar di HP, nama di kiri dan jumlah di kanan */
+#mem-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.mem-chip{justify-content:space-between;min-width:0;padding:9px 14px;border-radius:14px}
+.mem-chip{text-align:left;line-height:1.2}
+.mem-chip b{flex-shrink:0;background:rgba(255,140,0,.16);border-radius:9999px;padding:2px 8px;font-size:12px}
+@media(max-width:480px){#mem-list{grid-template-columns:repeat(2,minmax(0,1fr))}.mem-chip{font-size:12.5px}}
