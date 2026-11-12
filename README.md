@@ -12,7 +12,9 @@ Tanpa backend dan tanpa proses build: cukup file statis yang bisa di-hosting di 
 - **Sorot cahaya** yang mengikuti kursor di atas peta.
 - **Putar ulang**: peta terisi satu per satu sesuai urutan tanggal.
 - **Simpan peta (PNG)** dan **Wrapped**: kartu tahunan siap bagikan (tahun mengikuti kalender).
-- **Bagikan kartu** per show di modal kursi, memakai foto 2-Shot/Chekicha jika ada.
+- **Bagikan kartu** per show di modal kursi. Kartu bergaya sama dengan web (latar gelap bercahaya, kaca, hati piksel, foto ala polaroid galeri, denah dengan kursi yang disorot) dan tersedia dalam dua ukuran: **Feed 4:5** dan **Story 9:16**. Ketuk tombolnya untuk membuka **lembar bagikan**: Simpan (galeri/perangkat), WhatsApp, X (Post / DM), Instagram (Story / DM), LINE, Salin gambar, dan Lainnya. Wrapped memakai lembar yang sama.
+  - **HP**: tombol aplikasi membuka daftar bagikan bawaan HP dengan gambar terlampir, tinggal pilih aplikasinya (browser web tidak bisa menembak aplikasi tertentu dengan gambar). Di iPhone, Simpan membuka daftar yang sama, pilih *Simpan Gambar*.
+  - **Komputer**: gambar disalin ke clipboard lalu halaman aplikasi dibuka di tab baru, tinggal tempel (Ctrl+V). Kalau clipboard tidak didukung, gambar diunduh.
 
 **Statistik**
 - Kartu ringkasan: total show, kursi favorit, baris favorit, 2-Shot, Chekicha, member terbanyak. Kursi dengan jumlah sama dipilih dari baris paling depan, lalu nomor paling kanan.
