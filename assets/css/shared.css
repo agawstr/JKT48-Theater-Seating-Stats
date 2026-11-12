@@ -1324,3 +1324,8 @@ button.sh-row:active{transform:scale(.98)}
   .sh-prev{height:min(30vh,250px)}
 }
 @media(prefers-reduced-motion:reduce){.sh-prev,.sh-prev img,.sh-row,.sh-chip,#share-sheet .modal{transition:none!important;animation:none!important}.sh-prev img.ok{opacity:1}}
+
+/* HP/tablet: hanya Simpan + Bagikan (daftar bagikan bawaan HP yang memilih aplikasi) */
+.sh-only{display:none}
+.sh-simple .sh-only{display:flex}
+.sh-simple .sh-app{display:none}
