@@ -1692,10 +1692,11 @@ function openMember(name) {
   if (!m.ts && !m.ck && !m.ev) return;
   const met = m.ts + m.ck, span = m.dates.length ? (m.dates[0] === m.dates[m.dates.length - 1] ? fmtDate(m.dates[0]) : `${fmtDate(m.dates[0])} – ${fmtDate(m.dates[m.dates.length - 1])}`) : '';
   const cell = (l, v) => `<div class="stat"><div class="sv" data-cu="${v}">${v}</div><div class="sl">${l}</div></div>`;
-  $('mem-title').textContent = name;
+  const av = m.photos[0];
+  $('mem-title').innerHTML = (av ? `<img class="mem-av" src="${esc(thumbOf(av.src))}" data-full="${esc(av.src)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="" decoding="async">` : '')
+    + `<span class="mem-nm"><span>${esc(name)}</span>${span ? `<small>${esc(span)}</small>` : ''}</span>`;
   $('mem-body').innerHTML = `<div class="mem-grid">${cell('2-Shot', m.ts)}${cell('Chekicha', m.ck)}${cell('Total pertemuan', met)}${m.ev ? cell('Hadir di event', m.ev) : ''}</div>`
-    + (span ? `<p class="mem-span">${esc(span)}</p>` : '')
-    + (m.setlists.length ? `<h4 class="mem-h">Setlist yang paling sering bareng</h4>` + m.setlists.slice(0, 3).map(([n, c]) => `<div class="mem-r"><span>${esc(n)}</span><b>${c}×</b></div>`).join('') : '')
+    + (m.setlists.length ? `<h4 class="mem-h">Setlist yang paling sering bareng</h4>` + m.setlists.slice(0, 3).map(([n, c]) => `<div class="mem-r"><span class="mem-rn">${esc(n)}</span><i class="mem-rb"><u style="width:${c / m.setlists[0][1] * 100}%"></u></i><b>${c}×</b></div>`).join('') : '')
     + (m.seats.length ? `<h4 class="mem-h">Kursi saat bertemu</h4><div class="mem-seats">${m.seats.slice(0, 8).map(([n, c]) => `<button type="button" class="seat-badge tl-s" data-seat="${esc(n)}">${esc(n)}${c > 1 ? ` ×${c}` : ''}</button>`).join('')}</div>` : '')
     + (m.photos.length ? `<h4 class="mem-h">Foto</h4><div class="mem-ph">${m.photos.slice(0, 6).map(p => `<img src="${esc(thumbOf(p.src))}" data-full="${esc(p.src)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="${esc(p.label)} dengan ${esc(name)}, ${esc(fmtDate(p.date))}" decoding="async" loading="lazy">`).join('')}</div>` : '');
   $('mem-body').scrollTop = 0;
