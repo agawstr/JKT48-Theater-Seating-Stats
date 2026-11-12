@@ -2073,9 +2073,11 @@ function renderMembers(anim) {
   const h1 = box.offsetHeight;
   if (!h0 || Math.abs(h0 - h1) < 2) { box.style.transition = ''; return; }
   box.style.height = h0 + 'px'; void box.offsetHeight;
-  box.style.transition = 'height .65s cubic-bezier(.22,1,.36,1)';
+  // makin jauh selisih tingginya, makin lama (dan makin lembut: ease-in-out) supaya layar tidak "melesat" ke atas/bawah
+  const dur = Math.round(Math.min(1500, Math.max(550, 450 + Math.abs(h0 - h1) * .55)));
+  box.style.transition = `height ${dur}ms cubic-bezier(.45,.05,.25,1)`;
   box.style.height = h1 + 'px';
-  box._ht = setTimeout(() => { box.style.height = ''; box.style.transition = ''; }, 720);
+  box._ht = setTimeout(() => { box.style.height = ''; box.style.transition = ''; }, dur + 80);
 }
 function renderMembersCore(anim) {
   const box = $('mem-list');
