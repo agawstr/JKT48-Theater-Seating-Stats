@@ -31,6 +31,7 @@ Tanpa backend dan tanpa proses build: cukup file statis yang bisa di-hosting di 
 
 **Halaman admin**
 - Tambah, edit, hapus, dan cari riwayat (tabel dengan halaman), dengan cek duplikat dan kompres foto otomatis.
+- **Lineup per show**: field "Member yang tampil" di form (ketik + Enter, tempel banyak nama sekaligus, atau ketuk dari daftar member). Show baru di tanggal + sesi + setlist yang sama (mis. kursi lain) otomatis memakai lineup yang sudah ada, ada tombol **Salin lineup** dari show lain, dan **Simpan & lanjut** mempertahankan lineup. Chip "show belum ada lineup" di daftar tugas membantu melengkapi show lama. Opsi *Samarkan nama member* ikut menyamarkan lineup. Di halaman publik, modal member menampilkan *Ditonton tampil* dan *Kursi saat dia tampil*.
 - Field harga dan jenis tiket (opsional), serta saran otomatis untuk setlist dan member yang pernah diinput.
 - Pengingat backup: jumlah perubahan yang belum diunduh dan kapan terakhir diunduh.
 
