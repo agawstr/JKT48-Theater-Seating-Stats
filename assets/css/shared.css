@@ -1059,3 +1059,32 @@ html[data-perf=lite] .gi .gi-ph:not(.ok):not(.bad)::before,
   .gi .gi-tag{font-size:11.5px}
   .gi .gi-m,.gi .gi-d,.gi .gi-x{font-size:11.5px}
 }
+
+
+/* ---- v5: kilas balik "tahun lalu hari ini", statistik per member ---- */
+#memory:empty{display:none}
+.mem-c{display:flex;flex-direction:column;gap:10px;background:linear-gradient(100deg,rgba(255,210,63,.14),rgba(255,42,95,.1));border:1px solid #3d222e;border-radius:14px;padding:14px 18px;margin-bottom:16px;width:100%;box-sizing:border-box}
+.mem-i{display:flex;align-items:center;gap:12px}
+.mem-i img{width:48px;height:48px;border-radius:10px;object-fit:cover;flex-shrink:0;cursor:zoom-in}
+.mem-b{display:flex;flex-direction:column;gap:2px;min-width:0}
+.mem-b b{font-size:15px;overflow-wrap:anywhere}
+.mem-b span{font-size:12px;color:#a1a1aa}
+.mem-more{font-size:12px;color:#a1a1aa}
+.mem-link{background:none;border:0;padding:0;font:inherit;color:inherit;text-decoration:underline dotted;text-underline-offset:3px;cursor:pointer}
+.mem-link:hover{color:#ff2a5f}
+.stat[data-member]{cursor:pointer}
+#mem-list{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.mem-chip{display:inline-flex;align-items:center;gap:8px;background:#181115;color:#e4e4e7;border:1px solid #3d222e;border-radius:9999px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer}
+.mem-chip b{color:#ff8c00;font-variant-numeric:tabular-nums}
+.mem-chip:hover{border-color:#ff2a5f;color:#ff2a5f}
+.mem-chip:active{transform:scale(.96)}
+.mem-body{max-height:min(68vh,520px);overflow-y:auto;margin-top:14px}
+.mem-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:8px}
+.mem-span{font-size:12px;color:#a1a1aa;text-align:center;margin:10px 0 0}
+.mem-h{margin:16px 0 6px;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#ff2a5f}
+.mem-r{display:flex;justify-content:space-between;gap:12px;padding:6px 0;font-size:14px;border-bottom:1px solid #2d1820}
+.mem-r b{color:#ff8c00;font-variant-numeric:tabular-nums}
+.mem-seats{display:flex;flex-wrap:wrap;gap:6px}
+.mem-seats .seat-badge{border:0;cursor:pointer}
+.mem-ph{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.mem-ph img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;cursor:zoom-in}
