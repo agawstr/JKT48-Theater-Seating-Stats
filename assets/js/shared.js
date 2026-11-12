@@ -2268,7 +2268,8 @@ escHooks.push(() => { if ($('mem-modal').classList.contains('open') && !$('mem-m
   const root = document.documentElement, mq = matchMedia('(max-width:768px)'), touchTab = matchMedia('(min-width:769px) and (hover:none) and (pointer:coarse)');
   const bg = document.body.appendChild(Object.assign(document.createElement('div'), {id: 'bars-bg', ariaHidden: 'true'}));
   let raf = 0, on = false, isWide = false;
-  const stickPx = () => parseFloat(getComputedStyle(root).getPropertyValue('--stick')) || 50;
+  // posisi nempel yang sebenarnya (px): ambil dari `top` terhitung milik chip, bukan dari --stick (nilai calc(env()) tidak bisa di-parseFloat)
+  const stickPx = () => { const j = document.querySelector('.jump'); return j ? (parseFloat(getComputedStyle(j).top) || 0) : 0; };
   const sync = () => {
     raf = 0;
     const j = document.querySelector('.jump'), m = $('mem-bar');
@@ -2288,10 +2289,11 @@ escHooks.push(() => { if ($('mem-modal').classList.contains('open') && !$('mem-m
             const a = bs[0].getBoundingClientRect(), z = bs[bs.length - 1].getBoundingClientRect(), pad = 12;
             L = Math.max(8, a.left - pad); W = Math.min(vw - 8, z.right + pad) - L;
           } else { const r = j.getBoundingClientRect(); L = r.left; W = r.width; }
-          H = jh + 2;
+          H = mq.matches ? jh - 2 : jh + 2;
+          if (mq.matches) T = st + 4; // HP: kartu melayang, ada jarak tipis dari header
         } else {
           H = Math.max(jh, mr.bottom - st);
-          if (mq.matches) { L = 0; W = vw; R = '0 0 26px 26px'; }
+          if (mq.matches) { L = 8; W = vw - 16; T = st + 4; H -= 4; R = '24px'; } // HP: kartu kaca melengkung semua sisi, lebar layar dikurangi 8px kiri-kanan
           else if (touchTab.matches) { L = 0; W = vw; T = 0; H += st; R = '0 0 28px 28px'; }
           else { L = mr.left - 10; W = mr.width + 20; R = '22px'; }
         }
@@ -2301,6 +2303,7 @@ escHooks.push(() => { if ($('mem-modal').classList.contains('open') && !$('mem-m
       }
     }
     if (wide !== isWide) { isWide = wide; root.classList.toggle('bars-wide', wide); }
+    root.classList.toggle('bars-wide', wide && !mq.matches); // header HP tetap melengkung sendiri (tidak menyatu)
     if (show !== on) { on = show; root.classList.toggle('bars-on', show); }
   };
   const kick = () => { if (!raf) raf = requestAnimationFrame(sync); };
