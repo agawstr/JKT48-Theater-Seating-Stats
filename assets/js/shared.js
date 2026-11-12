@@ -451,8 +451,10 @@ function syncUrl() {
 }
 const isFiltered = () => Object.values(filter).some(Boolean);
 // skip: dimensi filter yang diabaikan (supaya grafik tetap menampilkan pilihan lain yang bisa diklik)
+// member "ada" di sebuah show kalau tampil di lineup ATAU bertemu 2-Shot/Chekicha (sama dengan statistik Per member)
+const hasMember = (r, name) => (r.lineup || []).includes(name) || extras(r).some(x => x.member === name);
 const matchF = (r, skip = []) => (skip.includes('setlist') || !filter.setlist || r.setlist === filter.setlist)
-  && (!filter.member || extras(r).some(x => x.member === filter.member))
+  && (!filter.member || hasMember(r, filter.member))
   && (skip.includes('date') || ((!filter.from || r.date >= filter.from) && (!filter.to || r.date <= filter.to)))
   && (skip.includes('row') || !filter.row || r.seat[0] === filter.row);
 const viewEx = skip => { // saat putar ulang: hanya N show pertama menurut tanggal
@@ -513,7 +515,7 @@ function renderFilters() {
     $(id).innerHTML = `<option value="">${ph}</option>` + (cur && !vals.includes(cur) ? [...vals, cur] : vals).map(v => `<option${v === cur ? ' selected' : ''}>${esc(v)}</option>`).join('');
   };
   opts('flt-setlist', [...new Set(records.map(r => r.setlist).filter(Boolean))].sort(), 'Semua setlist');
-  opts('flt-member', [...new Set(records.flatMap(r => extras(r).map(x => x.member)).filter(Boolean))].sort(), 'Semua member');
+  opts('flt-member', [...new Set(records.flatMap(r => [...extras(r).map(x => x.member), ...(r.lineup || [])]).filter(Boolean))].sort(), 'Semua member');
   $('flt-info').textContent = isFiltered() ? `${filter.row ? 'Baris ' + filter.row + ' · ' : ''}${view().length} dari ${records.length} show cocok` : '';
 }
 $('filters').addEventListener('change', e => {
