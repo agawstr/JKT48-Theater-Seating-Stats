@@ -188,7 +188,7 @@ function renderChartRaw() {
     `<div class="seat-block block-${j + 1}">` +
     LAYOUT.map((row, i) => `<div class="seat-row" style="--r:${i}">${row[j].map(seat).join('')}</div>`).join('') + '</div>').join('') + rowLabels();
   fitKey = ''; // isi peta baru digambar: ukurannya harus diukur ulang
-  $('total').textContent = records.length;
+  $('total').textContent = records.length; $('total').dataset.cu = records.length;
   const first = !introDone && records.length > 0; // animasi masuk hanya sekali
   introDone = introDone || first; intro = first;
   $('chart').classList.toggle('intro', first);
@@ -200,9 +200,9 @@ function renderChartRaw() {
   lastSig = sig;
   syncFbar();
   if (first) playEnter($('view-main'));
-  renderFilters(); renderStats(); if (first) countUp($('stats'));
+  renderFilters(); renderStats(); if (first) { countUp($('stats')); countUp($('total').parentElement); }
   tweenNums('st', $('stats'));
-  renderSetlists(); renderRows(); renderCal(); lazyView('view-gal', renderGallery); lazyView('view-tl', renderTimeline); renderCover(); renderLast(); renderStory(); lazyView('view-ev', renderTickets); syncUrl();
+  renderSetlists(); renderRows(); renderCal(); lazyView('view-gal', renderGallery); lazyView('view-tl', renderTimeline); renderCover(); if (first) countUp($('cover')); renderLast(); renderMemory(); renderMembers(); renderStory(); lazyView('view-ev', renderTickets); syncUrl();
   requestAnimationFrame(centerChart);
 }
 
@@ -251,7 +251,7 @@ function openSeat(code) {
       <b>${esc(r.setlist)}</b>
       <div class="hd">${esc(fmtDate(r.date))}${r.sesi ? ' · ' + r.sesi : ''}</div>
       ${r.note ? `<div class="hn">"${esc(r.note)}"</div>` : ''}
-      ${extras(r).map(x => `<div class="ht">${esc(x.label)} dengan ${esc(x.member)}</div>${x.photo ? `<div class="hi-ph"><img src="${esc(thumbOf(x.photo))}" data-full="${esc(x.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="Foto ${esc(x.label)}" decoding="async"></div>` : ''}`).join('')}
+      ${extras(r).map(x => `<div class="ht">${esc(x.label)} dengan ${x.member ? `<button type="button" class="mem-link" data-mem="${esc(x.member)}">${esc(x.member)}</button>` : ''}</div>${x.photo ? `<div class="hi-ph"><img src="${esc(thumbOf(x.photo))}" data-full="${esc(x.photo)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="Foto ${esc(x.label)}" decoding="async"></div>` : ''}`).join('')}
       ${r.harga ? `<div class="hn">${esc(rupiah(r.harga))}${r.tiket ? ' · ' + esc(r.tiket) : ''}</div>` : ''}
       ${lotHtml(r)}
       <button type="button" class="btn-s share" data-share="${r.id}">Bagikan kartu</button>
@@ -528,7 +528,8 @@ $('flt-reset').addEventListener('click', () => {
 const seatTie = (a, b) => a[0].localeCompare(b[0]) || parseInt(b.slice(2)) - parseInt(a.slice(2));
 function renderStats() {
   const by = (fn, tie) => tally(view(), fn, tie);
-  const card = (l, v, s) => `<div class="stat"><div class="sv${String(v).length > 9 ? ' sm' : ''}"${typeof v === 'number' ? ` data-n="${v}"` : ''}>${esc(v)}</div><div class="sl">${l}</div>${s ? `<div class="ss">${esc(s)}</div>` : ''}</div>`;
+  // x = atribut tambahan kartu; n/fmt = angka mentah + format (mis. 'rp') supaya kartu berisi teks (Rp ...) ikut berhitung
+  const card = (l, v, s, x = '', n = null, fmt = '') => `<div class="stat"${x}><div class="sv${String(v).length > 9 ? ' sm' : ''}"${typeof v === 'number' ? ` data-n="${v}"` : n !== null ? ` data-n="${n}" data-fmt="${fmt}"` : ''}>${esc(v)}</div><div class="sl">${l}</div>${s ? `<div class="ss">${/^\d+×$/.test(s) ? `<span data-cu="${parseInt(s)}" data-suf="×">${esc(s)}</span>` : esc(s)}</div>` : ''}</div>`;
   const st = top => top ? [top[0], top[1] + '×'] : ['-', ''];
   const paid = view().filter(r => r.harga > 0), tot = paid.reduce((a, r) => a + r.harga, 0);
   $('stats').innerHTML = [
@@ -537,8 +538,8 @@ function renderStats() {
     card('Baris favorit', ...st(by(r => r.seat[0], (a, b) => a.localeCompare(b)))),
     card('2-Shot', view().filter(r => r.twoshot === 'Ya').length + soloIn('ts'), soloIn('ts') ? 'termasuk ' + soloIn('ts') + ' di luar show' : ''),
     card('Chekicha', view().filter(r => r.chekicha === 'Ya').length + soloIn('ck'), soloIn('ck') ? 'termasuk ' + soloIn('ck') + ' di luar show' : ''),
-    card('Member terbanyak', ...st(by(r => extras(r).map(x => x.member)))),
-    ...(tot ? [card('Total biaya', rupiah(tot)), card('Rata-rata / show', rupiah(tot / paid.length), `dari ${paid.length} show berbayar`)] : [])
+    (t => card('Member terbanyak', ...st(t), t ? ` data-member="${esc(t[0])}" role="button" tabindex="0" title="Ketuk untuk statistik ${esc(t[0])}"` : ''))(by(r => extras(r).map(x => x.member))),
+    ...(tot ? [card('Total biaya', rupiah(tot), '', '', tot, 'rp'), card('Rata-rata / show', rupiah(tot / paid.length), `dari ${paid.length} show berbayar`, '', Math.round(tot / paid.length), 'rp')] : [])
   ].join('');
 }
 
@@ -620,16 +621,23 @@ function tally(list, fn, tie) {
   return Object.entries(o).sort((a, b) => b[1] - a[1] || (tie ? tie(a[0], b[0]) : 0))[0];
 }
 
-// angka naik dari 0 (hanya saat pertama kali tampil)
-function countUp(root) {
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  root.querySelectorAll('[data-n]').forEach(el => {
-    const n = +el.dataset.n, t0 = performance.now();
+// format angka untuk animasi hitung: '' = bilangan bulat, 'rp' = Rp 1.234.567, 'pct1' = 58.3%
+const fmtNum = (n, f) => f === 'rp' ? rupiah(Math.round(n)) : f === 'pct1' ? n.toFixed(1) + '%' : String(Math.round(n));
+// angka naik dari 0. Penanda: data-n (kartu statistik, ikut dianimasikan lagi saat filter berubah) atau data-cu (hanya hitung naik);
+// data-fmt = format, data-suf = akhiran (mis. ×). Teks akhir dikembalikan persis seperti aslinya di frame terakhir.
+function countUp(root, zero) {
+  if (calm()) return;
+  root.querySelectorAll('[data-n],[data-cu]').forEach(el => {
+    const n = parseFloat(el.dataset.n ?? el.dataset.cu), f = el.dataset.fmt || '', suf = el.dataset.suf || '', fin = el.textContent;
+    if (isNaN(n)) return;
+    if (document.hidden) { el.textContent = fin; return; } // rAF berhenti di tab latar: jangan tinggalkan angka di 0
+    const t0 = performance.now(), d = n > 99999 ? 1400 : 1100;
     const step = t => {
-      const p = Math.min(1, (t - t0) / 1100);
-      el.textContent = Math.round(n * (1 - Math.pow(1 - p, 3)));
+      const p = Math.min(1, (t - t0) / d);
+      el.textContent = p >= 1 ? fin : fmtNum(n * (1 - Math.pow(1 - p, 3)), f) + suf;
       if (p < 1) requestAnimationFrame(step);
     };
+    if (zero) el.textContent = fmtNum(0, f) + suf;
     requestAnimationFrame(step);
   });
 }
@@ -785,7 +793,7 @@ $('wrap-btn').addEventListener('click', wrapped);
 let showUnv = false;
 function renderCover() {
   const got = new Set(view().map(r => r.seat).filter(s => SEATS.has(s))).size, tot = SEATS.size, pct = Math.round(got / tot * 100);
-  $('cover').innerHTML = `<div class="cov-t"><b>Kursi terisi ${got} dari ${tot}</b><span>${pct}%</span></div>
+  $('cover').innerHTML = `<div class="cov-t"><b>Kursi terisi <span data-cu="${got}">${got}</span> dari ${tot}</b><span data-cu="${pct}" data-suf="%">${pct}%</span></div>
     <div class="cov-bar"><i style="width:${pct}%"></i></div>
     <div class="cov-s"><span>${tot - got} kursi belum pernah ditempati</span>
     <button type="button" class="btn-s" id="cov-btn" aria-pressed="${showUnv}">${showUnv ? 'Tampilkan semua' : 'Sorot yang belum'}</button></div>`;
@@ -1046,7 +1054,7 @@ function renderTicketsRaw() {
   const teNote = tw && tw.win + tw.lose ? `<p class="lot-n">Angka "Show teater" memasukkan ${tw.win} menang dan ${tw.lose} kalah dari tiket event teater (${[...new Set(te.map(tname))].map(esc).join(', ')}). Alur OFC → General dan rincian per setlist hanya menghitung tiket show.</p>` : '';
   const refs = tickets.filter(t => t.status === 'refund'); // menang undian tapi show dibatalkan & di-refund
   const names = {SHOW: 'Show teater', EXCLUSIVE: 'Exclusive / M&G', EVENT: 'Event'};
-  const card = (l, v, s, c = '') => `<div class="stat${c}"><div class="sv">${esc(v)}</div><div class="sl">${l}</div>${s ? `<div class="ss">${esc(s)}</div>` : ''}</div>`;
+  const card = (l, v, s, c = '', n = null, fmt = '') => `<div class="stat${c}"><div class="sv"${typeof v === 'number' ? ` data-cu="${v}"` : n !== null ? ` data-cu="${n}" data-fmt="${fmt}"` : ''}>${esc(v)}</div><div class="sl">${l}</div>${s ? `<div class="ss">${esc(s)}</div>` : ''}</div>`;
   const sh = ls.by['Show teater'], shDone = sh ? sh.win + sh.lose : 0;
   const bs = {}; // lotre per setlist (tiket show)
   tickets.filter(t => t.type === 'SHOW').forEach(t => { const o = bs[t.name] || (bs[t.name] = {win: 0, lose: 0}); raffleOf(t.raffle) === 'lose' ? o.lose++ : o.win++; });
@@ -1065,9 +1073,9 @@ function renderTicketsRaw() {
   ].map(([l, p, t0], i, _a, t = String(t0).replace(/\d+/g, n => `<b data-n="${n}">${n}</b>`)) => `<div class="lot-r fl" style="--i:${i}"><span>${l}</span><span class="sl-bar"><i style="width:${p}%"></i></span><span>${t}</span></div>`).join('') +
     `<p class="lot-n">${fl.ofcLose} show kalah di OFC: ${fl.genTry} lanjut daftar General (${fl.genWin} menang, ${fl.genLose} kalah) dan ${fl.ofcOnly} hanya mendaftar sekali di OFC.</p>` : '';
   const shPct = shDone ? sh.win / shDone * 100 : 0;
-  const shCard = shDone ? `<div class="stat main"><div class="ring" style="--p:${shPct.toFixed(1)}"><svg viewBox="0 0 36 36" aria-hidden="true"><circle class="rb" cx="18" cy="18" r="15.9"/><circle class="rf" cx="18" cy="18" r="15.9" pathLength="100"/></svg><span>${shPct.toFixed(1).replace(/\.0$/, '')}%</span></div><div class="sl">Persentase menang (show teater)</div><div class="ss">${sh.win} dari ${shDone} yang sudah diundi${tw && tw.win + tw.lose ? ' · termasuk ' + (tw.win + tw.lose) + ' tiket event teater' : ''}</div></div>` : '';
+  const shCard = shDone ? `<div class="stat main"><div class="ring" style="--p:${shPct.toFixed(1)}"><svg viewBox="0 0 36 36" aria-hidden="true"><circle class="rb" cx="18" cy="18" r="15.9"/><circle class="rf" cx="18" cy="18" r="15.9" pathLength="100"/></svg><span data-cu="${shPct.toFixed(1)}" data-fmt="pct1">${shPct.toFixed(1).replace(/\.0$/, '')}%</span></div><div class="sl">Persentase menang (show teater)</div><div class="ss">${sh.win} dari ${shDone} yang sudah diundi${tw && tw.win + tw.lose ? ' · termasuk ' + (tw.win + tw.lose) + ' tiket event teater' : ''}</div></div>` : '';
   box.innerHTML = !ls.total ? '<div class="empty">Belum ada data lotre</div>' :
-    `<div class="lot-cards">${shCard}${card('Entri lotre', ls.total)}${card(ls.inferred ? 'Menang (perkiraan)' : 'Menang', ls.win, refs.length ? `${refs.length} dibatalkan & di-refund` : '')}${card('Kalah', ls.lose)}${card('Persentase menang (semua jenis)', done ? ls.pct.toFixed(1) + '%' : '-', done ? `${ls.win} dari ${done} yang sudah diundi` : '')}</div>` +
+    `<div class="lot-cards">${shCard}${card('Entri lotre', ls.total)}${card(ls.inferred ? 'Menang (perkiraan)' : 'Menang', ls.win, refs.length ? `${refs.length} dibatalkan & di-refund` : '')}${card('Kalah', ls.lose)}${card('Persentase menang (semua jenis)', done ? ls.pct.toFixed(1) + '%' : '-', done ? `${ls.win} dari ${done} yang sudah diundi` : '', '', done ? ls.pct : null, 'pct1')}</div>` +
     Object.entries(ls.by).map(([ty, b]) => {
       const d = b.win + b.lose, p = d ? b.win / d * 100 : 0;
       return `<div class="lot-r"><span>${names[ty] || esc(ty)}</span><span class="sl-bar"><i style="width:${p}%"></i></span><span>${b.win ? b.win + ' menang' : '0 menang terdeteksi'} · ${b.lose} kalah${d && b.win ? ` (${p.toFixed(0)}%)` : ''}</span></div>`;
@@ -1098,7 +1106,7 @@ function renderTicketsRaw() {
   const cards = [['', 'Semua', ev.length, new Set(ev.map(tname)).size], ...TK_CATS.filter(c => stat[c]).map(c => [c, c, stat[c].n, stat[c].s.size])], cn = cards.length;
   $('ev-cats').style.setProperty('--cols', cn <= 4 ? cn : cn === 5 ? 5 : cn % 3 === 0 ? 3 : 4); // mis. 6 kartu = 3 x 2, 7 kartu = 4 + 3
   $('ev-cats').innerHTML = cards
-    .map(([k, l, n, z]) => `<button type="button" class="ev-c${k === evCat ? ' on' : ''}" data-cat="${esc(k)}" aria-pressed="${k === evCat}"><b>${n}</b><span>${esc(l)}</span><small>${z} seri</small></button>`).join('');
+    .map(([k, l, n, z]) => `<button type="button" class="ev-c${k === evCat ? ' on' : ''}" data-cat="${esc(k)}" aria-pressed="${k === evCat}"><b data-cu="${n}">${n}</b><span>${esc(l)}</span><small>${z} seri</small></button>`).join('');
 
   // kelompokkan tiket per seri (kategori + nama tanpa tanggal)
   const grouper = arr => {
@@ -1282,10 +1290,10 @@ function tweenNums(id, box) {
     const t0 = performance.now();
     const step = t => {
       const p = Math.min(1, (t - t0) / 900);
-      el.textContent = Math.round(from + (to - from) * (1 - Math.pow(1 - p, 3)));
+      el.textContent = fmtNum(from + (to - from) * (1 - Math.pow(1 - p, 3)), el.dataset.fmt || '');
       if (p < 1) requestAnimationFrame(step);
     };
-    el.textContent = from;
+    el.textContent = fmtNum(from, el.dataset.fmt || '');
     requestAnimationFrame(step);
   });
   numMem[id] = next;
@@ -1305,7 +1313,7 @@ function playRefresh() {
 const REVEAL = ['sl-chart', 'rchart', 'cal', 'mchart', 'ev-rank', 'lot'];
 function showReveal(el) { // nyalakan animasi bar / kalender / cincin pada bagian ini
   el.classList.add('shown');
-  if (el.id === 'lot') flowCount(el);
+  if (el.id === 'lot') { flowCount(el); countUp($('lot').querySelector('.lot-cards') || el, true); if ($('ev-cats')) countUp($('ev-cats'), true); }
   clearTimeout(el._sh);
   el._sh = setTimeout(() => el.classList.remove('shown'), 3600);
 }
@@ -1606,3 +1614,106 @@ if ($('gallery-bar')) {
   $('gallery-bar').insertAdjacentHTML('beforebegin', '<div id="g-kinds" class="gk-bar"></div>');
   $('g-kinds').addEventListener('click', e => { const b = e.target.closest('[data-gk]'); if (b) { galKind = b.dataset.gk; renderGallery(); } });
 }
+
+
+// ================= Rekap "tahun lalu hari ini" =================
+// Tanggal hari ini bisa diuji lewat ?today=YYYY-MM-DD. Memakai semua data (tidak terpengaruh filter peta).
+function todayStr() {
+  const q = new URLSearchParams(location.search).get('today');
+  if (q && /^\d{4}-\d{2}-\d{2}$/.test(q)) return q;
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+$('last').insertAdjacentHTML('afterend', '<div id="memory"></div>');
+function memoryItems(today) {
+  const md = today.slice(5), ty = +today.slice(0, 4), out = [];
+  const yrs = d => ty - +d.slice(0, 4);
+  const ok = d => d && d.slice(5) === md && yrs(d) > 0;
+  records.filter(r => ok(r.date)).forEach(r => out.push({y: yrs(r.date), t: r.setlist || '(tanpa setlist)', sub: [r.sesi, ...extras(r).map(x => `${x.label} dengan ${x.member}`)].filter(Boolean).join(' · '), seat: r.seat, ph: (extras(r).find(x => x.photo) || {}).photo}));
+  solo.filter(w => ok(w.date)).forEach(w => out.push({y: yrs(w.date), t: (w.kind === 'ts' ? '2-Shot' : 'Chekicha') + ' dengan ' + w.member, sub: w.setlist || '', ph: w.photo}));
+  tickets.filter(t => t.type !== 'SHOW' && t.used > 0 && ok(t.date)).forEach(t => out.push({y: yrs(t.date), t: t.name, sub: ['Event', t.member].filter(Boolean).join(' · ')}));
+  return out.sort((a, b) => a.y - b.y);
+}
+function renderMemory() {
+  const el = $('memory');
+  if (!el) return;
+  const today = todayStr(), items = dataLoaded ? memoryItems(today) : [];
+  if (!items.length) { el.innerHTML = ''; return; }
+  const when = y => y === 1 ? 'Setahun lalu hari ini' : `${y} tahun lalu hari ini`;
+  const shown = items.slice(0, 4);
+  el.innerHTML = `<div class="mem-c"><span class="last-l">Kilas balik · ${esc(fmtDate(today).replace(/ \d{4}$/, ''))}</span>` + shown.map(i => `
+    <div class="mem-i">${i.ph ? `<img src="${esc(thumbOf(i.ph))}" data-full="${esc(i.ph)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="Foto kilas balik" decoding="async">` : ''}
+      <div class="mem-b"><b>${esc(i.t)}</b><span>${when(i.y)}${i.sub ? ' · ' + esc(i.sub) : ''}${i.seat ? ` · Kursi <button type="button" class="seat-badge tl-s" data-seat="${esc(i.seat)}">${esc(i.seat)}</button>` : ''}</span></div></div>`).join('')
+    + (items.length > shown.length ? `<span class="mem-more">+${items.length - shown.length} lainnya di tanggal ini</span>` : '') + '</div>';
+}
+$('memory').addEventListener('click', e => {
+  const b = e.target.closest('[data-seat]');
+  if (b) openSeat(b.dataset.seat);
+});
+
+// ================= Statistik per member =================
+// Semua pertemuan (2-Shot + Chekicha, termasuk sesi lepas) dengan satu member, dari seluruh data (tidak terpengaruh filter).
+function memberStats(name) {
+  const m = {name, ts: 0, ck: 0, shows: [], solo: 0, ev: 0, dates: [], photos: []};
+  records.forEach(r => {
+    const x = extras(r).filter(e => e.member === name);
+    if (!x.length) return;
+    m.shows.push(r);
+    x.forEach(e => { m[e.k]++; m.dates.push(r.date); if (e.photo) m.photos.push({src: e.photo, date: r.date, label: e.label}); });
+  });
+  solo.filter(w => w.member === name).forEach(w => {
+    m[w.kind]++; m.solo++; m.dates.push(w.date);
+    if (w.photo) m.photos.push({src: w.photo, date: w.date, label: w.kind === 'ts' ? '2-Shot' : 'Chekicha'});
+    if (w.setlist) m.shows.push({setlist: w.setlist, seat: '', date: w.date, solo: 1});
+  });
+  m.ev = tickets.filter(t => t.type !== 'SHOW' && t.used > 0 && t.member === name).length;
+  m.dates.sort(); m.photos.sort((a, b) => b.date.localeCompare(a.date));
+  m.setlists = Object.entries(m.shows.reduce((o, r) => (r.setlist && (o[r.setlist] = (o[r.setlist] || 0) + 1), o), {})).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  m.seats = Object.entries(m.shows.reduce((o, r) => (r.seat && (o[r.seat] = (o[r.seat] || 0) + 1), o), {})).sort((a, b) => b[1] - a[1] || seatTie(a[0], b[0]));
+  return m;
+}
+function memberNames() { // semua member yang pernah bertemu, paling sering dulu
+  const o = {};
+  records.forEach(r => extras(r).forEach(x => x.member && (o[x.member] = (o[x.member] || 0) + 1)));
+  solo.forEach(w => w.member && (o[w.member] = (o[w.member] || 0) + 1));
+  return Object.entries(o).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+}
+$('mchart').insertAdjacentHTML('afterend', '<h2 class="sec" id="mem-h">Per member <small class="hint" style="display:inline">· ketuk nama untuk statistiknya</small></h2><div id="mem-list"></div>');
+function renderMembers() {
+  const box = $('mem-list'), list = memberNames();
+  if (!box) return;
+  box.innerHTML = list.length ? list.map(([n, c]) => `<button type="button" class="mem-chip" data-mem="${esc(n)}">${esc(n)}<b>${c}</b></button>`).join('') : '<div class="empty">Belum ada 2-Shot atau Chekicha</div>';
+  $('mem-h').hidden = !list.length;
+}
+$('lightbox').insertAdjacentHTML('beforebegin', `<div class="overlay" id="mem-modal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mem-title">
+  <button class="x" id="mem-close" aria-label="Tutup">&times;</button><h3 id="mem-title" style="margin:0"></h3><div class="mem-body" id="mem-body"></div></div></div>`);
+function openMember(name) {
+  const m = memberStats(name);
+  if (!m.ts && !m.ck && !m.ev) return;
+  const met = m.ts + m.ck, span = m.dates.length ? (m.dates[0] === m.dates[m.dates.length - 1] ? fmtDate(m.dates[0]) : `${fmtDate(m.dates[0])} – ${fmtDate(m.dates[m.dates.length - 1])}`) : '';
+  const cell = (l, v) => `<div class="stat"><div class="sv" data-cu="${v}">${v}</div><div class="sl">${l}</div></div>`;
+  $('mem-title').textContent = name;
+  $('mem-body').innerHTML = `<div class="mem-grid">${cell('2-Shot', m.ts)}${cell('Chekicha', m.ck)}${cell('Total pertemuan', met)}${m.ev ? cell('Hadir di event', m.ev) : ''}</div>`
+    + (span ? `<p class="mem-span">${esc(span)}</p>` : '')
+    + (m.setlists.length ? `<h4 class="mem-h">Setlist yang paling sering bareng</h4>` + m.setlists.slice(0, 3).map(([n, c]) => `<div class="mem-r"><span>${esc(n)}</span><b>${c}×</b></div>`).join('') : '')
+    + (m.seats.length ? `<h4 class="mem-h">Kursi saat bertemu</h4><div class="mem-seats">${m.seats.slice(0, 8).map(([n, c]) => `<button type="button" class="seat-badge tl-s" data-seat="${esc(n)}">${esc(n)}${c > 1 ? ` ×${c}` : ''}</button>`).join('')}</div>` : '')
+    + (m.photos.length ? `<h4 class="mem-h">Foto</h4><div class="mem-ph">${m.photos.slice(0, 6).map(p => `<img src="${esc(thumbOf(p.src))}" data-full="${esc(p.src)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="${esc(p.label)} dengan ${esc(name)}, ${esc(fmtDate(p.date))}" decoding="async" loading="lazy">`).join('')}</div>` : '');
+  $('mem-body').scrollTop = 0;
+  openEl('mem-modal');
+  countUp($('mem-body'), true);
+  $('mem-close').focus({preventScroll: true});
+}
+$('mem-close').addEventListener('click', () => closeEl('mem-modal'));
+$('mem-modal').addEventListener('click', e => {
+  if (e.target.id === 'mem-modal') return closeEl('mem-modal');
+  const b = e.target.closest('[data-seat]'); // ketuk kursi: tutup statistik member lalu buka riwayat kursi
+  if (b) { closeEl('mem-modal'); openSeat(b.dataset.seat); }
+});
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-mem],[data-member]');
+  if (b) openMember(b.dataset.mem || b.dataset.member);
+});
+document.addEventListener('keydown', e => {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('.stat[data-member]')) { e.preventDefault(); openMember(e.target.dataset.member); }
+});
+escHooks.push(() => { if ($('mem-modal').classList.contains('open') && !$('mem-modal').classList.contains('closing')) { closeEl('mem-modal'); return true; } return false; });
