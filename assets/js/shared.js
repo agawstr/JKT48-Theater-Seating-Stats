@@ -2061,7 +2061,23 @@ $('mchart').insertAdjacentHTML('afterend', `<section id="mem-sec"><h2 class="sec
   <div id="mem-bar"><input type="search" id="mem-q" placeholder="Cari member…" aria-label="Cari member" autocomplete="off"><button type="button" class="btn-s" id="mem-sort" aria-label="Ubah urutan"></button></div>
   <div id="mem-mode" class="mem-mode" role="group" aria-label="Member yang ditampilkan" hidden><i class="seg-ind" aria-hidden="true"></i><button type="button" data-mode="all" aria-pressed="true">Semua member</button><button type="button" data-mode="met" aria-pressed="false">Pernah 2-Shot/Chekicha</button></div>
   <p id="mem-n" class="mem-n" aria-live="polite"></p><p id="mem-key" class="mem-key"></p><div id="mem-list"></div></section>`);
+// tinggi daftar member dianimasikan: saat hasil cari berkurang, halaman memendek perlahan (layar turun/naik mulus, tidak mendadak terlempar ke atas);
+// saat kata dihapus dan hasil bertambah, halaman memanjang perlahan.
 function renderMembers(anim) {
+  const box = $('mem-list');
+  if (!box) return;
+  if (calm()) { clearTimeout(box._ht); box.style.height = box.style.transition = ''; return renderMembersCore(anim); }
+  const h0 = box.offsetHeight; // tinggi saat ini (bisa sedang di tengah animasi sebelumnya)
+  clearTimeout(box._ht); box.style.transition = 'none'; box.style.height = '';
+  renderMembersCore(anim);
+  const h1 = box.offsetHeight;
+  if (!h0 || Math.abs(h0 - h1) < 2) { box.style.transition = ''; return; }
+  box.style.height = h0 + 'px'; void box.offsetHeight;
+  box.style.transition = 'height .65s cubic-bezier(.22,1,.36,1)';
+  box.style.height = h1 + 'px';
+  box._ht = setTimeout(() => { box.style.height = ''; box.style.transition = ''; }, 720);
+}
+function renderMembersCore(anim) {
   const box = $('mem-list');
   if (!box) return;
   // rekam posisi chip lama (untuk animasi geser/masuk/keluar saat mengetik di pencarian atau ganti urutan)
