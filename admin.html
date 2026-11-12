@@ -220,7 +220,9 @@ button.tt-c{font:inherit;color:inherit;text-align:left;cursor:pointer}
 body.adm .view{min-width:0}
 body.adm .card{min-width:0}
 body.adm .crud{grid-template-columns:340px minmax(0,1fr)} /* 1fr biasa tidak bisa lebih sempit dari tabel min-width:600px di dalamnya */
-@media(max-width:900px){body.adm .crud{grid-template-columns:minmax(0,1fr)}}
+/* form + tabel bersebelahan butuh ruang tabel >= ~600px; kalau sempit, tumpuk (form di atas, tabel selebar penuh) supaya kolom Aksi tidak terpotong.
+   <1100px: tidak ada sidebar. 1280-1359px: sidebar 252px memakan ruang. */
+@media(max-width:1099px),(min-width:1280px) and (max-width:1359px){body.adm .crud{grid-template-columns:minmax(0,1fr)}}
 
 /* ---------- gerak ala iOS ---------- */
 body.adm{--ios:cubic-bezier(.32,.72,0,1);-webkit-tap-highlight-color:transparent}
