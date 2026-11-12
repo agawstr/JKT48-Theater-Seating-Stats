@@ -2330,5 +2330,10 @@ escHooks.push(() => { if ($('mem-modal').classList.contains('open') && !$('mem-m
   addEventListener('scroll', kick, {passive: true});
   addEventListener('resize', kick);
   mq.addEventListener('change', kick); touchTab.addEventListener('change', kick);
+  // pindah tab: Peta & Statistik disembunyikan -> panel kaca harus ikut hilang (sebelumnya baru dicek saat menggulir, jadi tertinggal di tab lain)
+  const vm = $('view-main');
+  if (vm && window.MutationObserver) new MutationObserver(kick).observe(vm, {attributes: true, attributeFilter: ['hidden', 'class', 'style']});
+  document.addEventListener('click', e => { if (e.target.closest('.tab')) { kick(); setTimeout(kick, 120); setTimeout(kick, 480); } }, true);
+  addEventListener('hashchange', kick); addEventListener('pageshow', kick);
   sync(); setTimeout(sync, 600);
 })();
