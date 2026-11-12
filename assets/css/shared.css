@@ -1258,21 +1258,8 @@ html[data-glass=on] .mem-mode{-webkit-backdrop-filter:blur(14px) saturate(160%);
 .mem-seats .seat-badge{text-align:center;box-sizing:border-box}
 .mem-seats button.mem-more{grid-column:span 2;text-align:center}
 
-/* ---- pil yang menempel (chip lompat + cari member): isi pekat, tanpa latar/kotak di belakangnya ----
-   Kaca tembus pandang membuat kartu di bawahnya kelihatan; pil dibuat solid supaya tidak ada yang tembus. */
+/* ---- pil yang menempel (chip lompat + cari member): tanpa latar di belakangnya, hanya pil yang melayang.
+   Isi pil dibuat solid (bukan kaca) supaya kartu di belakang tidak tembus ke dalam pil. ---- */
 .jump .btn-s,.jump .btn-s:hover,#mem-sort,#mem-sort:hover{background:#1c1318;background-image:none;-webkit-backdrop-filter:none;backdrop-filter:none}
 .jump .btn-s.on{background:#3a1522}
 #mem-q{background:#181115;background-image:none;-webkit-backdrop-filter:none;backdrop-filter:none}
-
-/* ---- latar bar menempel = salinan persis latar halaman (gradasi tetap di layar), jadi kartu yang lewat
-   di belakang bar tertutup total tapi tidak ada kotak yang kelihatan. Aktif hanya saat .stuck (diatur JS). ---- */
-.jump.stuck,#mem-bar.stuck{background-color:#0d090d;background-attachment:fixed;background-image:
-    radial-gradient(40% 35% at 15% 10%,rgba(255,42,95,.45),transparent 70%),
-    radial-gradient(35% 35% at 90% 25%,rgba(255,140,0,.32),transparent 70%),
-    radial-gradient(45% 40% at 70% 95%,rgba(136,19,55,.55),transparent 70%),
-    radial-gradient(30% 30% at 5% 85%,rgba(120,70,255,.25),transparent 70%)}
-/* HP: latar selebar layar supaya kartu di lorong kiri/kanan juga tertutup */
-@media(max-width:600px){
-  .jump{box-sizing:border-box;align-self:stretch;padding-left:max(12px,calc(50vw - 50% + 2px));padding-right:max(12px,calc(50vw - 50% + 2px));margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw)}
-  #mem-bar{box-sizing:border-box;width:auto;align-self:stretch;padding-left:max(12px,calc(50vw - 50%));padding-right:max(12px,calc(50vw - 50%));margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw)}
-}
