@@ -187,9 +187,7 @@ html:not([data-cheap]) .head .badge{animation-duration:.95s}
 @media(max-width:768px){
   body .tabbar::after{content:'';position:absolute;left:14px;right:14px;top:100%;height:calc(env(safe-area-inset-bottom,0px) + 12px);z-index:-1;pointer-events:none;background:#0d090d}
 }
-@media(min-width:769px) and (hover:none) and (pointer:coarse){
-  body.app .tabbar::after{content:'';position:absolute;left:14px;right:14px;top:100%;height:calc(env(safe-area-inset-bottom,0px) + 16px);z-index:-1;pointer-events:none;background:#0d090d}
-}
+/* iPad: strip hitam di bawah dock dihapus (kelihatan seperti kotak panjang) */
 
 /* ---------- 2. Catatan keterangan (admin): kartu kecil yang rapi, bukan teks lepas menempel ke tombol ---------- */
 p.tt-note{font-size:12.5px;line-height:1.6;color:#b9b9c2;margin:0;padding:12px 14px;border-radius:14px;
@@ -299,6 +297,11 @@ html[data-glass=on] #mem-q{background:rgba(0,0,0,.26)}
   #appbar{display:flex;justify-content:center;align-items:baseline;gap:10px;border-radius:0 0 26px 26px;
     background:rgba(13,9,13,.66);-webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%)}
   #appbar::before{display:none}
+  /* chip tidak lagi melar memenuhi baris: ukurannya pas teks & di tengah, supaya panel ramping bisa "memeluk" Ringkasan...Member */
+  .jump{gap:6px;padding-top:12px}
+  .jump .btn-s{flex:0 0 auto;padding:7px 12px}
+  .jump .btn-s:first-child{margin-left:auto}
+  .jump .btn-s:last-child{margin-right:auto}
   html.bars-wide #appbar{border-radius:0;border-bottom-color:transparent}
   #appbar{transition:border-radius .5s var(--ios),border-color .5s}
   #appbar{background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02)),rgba(22,13,19,.5);-webkit-backdrop-filter:blur(26px) saturate(185%);backdrop-filter:blur(26px) saturate(185%)}
