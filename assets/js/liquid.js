@@ -105,9 +105,7 @@
      Hanya opacity + transform, hanya item yang terlihat di layar. Dipanggil SETELAH render selesai. */
   const EASE = 'cubic-bezier(.22,1,.36,1)';
   const POP = EASE; // tanpa overshoot: item berhenti tepat di posisi akhir (tidak naik/turun sendiri setelah selesai)
-  const SPRING = () => { // pegas dari liquid.css (--spring-b: memantul sedikit lalu diam); cadangan: kurva tanpa pantulan
-    try { const v = getComputedStyle(document.documentElement).getPropertyValue('--spring-b').trim(); return v && CSS.supports('transition-timing-function', v) ? v : POP; } catch (e) { return POP; }
-  };
+  const SPRING = () => POP; // sengaja TANPA overshoot: --spring-b memantul ~2px melewati posisi akhir lalu kembali (item terlihat naik/turun sendiri)
   function swap(root, sel) {
     if (!root || root.hidden || calm()) return [];
     const L = typeof perf !== 'undefined' && perf.lite();
