@@ -312,3 +312,34 @@ html[data-glass=on] #mem-q{background:rgba(0,0,0,.26)}
 }
 @media(prefers-reduced-motion:reduce){#bars-bg,#appbar{transition:none}}
 html.bars-kill #bars-bg{transition:none!important;opacity:0!important;visibility:hidden!important}
+
+
+/* ---------- Kolom cari member: tombol hapus (×) + hitungan hasil di dalam kolom ---------- */
+.mem-qw{position:relative;flex:1;min-width:0;display:flex}
+.mem-qw #mem-q{width:100%;box-sizing:border-box}
+.mem-qw.has-q #mem-q{padding-right:84px}
+#mem-q::-webkit-search-cancel-button,#mem-q::-webkit-search-decoration{-webkit-appearance:none;appearance:none;display:none}
+.mem-qn{position:absolute;right:44px;top:50%;transform:translateY(-50%);font-size:11.5px;font-weight:700;color:#a1a1aa;font-variant-numeric:tabular-nums;pointer-events:none;white-space:nowrap}
+.mem-qx{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;border:0;padding:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.1);color:#e4e4e7;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.mem-qx[hidden]{display:none}
+.mem-qx:active{background:rgba(255,255,255,.2)}
+.mem-qx::after{content:"";position:absolute;inset:-6px} /* area ketuk ~44px */
+
+/* ---------- Kartu member redup (belum pernah 2-Shot): teks tetap terbaca ---------- */
+#mem-list.lu .mem-chip:not(.met){opacity:1;color:#c9c4c8;border-color:#2c1a22}
+#mem-list.lu .mem-chip:not(.met) .mem-cn{color:#c9c4c8}
+#mem-list.lu .mem-chip:not(.met) .mem-avs.ph{color:#bdb8bc;background:#2a1f25}
+#mem-list.lu .mem-chip:not(.met) b{color:#ffb454;background:rgba(255,140,0,.16)}
+#mem-list.lu .mem-chip:not(.met):hover,#mem-list.lu .mem-chip:not(.met):focus-visible{color:#fff;border-color:#ff2a5f}
+
+/* ---------- Bar cari/filter tiap tab = kartu kaca yang sama dengan panel chip ---------- */
+#tl-bar,#gallery-bar,#ev-bar{box-sizing:border-box;border-radius:22px;padding:8px 10px;
+  background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02)),rgba(22,13,19,.5);
+  box-shadow:0 14px 30px -16px rgba(0,0,0,.75),inset 0 1px 0 rgba(255,255,255,.2),inset 0 0 0 1px rgba(255,255,255,.08)}
+html[data-glass=on] #tl-bar,html[data-glass=on] #gallery-bar,html[data-glass=on] #ev-bar{-webkit-backdrop-filter:blur(26px) saturate(185%);backdrop-filter:blur(26px) saturate(185%)}
+html[data-glass=off] #tl-bar,html[data-glass=off] #gallery-bar,html[data-glass=off] #ev-bar{background:rgba(22,13,19,.96)}
+/* Riwayat: tepi kartu sejajar dengan kartu timeline (rel di kiri), bukan dengan rel */
+#tl-bar{margin-left:30px;max-width:calc(var(--col-w,720px) - 30px)}
+@media(max-width:600px){#tl-bar{margin-left:26px}}
+#tl-q,#g-member,#ev-member,#ev-status{background-color:rgba(0,0,0,.26)}
