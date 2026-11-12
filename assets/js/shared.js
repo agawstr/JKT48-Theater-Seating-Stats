@@ -1839,9 +1839,20 @@ $('mchart').insertAdjacentHTML('afterend', `<h2 class="sec" id="mem-h">Per membe
   <div id="mem-bar"><input type="search" id="mem-q" placeholder="Cari member…" aria-label="Cari member" autocomplete="off"><button type="button" class="btn-s" id="mem-sort" aria-label="Ubah urutan"></button></div>
   <div id="mem-mode" class="mem-mode" role="group" aria-label="Member yang ditampilkan" hidden><i class="seg-ind" aria-hidden="true"></i><button type="button" data-mode="all" aria-pressed="true">Semua member</button><button type="button" data-mode="met" aria-pressed="false">Pernah 2-Shot/Chekicha</button></div>
   <p id="mem-key" class="mem-key"></p><div id="mem-list"></div>`);
-function renderMembers() {
+function renderMembers(anim) {
   const box = $('mem-list');
   if (!box) return;
+  // rekam posisi chip lama (untuk animasi geser/masuk/keluar saat mengetik di pencarian atau ganti urutan)
+  const fx = anim && !calm();
+  const oldPos = new Map(), ghosts = [];
+  if (fx) {
+    const br = box.getBoundingClientRect();
+    box.querySelectorAll('.mem-chip').forEach(el => {
+      const r = el.getBoundingClientRect();
+      oldPos.set(el.dataset.mem, r);
+      if (r.bottom > 0 && r.top < innerHeight) ghosts.push({n: el.dataset.mem, node: el.cloneNode(true), l: r.left - br.left + box.scrollLeft, t: r.top - br.top + box.scrollTop, w: r.width, h: r.height});
+    });
+  }
   const all = memberNames(), hasLineup = records.some(r => (r.lineup || []).length);
   const mode = hasLineup ? memMode : 'all'; // saklar hanya berarti kalau lineup sudah ada
   const q = memQ.trim().toLowerCase();
@@ -1850,7 +1861,9 @@ function renderMembers() {
   $('mem-h').hidden = $('mem-bar').hidden = $('mem-key').hidden = !all.length;
   $('mem-mode').hidden = !all.length || !hasLineup;
   $('mem-mode').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
-  $('mem-sort').textContent = memSort === 'az' ? 'A–Z' : 'Terbanyak';
+  const sb = $('mem-sort'), stxt = memSort === 'az' ? 'A–Z' : 'Terbanyak';
+  if (!sb.firstElementChild) sb.innerHTML = '<span class="ms-l"></span>';
+  if (sb.firstElementChild.textContent !== stxt) sb.firstElementChild.textContent = stxt;
   $('mem-key').innerHTML = hasLineup
     ? '<span class="lg-i"><b class="lg-a">8</b> kali ditonton (tampil di show)</span><span class="lg-i"><b class="lg-m">3</b> di antaranya 2-Shot / Chekicha</span><span class="lg-i lg-n">Kotak berwarna = pernah 2-Shot/Chekicha · yang redup belum</span>'
     : 'Angka = jumlah 2-Shot + Chekicha. Isi lineup di admin untuk menghitung semua member yang tampil.';
@@ -1861,6 +1874,31 @@ function renderMembers() {
     return `<button type="button" class="mem-chip${m && hasLineup ? ' met' : ''}" data-mem="${esc(n)}"${ttl}><span class="mem-cn">${esc(n)}</span><span class="mem-nums"><b>${c}</b>${hasLineup && m ? `<b class="mm">${m}</b>` : ''}</span>${hasLineup && m ? `<span class="mem-rt" style="width:${pct}%"></span>` : ''}</button>`;
   }).join('')
     : `<div class="empty">${all.length ? 'Tidak ada member yang cocok' : 'Belum ada data member'}</div>`;
+  if (!fx || !oldPos.size) return;
+  // chip yang masih ada: meluncur dari posisi lama; chip baru: muncul membesar; chip yang hilang: memudar (hantu)
+  let ei = 0;
+  const now = new Set();
+  box.querySelectorAll('.mem-chip').forEach(el => {
+    now.add(el.dataset.mem);
+    const r = el.getBoundingClientRect();
+    if (r.bottom < 0 || r.top > innerHeight) return;
+    const o = oldPos.get(el.dataset.mem);
+    if (o) {
+      const dx = o.left - r.left, dy = o.top - r.top;
+      if (dx || dy) el.animate([{transform: `translate3d(${dx}px,${dy}px,0)`}, {transform: 'none'}], {duration: 520, easing: lbEase});
+    } else {
+      el.animate([{opacity: 0, transform: 'scale(.88)'}, {opacity: 1, transform: 'none'}], {duration: 420, delay: Math.min(ei++, 10) * 20, easing: lbEase, fill: 'backwards'});
+    }
+  });
+  ghosts.filter(g => !now.has(g.n)).slice(0, 24).forEach(g => {
+    const n = g.node;
+    n.style.cssText = `position:absolute;left:${g.l}px;top:${g.t}px;width:${g.w}px;height:${g.h}px;margin:0;pointer-events:none;z-index:0`;
+    n.setAttribute('aria-hidden', 'true'); n.tabIndex = -1; n.removeAttribute('data-mem');
+    box.appendChild(n);
+    n.animate([{opacity: 1, transform: 'none'}, {opacity: 0, transform: 'scale(.9)'}], {duration: 240, easing: 'ease-out', fill: 'forwards'}).onfinish = () => n.remove();
+  });
+  const em = box.querySelector('.empty');
+  if (em) em.animate([{opacity: 0, transform: 'translateY(6px)'}, {opacity: 1, transform: 'none'}], {duration: 360, easing: lbEase});
 }
 // pil geser di saklar "Semua member / Pernah 2-Shot/Chekicha": melar ke tujuan lalu mengecil (efek cair), seperti pil di tab bar
 function segMove(anim) {
@@ -1877,9 +1915,18 @@ function segMove(anim) {
 }
 if (window.ResizeObserver) new ResizeObserver(() => segMove(false)).observe($('mem-mode')); // muncul / ukuran berubah: pasang tanpa animasi
 const memSwap = () => { if (window.liquid && window.liquid.swap) window.liquid.swap($('mem-list'), '.mem-chip'); }; // chip masuk bertahap dengan pegas (liquid.js)
-$('mem-q').addEventListener('input', e => { memQ = e.target.value; renderMembers(); });
+$('mem-q').addEventListener('input', e => { memQ = e.target.value; renderMembers(true); });
 $('mem-mode').addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if (b && b.dataset.mode !== memMode) { memMode = b.dataset.mode; renderMembers(); segMove(true); memSwap(); } });
-$('mem-sort').addEventListener('click', () => { memSort = memSort === 'az' ? 'top' : 'az'; renderMembers(); memSwap(); });
+$('mem-sort').addEventListener('click', () => {
+  // tombol melar/menyusut mulus ke lebar label baru (search bar ikut karena flex:1), label baru memudar masuk, chip meluncur ke urutan baru
+  const btn = $('mem-sort'), w0 = btn.offsetWidth;
+  memSort = memSort === 'az' ? 'top' : 'az';
+  renderMembers(true);
+  if (calm()) return;
+  const w1 = btn.offsetWidth;
+  if (w0 !== w1) btn.animate([{width: w0 + 'px'}, {width: w1 + 'px'}], {duration: 460, easing: lbEase});
+  btn.firstElementChild.animate([{opacity: 0, transform: 'translateY(7px) scale(.92)'}, {opacity: 1, transform: 'none'}], {duration: 380, easing: lbEase});
+});
 $('lightbox').insertAdjacentHTML('beforebegin', `<div class="overlay" id="mem-modal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mem-title">
   <button class="x" id="mem-close" aria-label="Tutup">&times;</button><h3 id="mem-title" style="margin:0"></h3><div class="mem-body" id="mem-body"></div></div></div>`);
 const seatBlock = (title, list) => list.length ? `<h4 class="mem-h">${title}</h4><div class="mem-seats">${list.map(([n, c], i) => `<button type="button" class="seat-badge tl-s" data-seat="${esc(n)}"${i >= 10 ? ' data-x hidden' : ''}>${esc(n)}${c > 1 ? ` ×${c}` : ''}</button>`).join('')}${list.length > 10 ? `<button type="button" class="mem-more" data-more aria-expanded="false">+${list.length - 10} lainnya</button>` : ''}</div>` : '';
