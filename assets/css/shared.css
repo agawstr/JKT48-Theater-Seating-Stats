@@ -906,7 +906,7 @@ img,canvas{max-width:100%}
         akibatnya kadang jalan, kadang tidak). Semuanya dipegang WAAPI di app.js. --- */
 #view-main,#view-gal,#view-tl,#view-ev,
 .enter .tl-i,.enter .gi,.enter .ev-g,.enter .ev-c,.enter #story,.enter .last-c,.enter #cover,.enter #filters,.enter #stats .stat,
-#gallery .gi,#gallery .gi.a,.enter .tl-i.a,.enter .ev-g:nth-child(-n+8){animation:none!important}
+#gallery .gi,#gallery .gi.a,.enter .tl-i.a,.enter .ev-g:nth-child(-n+8),.intro .seat-row{animation:none!important}
 .leave{animation:none!important}
 
 /* tab lama yang sedang memudar keluar: lepas dari alur halaman, tetap di posisi semula */
