@@ -2292,6 +2292,7 @@ escHooks.push(() => { if ($('mem-modal').classList.contains('open') && !$('mem-m
     raf = 0;
     const j = document.querySelector('.jump'), m = $('mem-bar');
     let show = false;
+    if (gone()) return;
     let wide = false;
     if (j && j.offsetHeight) {
       const st = stickPx(), jh = j.offsetHeight, vw = root.clientWidth;
@@ -2332,8 +2333,10 @@ escHooks.push(() => { if ($('mem-modal').classList.contains('open') && !$('mem-m
   mq.addEventListener('change', kick); touchTab.addEventListener('change', kick);
   // pindah tab: Peta & Statistik disembunyikan -> panel kaca harus ikut hilang (sebelumnya baru dicek saat menggulir, jadi tertinggal di tab lain)
   const vm = $('view-main');
-  if (vm && window.MutationObserver) new MutationObserver(kick).observe(vm, {attributes: true, attributeFilter: ['hidden', 'class', 'style']});
-  document.addEventListener('click', e => { if (e.target.closest('.tab')) { kick(); setTimeout(kick, 120); setTimeout(kick, 480); } }, true);
+  // tab Peta & Statistik disembunyikan: panel hilang SEKETIKA (tanpa fade), sebelum frame berikutnya digambar
+  const gone = () => { const g = !!(vm && vm.hidden); root.classList.toggle('bars-kill', g); if (g && (on || isWide)) { on = isWide = false; root.classList.remove('bars-on', 'bars-wide'); } return g; };
+  if (vm && window.MutationObserver) new MutationObserver(() => { gone(); kick(); }).observe(vm, {attributes: true, attributeFilter: ['hidden', 'class', 'style']});
+  document.addEventListener('click', e => { if (e.target.closest('.tab')) { setTimeout(gone, 0); kick(); setTimeout(kick, 120); setTimeout(kick, 480); } }, true);
   addEventListener('hashchange', kick); addEventListener('pageshow', kick);
   sync(); setTimeout(sync, 600);
 })();
