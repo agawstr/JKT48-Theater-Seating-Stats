@@ -15,7 +15,7 @@ Tanpa backend dan tanpa proses build: cukup file statis yang bisa di-hosting di 
 - **Bagikan kartu** per show di modal kursi, memakai foto 2-Shot/Chekicha jika ada.
 
 **Statistik**
-- Kartu ringkasan: total show, kursi favorit, baris favorit, 2-Shot, Chekicha, member terbanyak, serta total biaya dan rata-rata per show bila harga tiket diisi. Kursi dengan jumlah sama dipilih dari baris paling depan, lalu nomor paling kanan.
+- Kartu ringkasan: total show, kursi favorit, baris favorit, 2-Shot, Chekicha, member terbanyak. Kursi dengan jumlah sama dipilih dari baris paling depan, lalu nomor paling kanan.
 - **Cakupan kursi** dengan progress bar dan tombol **Sorot yang belum** untuk menandai kursi yang belum pernah ditempati.
 - **Filter** setlist, member, dan rentang tanggal. Hasilnya tersimpan di URL (`?setlist=...&member=...&from=2026-01-01&to=2026-06-30`), jadi bisa dibagikan lewat link.
 - Grafik total kunjungan per setlist (klik bar untuk memfilter), sebaran per baris, kalender kehadiran per hari, dan kunjungan per bulan.
@@ -25,14 +25,14 @@ Tanpa backend dan tanpa proses build: cukup file statis yang bisa di-hosting di 
 - **Angka berhitung naik** di semua kartu ringkasan: statistik (termasuk Rp), total di header, kursi terisi, kartu lotre, kategori Tiket & Event, dan statistik member. Mati otomatis jika "kurangi gerakan" aktif.
 
 **Tab lain**
-- **Riwayat**: timeline per tahun dan bulan. Header bulan menempel di bawah tab bar (lengkap dengan jumlah show), tiap kartu menampilkan tanggal, sesi, setlist, chip 2-Shot/Chekicha/lotre/harga, dan catatan. Milestone (show ke-1, 10, dan kelipatan 25) diberi bintang emas. **Seluruh kartu bisa diketuk** untuk membuka detail kursi. Ada kolom pencarian.
+- **Riwayat**: timeline per tahun dan bulan. Header bulan menempel di bawah tab bar (lengkap dengan jumlah show), tiap kartu menampilkan tanggal, sesi, setlist, chip 2-Shot/Chekicha/lotre, dan catatan. Milestone (show ke-1, 10, dan kelipatan 25) diberi bintang emas. **Seluruh kartu bisa diketuk** untuk membuka detail kursi. Ada kolom pencarian.
 - **Galeri**: foto bergaya polaroid/instax. Nama member memakai tulisan tangan (Caveat) berukuran besar, jenis foto berupa label kecil, lalu setlist dan tanggal dengan ukuran lebih kecil. Warna bingkai dan selotip berbeda untuk 2-Shot (krem), Chekicha (merah muda), dan 2-Shot Event (ungu). Bisa difilter per jenis dan member, lalu dibuka di lightbox.
 - **Tiket & Event**: statistik lotre, meet & greet, special show, dan event.
 
 **Halaman admin**
 - Tambah, edit, hapus, dan cari riwayat (tabel dengan halaman), dengan cek duplikat dan kompres foto otomatis.
 - **Lineup per show**: field "Member yang tampil" di form (ketik + Enter, tempel banyak nama sekaligus, atau ketuk dari daftar member). Show baru di tanggal + sesi + setlist yang sama (mis. kursi lain) otomatis memakai lineup yang sudah ada, ada tombol **Salin lineup** dari show lain, dan **Simpan & lanjut** mempertahankan lineup. Chip "show belum ada lineup" di daftar tugas membantu melengkapi show lama. Opsi *Samarkan nama member* ikut menyamarkan lineup. Di halaman publik, modal member menampilkan *Ditonton tampil* dan *Kursi saat dia tampil*.
-- Field harga dan jenis tiket (opsional), serta saran otomatis untuk setlist dan member yang pernah diinput.
+- Field harga dan jenis tiket (opsional; **harga hanya tampil di admin, tidak pernah di halaman publik**), serta saran otomatis untuk setlist dan member yang pernah diinput.
 - Pengingat backup: jumlah perubahan yang belum diunduh dan kapan terakhir diunduh.
 
 ## Performa & animasi
