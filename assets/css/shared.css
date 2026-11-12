@@ -1129,3 +1129,6 @@ html[data-perf=lite] .gi .gi-ph:not(.ok):not(.bad)::before,
 .mem-chip.met::before{content:"";width:7px;height:7px;border-radius:50%;background:#ff2a5f;flex-shrink:0;margin-right:-2px}
 .mem-cn{flex:1;min-width:0;text-align:left}
 .mem-chip.met::before{margin-right:0}
+
+/* per member: di desktop induknya (.col-map) flex-column rata tengah, jadi daftar menyusut jadi satu kolom sempit; paksa selebar induk */
+#mem-bar,#mem-key,#mem-list{align-self:stretch;width:100%;box-sizing:border-box}
