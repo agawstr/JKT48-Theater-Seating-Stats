@@ -2058,7 +2058,7 @@ function memberAvatars() {
 const memInit = n => (String(n).trim().match(/[A-Za-z0-9\u00C0-\uFFFF]/) || ['?'])[0].toUpperCase();
 let memQ = '', memSort = 'top', memMode = 'all'; // memMode: 'all' (semua yang tampil) | 'met' (pernah ketemu)
 $('mchart').insertAdjacentHTML('afterend', `<section id="mem-sec"><h2 class="sec" id="mem-h">Per member <small class="hint" style="display:inline">· ketuk nama untuk statistiknya</small></h2>
-  <div id="mem-bar"><input type="search" id="mem-q" placeholder="Cari member…" aria-label="Cari member" autocomplete="off"><button type="button" class="btn-s" id="mem-sort" aria-label="Ubah urutan"></button></div>
+  <div id="mem-bar"><span class="mem-qw" id="mem-qw"><input type="search" id="mem-q" placeholder="Cari member…" aria-label="Cari member" autocomplete="off"><span id="mem-qn" class="mem-qn" aria-hidden="true"></span><button type="button" id="mem-qx" class="mem-qx" aria-label="Hapus pencarian" hidden><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M3.5 3.5l9 9m0-9l-9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg></button></span><button type="button" class="btn-s" id="mem-sort" aria-label="Ubah urutan"></button></div>
   <div id="mem-mode" class="mem-mode" role="group" aria-label="Member yang ditampilkan" hidden><i class="seg-ind" aria-hidden="true"></i><button type="button" data-mode="all" aria-pressed="true">Semua member</button><button type="button" data-mode="met" aria-pressed="false">Pernah 2-Shot/Chekicha</button></div>
   <p id="mem-n" class="mem-n" aria-live="polite"></p><p id="mem-key" class="mem-key"></p><div id="mem-list"></div></section>`);
 // tinggi daftar member dianimasikan: saat hasil cari berkurang, halaman memendek perlahan (layar turun/naik mulus, tidak mendadak terlempar ke atas);
@@ -2111,6 +2111,7 @@ function renderMembersCore(anim) {
   const pool = all.filter(([, , m]) => mode === 'all' || m > 0).length; // jumlah sebelum pencarian
   $('mem-n').hidden = !all.length;
   $('mem-n').textContent = !all.length ? '' : q && list.length !== pool ? `${list.length} dari ${pool} member` : `${pool} member`;
+  { const w = $('mem-qw'); if (w) { w.classList.toggle('has-q', !!memQ); $('mem-qx').hidden = !memQ; $('mem-qn').textContent = q ? `${list.length}/${pool}` : ''; } } // hitungan hasil + tombol hapus langsung di kolom cari
   box.innerHTML = list.length ? list.map(([n, c, m]) => {
     const pct = c ? Math.min(100, Math.round(m / c * 100)) : 0;
     const ttl = hasLineup ? ` title="${esc(`Ditonton ${c}× · 2-Shot/Chekicha ${m}×` + (m ? ` (${pct}%)` : ''))}"` : '';
@@ -2161,6 +2162,7 @@ function segMove(anim) {
 if (window.ResizeObserver) new ResizeObserver(() => segMove(false)).observe($('mem-mode')); // muncul / ukuran berubah: pasang tanpa animasi
 const memSwap = () => { if (window.liquid && window.liquid.swap) (window.liquid.swap($('mem-list'), '.mem-chip') || []).forEach(a => { a.playbackRate = .55; }); }; // chip masuk bertahap dengan pegas (liquid.js)
 $('mem-q').addEventListener('input', e => { memQ = e.target.value; renderMembers(true); });
+$('mem-qx').addEventListener('click', () => { memQ = ''; $('mem-q').value = ''; renderMembers(true); $('mem-q').focus(); });
 $('mem-mode').addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if (b && b.dataset.mode !== memMode) { memMode = b.dataset.mode; renderMembers(); segMove(true); memSwap(); } });
 $('mem-sort').addEventListener('click', () => {
   // tombol melar/menyusut mulus ke lebar label baru (search bar ikut karena flex:1), label baru memudar masuk, chip meluncur ke urutan baru
