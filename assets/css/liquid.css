@@ -257,3 +257,22 @@ html[data-glass=on][data-perf=lite] .modal{
 /* perangkat sentuh yang tidak lewat aturan di atas (mis. glass dimatikan): buang semburat merah muda lama */
 @media (hover:none){.modal{background-image:var(--g-bg-hi)}}
 html[data-glass=off] .modal{background:#26191f}
+
+
+/* ---------- Latar overlay modal: dipindah ke ::before supaya kaca kartu tidak "berubah" saat muncul ----------
+   Sebelumnya .overlay sendiri punya backdrop-filter + dianimasikan, jadi jadi "backdrop root": blur kartu di dalamnya
+   hanya melihat warna overlay (bukan halaman) dan tampilannya bergeser selama animasi, lalu pop ke tampilan akhir.
+   Sekarang overlay polos; peredup + blur ada di ::before (fade pakai opacity), sehingga blur kartu selalu menyampel halaman asli. */
+.overlay.open:not(.docked):not(#lightbox),
+html #seat-modal.docked.over.open.open.open{
+  background:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;animation:none!important}
+.overlay.open:not(.docked):not(#lightbox)::before,
+html #seat-modal.docked.over.open.open.open::before{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:rgba(0,0,0,.32);-webkit-backdrop-filter:blur(10px) saturate(150%);backdrop-filter:blur(10px) saturate(150%);
+  animation:ovb-in .5s var(--ios) both}
+.overlay.open.closing:not(.docked):not(#lightbox)::before,
+html #seat-modal.docked.over.open.open.open.closing::before{animation:ovb-out .42s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes ovb-in{from{opacity:0}}
+@keyframes ovb-out{to{opacity:0}}
+@media(prefers-reduced-motion:reduce){.overlay.open:not(.docked):not(#lightbox)::before,html #seat-modal.docked.over.open.open.open::before{animation:none}}
