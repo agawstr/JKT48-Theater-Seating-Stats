@@ -1680,19 +1680,39 @@ function memberStats(name) {
   m.seats = Object.entries(m.shows.reduce((o, r) => (r.seat && (o[r.seat] = (o[r.seat] || 0) + 1), o), {})).sort((a, b) => b[1] - a[1] || seatTie(a[0], b[0]));
   return m;
 }
-function memberNames() { // semua member yang pernah bertemu, paling sering dulu
-  const o = {};
-  records.forEach(r => extras(r).forEach(x => x.member && (o[x.member] = (o[x.member] || 0) + 1)));
-  solo.forEach(w => w.member && (o[w.member] = (o[w.member] || 0) + 1));
-  return Object.entries(o).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+// semua member yang pernah muncul (lineup, 2-Shot, Chekicha, sesi lepas): [nama, jumlah ditampilkan, pernah ketemu?]
+// jumlah = berapa kali ditonton tampil (lineup atau bertemu); kalau belum ada lineup sama sekali, jumlah pertemuan 2-Shot/Chekicha
+function memberNames() {
+  const app = {}, met = {}, hasLineup = records.some(r => (r.lineup || []).length);
+  records.forEach(r => {
+    const names = new Set(extras(r).map(x => x.member).filter(Boolean));
+    names.forEach(n => met[n] = (met[n] || 0) + 1);
+    [...names, ...(r.lineup || [])].forEach(n => app[n] = (app[n] || 0) + 1);
+    new Set([...(r.lineup || [])].filter(n => names.has(n))).forEach(n => app[n]--); // yang ada di lineup DAN bertemu dihitung sekali
+  });
+  solo.forEach(w => { if (w.member) met[w.member] = (met[w.member] || 0) + 1; });
+  const all = new Set([...Object.keys(app), ...Object.keys(met)]);
+  return [...all].map(n => [n, hasLineup ? (app[n] || met[n] || 0) : (met[n] || 0), !!met[n]]);
 }
-$('mchart').insertAdjacentHTML('afterend', '<h2 class="sec" id="mem-h">Per member <small class="hint" style="display:inline">· ketuk nama untuk statistiknya</small></h2><div id="mem-list"></div>');
+let memQ = '', memSort = 'top';
+$('mchart').insertAdjacentHTML('afterend', `<h2 class="sec" id="mem-h">Per member <small class="hint" style="display:inline">· ketuk nama untuk statistiknya</small></h2>
+  <div id="mem-bar"><input type="search" id="mem-q" placeholder="Cari member…" aria-label="Cari member" autocomplete="off"><button type="button" class="btn-s" id="mem-sort" aria-label="Ubah urutan"></button></div>
+  <p id="mem-key" class="mem-key"></p><div id="mem-list"></div>`);
 function renderMembers() {
-  const box = $('mem-list'), list = memberNames();
+  const box = $('mem-list');
   if (!box) return;
-  box.innerHTML = list.length ? list.map(([n, c]) => `<button type="button" class="mem-chip" data-mem="${esc(n)}">${esc(n)}<b>${c}</b></button>`).join('') : '<div class="empty">Belum ada 2-Shot atau Chekicha</div>';
-  $('mem-h').hidden = !list.length;
+  const all = memberNames(), hasLineup = records.some(r => (r.lineup || []).length);
+  const q = memQ.trim().toLowerCase();
+  const list = all.filter(([n]) => !q || n.toLowerCase().includes(q))
+    .sort((a, b) => memSort === 'az' ? a[0].localeCompare(b[0]) : b[1] - a[1] || a[0].localeCompare(b[0]));
+  $('mem-h').hidden = $('mem-bar').hidden = $('mem-key').hidden = !all.length;
+  $('mem-sort').textContent = memSort === 'az' ? 'A–Z' : 'Terbanyak';
+  $('mem-key').innerHTML = hasLineup ? 'Angka = berapa kali ditonton tampil · <i class="mem-dot"></i> pernah 2-Shot / Chekicha' : 'Angka = jumlah 2-Shot + Chekicha. Isi lineup di admin untuk menghitung semua member yang tampil.';
+  box.innerHTML = list.length ? list.map(([n, c, m]) => `<button type="button" class="mem-chip${m && hasLineup ? ' met' : ''}" data-mem="${esc(n)}"><span class="mem-cn">${esc(n)}</span><b>${c}</b></button>`).join('')
+    : `<div class="empty">${all.length ? 'Tidak ada member yang cocok' : 'Belum ada data member'}</div>`;
 }
+$('mem-q').addEventListener('input', e => { memQ = e.target.value; renderMembers(); });
+$('mem-sort').addEventListener('click', () => { memSort = memSort === 'az' ? 'top' : 'az'; renderMembers(); });
 $('lightbox').insertAdjacentHTML('beforebegin', `<div class="overlay" id="mem-modal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mem-title">
   <button class="x" id="mem-close" aria-label="Tutup">&times;</button><h3 id="mem-title" style="margin:0"></h3><div class="mem-body" id="mem-body"></div></div></div>`);
 const seatBlock = (title, list) => list.length ? `<h4 class="mem-h">${title}</h4><div class="mem-seats">${list.slice(0, 10).map(([n, c]) => `<button type="button" class="seat-badge tl-s" data-seat="${esc(n)}">${esc(n)}${c > 1 ? ` ×${c}` : ''}</button>`).join('')}${list.length > 10 ? `<span class="mem-more">+${list.length - 10} lainnya</span>` : ''}</div>` : '';
