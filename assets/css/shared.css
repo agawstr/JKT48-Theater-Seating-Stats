@@ -1263,3 +1263,8 @@ html[data-glass=on] .mem-mode{-webkit-backdrop-filter:blur(14px) saturate(160%);
 .jump .btn-s,.jump .btn-s:hover,#mem-sort,#mem-sort:hover{background:#1c1318;background-image:none;-webkit-backdrop-filter:none;backdrop-filter:none}
 .jump .btn-s.on{background:#3a1522}
 #mem-q{background:#181115;background-image:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+/* tanpa bayangan luar: bayangan gelap di sekeliling pil kelihatan seperti kotak hitam tipis di belakangnya */
+.jump .btn-s,.jump .btn-s:hover,.jump .btn-s.on,#mem-sort,#mem-sort:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
+#mem-q,#mem-q:focus{box-shadow:none}
+/* tablet / laptop (jendela tidak penuh): bagian member selebar kolom halaman, jadi daftar jadi beberapa kolom, bukan satu lajur sempit */
+#mem-sec{width:100%;max-width:var(--col-w);box-sizing:border-box}
