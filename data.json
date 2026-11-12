@@ -7,7 +7,7 @@
    "date": "2026-09-25",
    "sesi": "Malam",
    "note": "Shonichi Ramune Intan",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Ya",
    "tsType": "roulette",
@@ -16,7 +16,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Anindya Ramadhani",
+    "Aurellia",
+    "Aurhel Alana",
+    "Celline Thefani",
+    "Fritzy Rosmerian",
+    "Grace Octaviani",
+    "Hillary Abigail",
+    "Indah Cahya",
+    "Jemima Evodie",
+    "Michelle Alexandra",
+    "Nayla Suji",
+    "Nur Intan"
+   ]
   },
   {
    "id": 1790908089136,
@@ -25,7 +39,7 @@
    "date": "2025-05-03",
    "sesi": "Malam",
    "note": "Shonichi Pajama Intan & Ekin",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Ya",
    "tsType": "roulette",
@@ -34,7 +48,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Abigail Rachel",
+    "Hillary Abigail",
+    "Jacqueline Immanuela",
+    "Jazzlyn Trisha",
+    "Michelle Levia",
+    "Nayla Suji",
+    "Nina Tutachia",
+    "Nur Intan",
+    "Oline Manuel",
+    "Regina Wilian",
+    "Shabilqis Naila",
+    "Victoria Kimberly"
+   ]
   },
   {
    "id": 1790911847993,
@@ -43,7 +71,7 @@
    "date": "2024-03-24",
    "sesi": "Siang",
    "note": "Show 2 JKT48 School",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -52,7 +80,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Abigail Rachel",
+    "Aisa Maharani",
+    "Aurellia",
+    "Febriola Sinambela",
+    "Fritzy Rosmerian",
+    "Greesella Adhalia",
+    "Jazzlyn Trisha",
+    "Letycia Moreen",
+    "Mutiara Azzahra",
+    "Nina Tutachia",
+    "Ribka Budiman",
+    "Shabilqis Naila"
+   ]
   },
   {
    "id": 1790912085565,
@@ -61,7 +103,7 @@
    "date": "2024-05-18",
    "sesi": "Malam",
    "note": "Pertama kali theateran",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Ya",
    "tsType": "roulette",
@@ -70,7 +112,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Abigail Rachel",
+    "Adeline Wijaya",
+    "Catherina Vallencia",
+    "Fritzy Rosmerian",
+    "Hillary Abigail",
+    "Letycia Moreen",
+    "Nayla Suji",
+    "Nina Tutachia",
+    "Oline Manuel",
+    "Regina Wilian",
+    "Shabilqis Naila",
+    "Victoria Kimberly"
+   ]
   },
   {
    "id": 1790912278623,
@@ -79,7 +135,7 @@
    "date": "2024-06-07",
    "sesi": "Malam",
    "note": "",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -88,7 +144,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Abigail Rachel",
+    "Alya Amanda",
+    "Anindya Ramadhani",
+    "Chelsea Davina",
+    "Dena Natalia",
+    "Jazzlyn Trisha",
+    "Michelle Alexandra",
+    "Michelle Levia",
+    "Nayla Suji",
+    "Nina Tutachia",
+    "Oline Manuel",
+    "Regina Wilian"
+   ]
   },
   {
    "id": 1790912404339,
@@ -97,7 +167,7 @@
    "date": "2024-06-23",
    "sesi": "Siang",
    "note": "",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Ya",
    "tsType": "roulette",
@@ -106,7 +176,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Abigail Rachel",
+    "Alya Amanda",
+    "Anindya Ramadhani",
+    "Chelsea Davina",
+    "Cynthia Yaputera",
+    "Dena Natalia",
+    "Jazzlyn Trisha",
+    "Michelle Alexandra",
+    "Michelle Levia",
+    "Nayla Suji",
+    "Nina Tutachia",
+    "Regina Wilian"
+   ]
   },
   {
    "id": 1790912500816,
@@ -114,8 +198,8 @@
    "setlist": "Pajama Drive",
    "date": "2024-07-05",
    "sesi": "Malam",
-   "note": "ROOOWW AAAAA",
-   "harga": 0,
+   "note": "huhu bigel nangis",
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Ya",
    "tsType": "roulette",
@@ -124,7 +208,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Abigail Rachel",
+    "Alya Amanda",
+    "Anindya Ramadhani",
+    "Chelsea Davina",
+    "Cynthia Yaputera",
+    "Dena Natalia",
+    "Jazzlyn Trisha",
+    "Michelle Alexandra",
+    "Michelle Levia",
+    "Nayla Suji",
+    "Nina Tutachia",
+    "Regina Wilian"
+   ]
   },
   {
    "id": 1790912723786,
@@ -133,7 +231,7 @@
    "date": "2024-11-28",
    "sesi": "Malam",
    "note": "",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Ya",
    "tsType": "roulette",
@@ -142,7 +240,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Abigail Rachel",
+    "Aurhel Alana",
+    "Catherina Vallencia",
+    "Fritzy Rosmerian",
+    "Hillary Abigail",
+    "Jazzlyn Trisha",
+    "Letycia Moreen",
+    "Michelle Levia",
+    "Oline Manuel",
+    "Regina Wilian",
+    "Ribka Budiman",
+    "Shabilqis Naila"
+   ]
   },
   {
    "id": 1790912807668,
@@ -151,7 +263,7 @@
    "date": "2025-01-09",
    "sesi": "Malam",
    "note": "",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -160,7 +272,25 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Amanda Sukma",
+    "Anindya Ramadhani",
+    "Cathleen Nixie",
+    "Celline Thefani",
+    "Febriola Sinambela",
+    "Gabriela Abigail",
+    "Gendis Mayrannisa",
+    "Grace Octaviani",
+    "Greesella Adhalia",
+    "Helisma Putri",
+    "Indah Cahya",
+    "Indira Seruni",
+    "Jesslyn Elly",
+    "Michelle Alexandra",
+    "Raisha Syifa",
+    "Regina Wilian"
+   ]
   },
   {
    "id": 1790912860532,
@@ -169,7 +299,7 @@
    "date": "2025-01-10",
    "sesi": "Malam",
    "note": "ROW BAGUS",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -178,7 +308,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Abigail Rachel",
+    "Aurhel Alana",
+    "Fritzy Rosmerian",
+    "Hillary Abigail",
+    "Jazzlyn Trisha",
+    "Michelle Levia",
+    "Nayla Suji",
+    "Oline Manuel",
+    "Regina Wilian",
+    "Ribka Budiman",
+    "Shabilqis Naila",
+    "Victoria Kimberly"
+   ]
   },
   {
    "id": 1790912944256,
@@ -187,7 +331,7 @@
    "date": "2025-01-23",
    "sesi": "Malam",
    "note": "",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Ya",
    "tsType": "roulette",
@@ -196,7 +340,25 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Alya Amanda",
+    "Angelina Christy",
+    "Anindya Ramadhani",
+    "Cathleen Nixie",
+    "Cornelia Vanisa",
+    "Dena Natalia",
+    "Desy Natalia",
+    "Febriola Sinambela",
+    "Fiony Alveria",
+    "Gendis Mayrannisa",
+    "Grace Octaviani",
+    "Greesella Adhalia",
+    "Helisma Putri",
+    "Indira Seruni",
+    "Lulu Salsabila",
+    "Michelle Alexandra"
+   ]
   },
   {
    "id": 1790913006391,
@@ -205,7 +367,7 @@
    "date": "2025-01-24",
    "sesi": "Malam",
    "note": "",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -214,7 +376,25 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Angelina Christy",
+    "Aurellia",
+    "Cathleen Nixie",
+    "Chelsea Davina",
+    "Dena Natalia",
+    "Desy Natalia",
+    "Gabriela Abigail",
+    "Gita Sekar Andarini",
+    "Grace Octaviani",
+    "Greesella Adhalia",
+    "Indira Seruni",
+    "Jesslyn Elly",
+    "Lulu Salsabila",
+    "Marsha Lenathea",
+    "Mutiara Azzahra",
+    "Shania Gracia"
+   ]
   },
   {
    "id": 1790913557219,
@@ -223,7 +403,7 @@
    "date": "2025-01-26",
    "sesi": "Siang",
    "note": "Shonichi GEN 13",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -232,7 +412,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Astrella Virgiananda",
+    "Aulia Riza",
+    "Bong Aprilli",
+    "Fritzy Rosmerian",
+    "Hagia Sopia",
+    "Humaira Ramadhani",
+    "Jacqueline Immanuela",
+    "Jemima Evodie",
+    "Mikaela Kusjanto",
+    "Nina Tutachia",
+    "Nur Intan",
+    "Oline Manuel"
+   ]
   },
   {
    "id": 1790913633796,
@@ -241,7 +435,7 @@
    "date": "2025-02-01",
    "sesi": "Siang",
    "note": "Shonichi SMET Show 1",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -250,7 +444,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Alya Amanda",
+    "Angelina Christy",
+    "Celline Thefani",
+    "Cynthia Yaputera",
+    "Febriola Sinambela",
+    "Fiony Alveria",
+    "Freya Jayawardhana",
+    "Greesella Adhalia",
+    "Indira Seruni",
+    "Jesslyn Elly",
+    "Lulu Salsabila",
+    "Shania Gracia"
+   ]
   },
   {
    "id": 1790913680704,
@@ -259,7 +467,7 @@
    "date": "2025-02-05",
    "sesi": "Malam",
    "note": "STS Levi",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -268,7 +476,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Abigail Rachel",
+    "Aurhel Alana",
+    "Fritzy Rosmerian",
+    "Hillary Abigail",
+    "Jazzlyn Trisha",
+    "Michelle Levia",
+    "Nayla Suji",
+    "Oline Manuel",
+    "Regina Wilian",
+    "Ribka Budiman",
+    "Shabilqis Naila",
+    "Victoria Kimberly"
+   ]
   },
   {
    "id": 1790913805293,
@@ -277,7 +499,7 @@
    "date": "2025-04-26",
    "sesi": "Siang",
    "note": "Aitakatta terakhir Lana",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Ya",
    "tsType": "roulette",
@@ -286,7 +508,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Adeline Wijaya",
+    "Astrella Virgiananda",
+    "Aulia Riza",
+    "Aurhel Alana",
+    "Bong Aprilli",
+    "Catherina Vallencia",
+    "Hagia Sopia",
+    "Humaira Ramadhani",
+    "Jacqueline Immanuela",
+    "Jemima Evodie",
+    "Mikaela Kusjanto",
+    "Nur Intan"
+   ]
   },
   {
    "id": 1790913950029,
@@ -295,7 +531,7 @@
    "date": "2025-06-27",
    "sesi": "Malam",
    "note": "",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -304,7 +540,25 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Alya Amanda",
+    "Amanda Sukma",
+    "Aurhel Alana",
+    "Cathleen Nixie",
+    "Desy Natalia",
+    "Feni Fitriyanti",
+    "Fritzy Rosmerian",
+    "Gabriela Abigail",
+    "Gendis Mayrannisa",
+    "Grace Octaviani",
+    "Greesella Adhalia",
+    "Helisma Putri",
+    "Indira Seruni",
+    "Jesslyn Elly",
+    "Raisha Syifa",
+    "Shania Gracia"
+   ]
   },
   {
    "id": 1790914046959,
@@ -313,7 +567,7 @@
    "date": "2025-06-28",
    "sesi": "Malam",
    "note": "Theater w/ UB boys",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -322,7 +576,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Abigail Rachel",
+    "Aulia Riza",
+    "Hillary Abigail",
+    "Jacqueline Immanuela",
+    "Jazzlyn Trisha",
+    "Michelle Levia",
+    "Nayla Suji",
+    "Nur Intan",
+    "Oline Manuel",
+    "Ribka Budiman",
+    "Shabilqis Naila",
+    "Victoria Kimberly"
+   ]
   },
   {
    "id": 1790914185897,
@@ -331,7 +599,7 @@
    "date": "2025-07-02",
    "sesi": "Malam",
    "note": "",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -340,7 +608,21 @@
    "chekicha": "Ya",
    "ckType": "roulette",
    "ckMember": "Nur Intan",
-   "ckPhoto": "photos/1790914185897-ck.jpg"
+   "ckPhoto": "photos/1790914185897-ck.jpg",
+   "lineup": [
+    "Adeline Wijaya",
+    "Aulia Riza",
+    "Catherina Vallencia",
+    "Hagia Sopia",
+    "Hillary Abigail",
+    "Jacqueline Immanuela",
+    "Jazzlyn Trisha",
+    "Mikaela Kusjanto",
+    "Nina Tutachia",
+    "Nur Intan",
+    "Oline Manuel",
+    "Victoria Kimberly"
+   ]
   },
   {
    "id": 1790914244038,
@@ -349,7 +631,7 @@
    "date": "2025-07-16",
    "sesi": "Malam",
    "note": "",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -358,7 +640,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Abigail Rachel",
+    "Aulia Riza",
+    "Hillary Abigail",
+    "Jacqueline Immanuela",
+    "Jazzlyn Trisha",
+    "Jemima Evodie",
+    "Nayla Suji",
+    "Nur Intan",
+    "Oline Manuel",
+    "Ribka Budiman",
+    "Shabilqis Naila",
+    "Victoria Kimberly"
+   ]
   },
   {
    "id": 1790914369376,
@@ -367,7 +663,7 @@
    "date": "2025-08-01",
    "sesi": "Malam",
    "note": "STS Fritzy",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Ya",
    "tsType": "birthday",
@@ -376,7 +672,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Alya Amanda",
+    "Aurellia",
+    "Aurhel Alana",
+    "Desy Natalia",
+    "Fiony Alveria",
+    "Fritzy Rosmerian",
+    "Gabriela Abigail",
+    "Greesella Adhalia",
+    "Indira Seruni",
+    "Marsha Lenathea",
+    "Raisha Syifa",
+    "Shania Gracia"
+   ]
   },
   {
    "id": 1790914495058,
@@ -385,7 +695,7 @@
    "date": "2025-09-26",
    "sesi": "Malam",
    "note": "So Long!",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Ya",
    "tsType": "roulette",
@@ -394,7 +704,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Abigail Rachel",
+    "Adeline Wijaya",
+    "Astrella Virgiananda",
+    "Bong Aprilli",
+    "Hagia Sopia",
+    "Humaira Ramadhani",
+    "Jacqueline Immanuela",
+    "Jazzlyn Trisha",
+    "Mikaela Kusjanto",
+    "Nayla Suji",
+    "Nina Tutachia",
+    "Oline Manuel"
+   ]
   },
   {
    "id": 1790914536926,
@@ -403,7 +727,7 @@
    "date": "2025-12-26",
    "sesi": "Siang",
    "note": "Senshuuraku RKJ",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -412,7 +736,25 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Alya Amanda",
+    "Amanda Sukma",
+    "Angelina Christy",
+    "Aurhel Alana",
+    "Cathleen Nixie",
+    "Chelsea Davina",
+    "Fiony Alveria",
+    "Freya Jayawardana",
+    "Gabriela Abigail",
+    "Gita Sekar Andarini",
+    "Grace Octaviani",
+    "Helisma Putri",
+    "Jessica Chandra",
+    "Marsha Lenathea",
+    "Raisha Syifa",
+    "Shania Gracia"
+   ]
   },
   {
    "id": 1790914653302,
@@ -421,7 +763,7 @@
    "date": "2026-01-08",
    "sesi": "Malam",
    "note": "STS Dena",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -430,7 +772,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Alya Amanda",
+    "Aurellia",
+    "Aurhel Alana",
+    "Cathleen Nixie",
+    "Cornelia Vanisa",
+    "Cynthia Yaputera",
+    "Dena Natalia",
+    "Desy Natalia",
+    "Helisma Putri",
+    "Indah Cahya",
+    "Kathrina Irene",
+    "Lulu Salsabila"
+   ]
   },
   {
    "id": 1790914715302,
@@ -439,7 +795,7 @@
    "date": "2026-01-09",
    "sesi": "Malam",
    "note": "",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -448,7 +804,25 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Aurellia",
+    "Aurhel Alana",
+    "Celline Thefani",
+    "Cornelia Vanisa",
+    "Cynthia Yaputera",
+    "Dena Natalia",
+    "Fritzy Rosmerian",
+    "Gabriela Abigail",
+    "Helisma Putri",
+    "Indah Cahya",
+    "Jazzlyn Trisha",
+    "Jesslyn Elly",
+    "Lulu Salsabila",
+    "Nayla Suji",
+    "Oline Manuel",
+    "Victoria Kimberly"
+   ]
   },
   {
    "id": 1790914799398,
@@ -456,8 +830,8 @@
    "setlist": "Sambil Menggandeng Erat Tanganku",
    "date": "2026-01-10",
    "sesi": "Siang",
-   "note": "Levi Shonichi",
-   "harga": 0,
+   "note": "Shonichi TWT Levi",
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -466,7 +840,21 @@
    "chekicha": "Ya",
    "ckType": "roulette",
    "ckMember": "Michelle Levia",
-   "ckPhoto": "photos/1790914799398-ck.jpg"
+   "ckPhoto": "photos/1790914799398-ck.jpg",
+   "lineup": [
+    "Amanda Sukma",
+    "Anindya Ramadhani",
+    "Aurellia",
+    "Catherina Vallencia",
+    "Chelsea Davina",
+    "Cornelia Vanisa",
+    "Fritzy Rosmerian",
+    "Gabriela Abigail",
+    "Gendis Mayrannisa",
+    "Jesslyn Elly",
+    "Michelle Levia",
+    "Raisha Syifa"
+   ]
   },
   {
    "id": 1790914836397,
@@ -475,7 +863,7 @@
    "date": "2026-01-11",
    "sesi": "Siang",
    "note": "",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -484,7 +872,25 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Cathleen Nixie",
+    "Cornelia Vanisa",
+    "Dena Natalia",
+    "Fritzy Rosmerian",
+    "Gabriela Abigail",
+    "Helisma Putri",
+    "Hillary Abigail",
+    "Indah Cahya",
+    "Jazzlyn Trisha",
+    "Lulu Salsabila",
+    "Nina Tutachia",
+    "Oline Manuel",
+    "Raisha Syifa",
+    "Ribka Budiman",
+    "Shabilqis Naila",
+    "Victoria Kimberly"
+   ]
   },
   {
    "id": 1790914871095,
@@ -493,7 +899,7 @@
    "date": "2026-01-16",
    "sesi": "Siang",
    "note": "STS Ribka",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -502,7 +908,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Abigail Rachel",
+    "Adeline Wijaya",
+    "Aurhel Alana",
+    "Cathleen Nixie",
+    "Chelsea Davina",
+    "Cornelia Vanisa",
+    "Dena Natalia",
+    "Gabriela Abigail",
+    "Jesslyn Elly",
+    "Michelle Levia",
+    "Raisha Syifa",
+    "Ribka Budiman"
+   ]
   },
   {
    "id": 1790914922718,
@@ -511,7 +931,7 @@
    "date": "2026-01-18",
    "sesi": "Siang",
    "note": "STS Greesel",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -520,7 +940,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Aurellia",
+    "Aurhel Alana",
+    "Celline Thefani",
+    "Cynthia Yaputera",
+    "Fiony Alveria",
+    "Freya Jayawardana",
+    "Grace Octaviani",
+    "Indah Cahya",
+    "Jessica Chandra",
+    "Kathrina Irene",
+    "Marsha Lenathea",
+    "Mutiara Azzahra"
+   ]
   },
   {
    "id": 1790914993320,
@@ -528,8 +962,8 @@
    "setlist": "Cara Meminum Ramune",
    "date": "2026-01-22",
    "sesi": "Malam",
-   "note": "Aralie Shonichi",
-   "harga": 0,
+   "note": "Shonichi Ramune Aralie",
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -538,7 +972,25 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Abigail Rachel",
+    "Celline Thefani",
+    "Cynthia Yaputera",
+    "Fiony Alveria",
+    "Gita Sekar Andarini",
+    "Grace Octaviani",
+    "Greesella Adhalia",
+    "Indah Cahya",
+    "Jesslyn Elly",
+    "Kathrina Irene",
+    "Marsha Lenathea",
+    "Michelle Alexandra",
+    "Mutiara Azzahra",
+    "Nayla Suji",
+    "Shabilqis Naila",
+    "Victoria Kimberly"
+   ]
   },
   {
    "id": 1790915023217,
@@ -547,7 +999,7 @@
    "date": "2026-01-23",
    "sesi": "Malam",
    "note": "",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -556,7 +1008,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Angelina Christy",
+    "Anindya Ramadhani",
+    "Aurellia",
+    "Cathleen Nixie",
+    "Chelsea Davina",
+    "Dena Natalia",
+    "Desy Natalia",
+    "Freya Jayawardana",
+    "Fritzy Rosmerian",
+    "Helisma Putri",
+    "Indah Cahya",
+    "Lulu Salsabila"
+   ]
   },
   {
    "id": 1790915093355,
@@ -564,8 +1030,8 @@
    "setlist": "Sambil Menggandeng Erat Tanganku",
    "date": "2026-01-25",
    "sesi": "Siang",
-   "note": "Oline Shonichi",
-   "harga": 0,
+   "note": "Shonichi TWT Oline",
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Ya",
    "tsType": "roulette",
@@ -574,7 +1040,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Adeline Wijaya",
+    "Alya Amanda",
+    "Amanda Sukma",
+    "Celline Thefani",
+    "Fritzy Rosmerian",
+    "Gabriela Abigail",
+    "Jesslyn Elly",
+    "Lulu Salsabila",
+    "Marsha Lenathea",
+    "Oline Manuel",
+    "Raisha Syifa",
+    "Shabilqis Naila"
+   ]
   },
   {
    "id": 1790915127926,
@@ -583,7 +1063,7 @@
    "date": "2026-02-06",
    "sesi": "Malam",
    "note": "",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Ya",
    "tsType": "roulette",
@@ -592,7 +1072,25 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Adeline Wijaya",
+    "Aurellia",
+    "Catherina Vallencia",
+    "Cathleen Nixie",
+    "Chelsea Davina",
+    "Cornelia Vanisa",
+    "Dena Natalia",
+    "Desy Natalia",
+    "Gita Sekar Andarini",
+    "Hillary Abigail",
+    "Jazzlyn Trisha",
+    "Jessica Chandra",
+    "Kathrina Irene",
+    "Lulu Salsabila",
+    "Mutiara Azzahra",
+    "Shabilqis Naila"
+   ]
   },
   {
    "id": 1790915166058,
@@ -601,7 +1099,7 @@
    "date": "2026-02-07",
    "sesi": "Siang",
    "note": "",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -610,7 +1108,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Abigail Rachel",
+    "Alya Amanda",
+    "Cathleen Nixie",
+    "Cornelia Vanisa",
+    "Fritzy Rosmerian",
+    "Gabriela Abigail",
+    "Helisma Putri",
+    "Jesslyn Elly",
+    "Michelle Levia",
+    "Nina Tutachia",
+    "Raisha Syifa",
+    "Victoria Kimberly"
+   ]
   },
   {
    "id": 1790915369203,
@@ -619,7 +1131,7 @@
    "date": "2026-02-22",
    "sesi": "Malam",
    "note": "Show 1 JKT48 School 2026",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Ya",
    "tsType": "roulette",
@@ -628,7 +1140,20 @@
    "chekicha": "Ya",
    "ckType": "roulette",
    "ckMember": "Astrella Virgiananda",
-   "ckPhoto": "photos/1790915369203-ck.jpg"
+   "ckPhoto": "photos/1790915369203-ck.jpg",
+   "lineup": [
+    "Astrella Virgiananda",
+    "Aulia Riza",
+    "Bong Aprilli",
+    "Freya Jayawardana",
+    "Hagia Sopia",
+    "Helisma Putri",
+    "Humaira Ramadhani",
+    "Jacqueline Immanuela",
+    "Jemima Evodie",
+    "Mikaela Kusjanto",
+    "Nur Intan"
+   ]
   },
   {
    "id": 1790915443527,
@@ -637,7 +1162,7 @@
    "date": "2026-03-15",
    "sesi": "Malam",
    "note": "Show 4 JKT48 School 2026",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -646,7 +1171,24 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Grace Octaviani",
+    "Michelle Alexandra",
+    "Hagia Sopia",
+    "Jacqueline Immanuela",
+    "Nur Intan",
+    "Afera Thalia",
+    "Carissa Dini",
+    "Christabella Bonita",
+    "Fahira Putri",
+    "Fatimah Azzahra",
+    "Heidi Suyangga",
+    "Maxine Faye",
+    "Putry Jazyta",
+    "Ralyne Van Irwan",
+    "Sona Kalyana"
+   ]
   },
   {
    "id": 1790915632338,
@@ -655,7 +1197,7 @@
    "date": "2026-04-19",
    "sesi": "Siang",
    "note": "",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -664,7 +1206,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Anindya Ramadhani",
+    "Aurellia",
+    "Aurhel Alana",
+    "Cathleen Nixie",
+    "Cynthia Yaputera",
+    "Fiony Alveria",
+    "Fritzy Rosmerian",
+    "Grace Octaviani",
+    "Indah Cahya",
+    "Jazzlyn Trisha",
+    "Michelle Alexandra",
+    "Nayla Suji"
+   ]
   },
   {
    "id": 1790915665116,
@@ -673,7 +1229,7 @@
    "date": "2026-05-01",
    "sesi": "Malam",
    "note": "",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -682,7 +1238,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Alya Amanda",
+    "Anindya Ramadhani",
+    "Aurellia",
+    "Aurhel Alana",
+    "Cathleen Nixie",
+    "Celline Thefani",
+    "Cynthia Yaputera",
+    "Fritzy Rosmerian",
+    "Hillary Abigail",
+    "Indah Cahya",
+    "Jazzlyn Trisha",
+    "Nayla Suji"
+   ]
   },
   {
    "id": 1790915766549,
@@ -691,7 +1261,7 @@
    "date": "2026-05-24",
    "sesi": "Malam",
    "note": "",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Ya",
    "tsType": "roulette",
@@ -700,7 +1270,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Astrella Virgiananda",
+    "Bong Aprilli",
+    "Carissa Dini",
+    "Fahira Putri",
+    "Fatimah Azzahra",
+    "Heidi Suyangga",
+    "Humaira Ramadhani",
+    "Jacqueline Immanuela",
+    "Jemima Evodie",
+    "Nur Intan",
+    "Ralyne Van Irwan",
+    "Sona Kalyana"
+   ]
   },
   {
    "id": 1790915818736,
@@ -709,7 +1293,7 @@
    "date": "2026-06-19",
    "sesi": "Malam",
    "note": "",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -718,7 +1302,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Abigail Rachel",
+    "Angelina Christy",
+    "Aulia Riza",
+    "Catherina Vallencia",
+    "Dena Natalia",
+    "Desy Natalia",
+    "Jessica Chandra",
+    "Lulu Salsabila",
+    "Mutiara Azzahra",
+    "Raisha Syifa",
+    "Ribka Budiman",
+    "Victoria Kimberly"
+   ]
   },
   {
    "id": 1790915892502,
@@ -727,7 +1325,7 @@
    "date": "2026-06-20",
    "sesi": "Siang",
    "note": "",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -736,7 +1334,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Afera Thalia",
+    "Astrella Virgiananda",
+    "Fahira Putri",
+    "Fatimah Azzahra",
+    "Hagia Sopia",
+    "Heidi Suyangga",
+    "Humaira Ramadhani",
+    "Jacqueline Immanuela",
+    "Jemima Evodie",
+    "Nur Intan",
+    "Ralyne Van Irwan",
+    "Sona Kalyana"
+   ]
   },
   {
    "id": 1790915925629,
@@ -744,8 +1356,8 @@
    "setlist": "Cara Meminum Ramune",
    "date": "2026-06-20",
    "sesi": "Malam",
-   "note": "Virgi Shonichi",
-   "harga": 0,
+   "note": "Shonichi Ramune Virgi",
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -754,7 +1366,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Afera Thalia",
+    "Astrella Virgiananda",
+    "Fahira Putri",
+    "Fatimah Azzahra",
+    "Hagia Sopia",
+    "Heidi Suyangga",
+    "Humaira Ramadhani",
+    "Jacqueline Immanuela",
+    "Jemima Evodie",
+    "Nur Intan",
+    "Ralyne Van Irwan",
+    "Sona Kalyana"
+   ]
   },
   {
    "id": 1790915991087,
@@ -763,7 +1389,7 @@
    "date": "2026-06-25",
    "sesi": "Malam",
    "note": "Show 1 Theater Sementara, BB-6",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -772,7 +1398,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Fiony Alveria",
+    "Indah Cahya",
+    "Aurellia",
+    "Alya Amanda",
+    "Cathleen Nixie",
+    "Cynthia Yaputera",
+    "Celline Thefani",
+    "Grace Octaviani",
+    "Michelle Alexandra",
+    "Fritzy Rosmerian",
+    "Aurhel Alana",
+    "Jazzlyn Trisha"
+   ]
   },
   {
    "id": 1790916110218,
@@ -781,7 +1421,7 @@
    "date": "2026-08-07",
    "sesi": "Malam",
    "note": "STS Virgi",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -790,7 +1430,21 @@
    "chekicha": "Ya",
    "ckType": "birthday",
    "ckMember": "Abigail Rachel",
-   "ckPhoto": "photos/1790916110218-ck.jpg"
+   "ckPhoto": "photos/1790916110218-ck.jpg",
+   "lineup": [
+    "Astrella Virgiananda",
+    "Bong Aprilli",
+    "Carissa Dini",
+    "Fahira Putri",
+    "Fatimah Azzahra",
+    "Heidi Suyangga",
+    "Humaira Ramadhani",
+    "Jacqueline Immanuela",
+    "Jemima Evodie",
+    "Nur Intan",
+    "Ralyne Van Irwan",
+    "Sona Kalyana"
+   ]
   },
   {
    "id": 1790916162049,
@@ -799,7 +1453,7 @@
    "date": "2026-08-13",
    "sesi": "Malam",
    "note": "STS Maira",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -808,7 +1462,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Afera Thalia",
+    "Astrella Virgiananda",
+    "Aulia Riza",
+    "Christabella Bonita",
+    "Fahira Putri",
+    "Hagia Sopia",
+    "Humaira Ramadhani",
+    "Jacqueline Immanuela",
+    "Maxine Faye",
+    "Mikaela Kusjanto",
+    "Putry Jazyta",
+    "Ralyne Van Irwan"
+   ]
   },
   {
    "id": 1790916190974,
@@ -817,7 +1485,7 @@
    "date": "2026-08-16",
    "sesi": "Siang",
    "note": "",
-   "harga": 0,
+   "harga": 200000,
    "tiket": "",
    "twoshot": "Tidak",
    "tsType": "",
@@ -826,7 +1494,21 @@
    "chekicha": "Tidak",
    "ckType": "",
    "ckMember": "",
-   "ckPhoto": ""
+   "ckPhoto": "",
+   "lineup": [
+    "Astrella Virgiananda",
+    "Bong Aprilli",
+    "Carissa Dini",
+    "Fahira Putri",
+    "Fatimah Azzahra",
+    "Humaira Ramadhani",
+    "Jacqueline Immanuela",
+    "Jemima Evodie",
+    "Nur Intan",
+    "Putry Jazyta",
+    "Ralyne Van Irwan",
+    "Sona Kalyana"
+   ]
   }
  ],
  "solo": [
@@ -4775,5 +5457,5 @@
    "photo": ""
   }
  ],
- "updated": "2026-11-09"
+ "updated": "2026-11-12"
 }
