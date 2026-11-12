@@ -2138,10 +2138,10 @@ function segMove(anim) {
   ind.style.transform = T(x); ind.style.width = w + 'px';
   if (!anim || !prev || calm() || (prev.x === x && prev.w === w)) return;
   const lo = Math.min(prev.x, x), hi = Math.max(prev.x + prev.w, x + w);
-  ind.animate([{transform: T(prev.x), width: prev.w + 'px'}, {transform: T(lo), width: (hi - lo) + 'px', offset: .45}, {transform: T(x), width: w + 'px'}], {duration: 700, easing: lbEase});
+  ind.animate([{transform: T(prev.x), width: prev.w + 'px'}, {transform: T(lo), width: (hi - lo) + 'px', offset: .45}, {transform: T(x), width: w + 'px'}], {duration: 1100, easing: lbEase});
 }
 if (window.ResizeObserver) new ResizeObserver(() => segMove(false)).observe($('mem-mode')); // muncul / ukuran berubah: pasang tanpa animasi
-const memSwap = () => { if (window.liquid && window.liquid.swap) window.liquid.swap($('mem-list'), '.mem-chip'); }; // chip masuk bertahap dengan pegas (liquid.js)
+const memSwap = () => { if (window.liquid && window.liquid.swap) (window.liquid.swap($('mem-list'), '.mem-chip') || []).forEach(a => { a.playbackRate = .55; }); }; // chip masuk bertahap dengan pegas (liquid.js)
 $('mem-q').addEventListener('input', e => { memQ = e.target.value; renderMembers(true); });
 $('mem-mode').addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if (b && b.dataset.mode !== memMode) { memMode = b.dataset.mode; renderMembers(); segMove(true); memSwap(); } });
 $('mem-sort').addEventListener('click', () => {
