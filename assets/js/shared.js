@@ -2074,7 +2074,7 @@ function renderMembers(anim) {
   if (!h0 || Math.abs(h0 - h1) < 2) { box.style.transition = ''; return; }
   box.style.height = h0 + 'px'; void box.offsetHeight;
   // makin jauh selisih tingginya, makin lama (dan makin lembut: ease-in-out) supaya layar tidak "melesat" ke atas/bawah
-  const dur = Math.round(Math.min(1500, Math.max(550, 450 + Math.abs(h0 - h1) * .55)));
+  const dur = Math.round(Math.min(900, Math.max(450, 350 + Math.abs(h0 - h1) * .4)));
   box.style.transition = `height ${dur}ms cubic-bezier(.45,.05,.25,1)`;
   box.style.height = h1 + 'px';
   box._ht = setTimeout(() => { box.style.height = ''; box.style.transition = ''; }, dur + 80);
@@ -2315,9 +2315,11 @@ escHooks.push(() => { if ($('mem-modal').classList.contains('open') && !$('mem-m
           else if (touchTab.matches) { L = 0; W = vw; T = 0; H += st; R = '0 0 28px 28px'; }
           else { L = mr.left - 10; W = mr.width + 20; R = '22px'; }
         }
+        if (!on) bg.style.transition = 'none'; // baru muncul: pasang ukuran langsung (tanpa meluncur dari ukuran lama), lalu fade/skala masuk
         const set = (k, v) => bg.style.setProperty(k, v);
         set('--bl', Math.round(L) + 'px'); set('--bw', Math.round(W) + 'px'); set('--bt', Math.round(T) + 'px');
         set('--bh', Math.round(H) + 'px'); set('--br', R);
+        if (!on) { void bg.offsetWidth; bg.style.transition = ''; }
       }
     }
     if (wide !== isWide) { isWide = wide; root.classList.toggle('bars-wide', wide); }
