@@ -1176,6 +1176,7 @@ const SH_APPS = { // url = tujuan di desktop / peramban tanpa dukungan kirim ber
   line: {name: 'LINE', url: t => 'https://line.me/R/msg/text/?' + SH_ENC(t)}
 };
 const SH_SVG = {
+  share: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4m0 0L8 8m4-4l4 4M6 12v6.5a1.5 1.5 0 0 0 1.5 1.5h9a1.5 1.5 0 0 0 1.5-1.5V12"/></svg>',
   save: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19.5h14"/></svg>',
   wa: '<svg viewBox="0 0 24 24"><path d="M12 3.5a8.5 8.5 0 0 0-7.3 12.8l-1.2 4.2 4.3-1.1A8.5 8.5 0 1 0 12 3.5z" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 8.5c.3 3.3 2.3 5.3 6.2 6.3l1-1.3-2-1-.9.8c-1-.4-1.9-1.3-2.3-2.3l.8-.9-1-2z" fill="#fff"/></svg>',
   x: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-linecap="round"><path d="M5 4.5l14 15" stroke-width="2.4"/><path d="M19 4.5L5 19.5" stroke-width="1.6"/></svg>',
@@ -1195,6 +1196,7 @@ function shEnsure() {
         <div class="sh-prev" id="sh-prev"><img id="sh-img" alt="Pratinjau kartu"></div></div>
       <div class="sh-right"><div class="sh-list" id="sh-list" aria-busy="true">
         ${row('save', 'linear-gradient(135deg,#ff2a5f,#ff8c00)', 'Simpan', 'Ke galeri / perangkat', [['save', '', 0]])}
+        ${row('share', 'linear-gradient(135deg,#7c5cff,#ff2a5f)', 'Bagikan', 'WhatsApp, Instagram, X, LINE, dll.', [['more', '', 0]]).replace('class="sh-row"', 'class="sh-row sh-only"')}
         ${row('wa', '#25d366', 'WhatsApp', 'Kirim ke chat', [['wa', '', 0]])}
         ${row('x', '#000', 'X', 'Post atau pesan', [['x-post', 'Post'], ['x-dm', 'DM']])}
         ${row('ig', 'linear-gradient(45deg,#feda75,#fa7e1e 30%,#d62976 60%,#4f5bd5)', 'Instagram', 'Story atau pesan', [['ig-story', 'Story'], ['ig-dm', 'DM']])}
@@ -1204,6 +1206,7 @@ function shEnsure() {
       <p class="sh-hint" id="sh-hint" role="status" aria-live="polite"></p></div>
     </div></div></div>`);
   const sh = $('share-sheet'), m = sh.querySelector('.modal');
+  sh.querySelectorAll('.sh-list > .sh-row:not(.sh-only):not(:first-child)').forEach(e => e.classList.add('sh-app')); // di HP/tablet hanya Simpan + Bagikan
   $('sh-close').addEventListener('click', () => closeEl('share-sheet'));
   sh.addEventListener('click', e => { if (e.target === sh) closeEl('share-sheet'); });
   $('sh-seg').addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (!b || b.dataset.f === SH.fmt) return; SH.fmt = b.dataset.f; shRender(); });
@@ -1228,7 +1231,8 @@ async function shRender() {
     try { SH.file = new File([blob], name, {type: 'image/png'}); } catch (e) { SH.file = null; }
     SH.name = name; img.src = SH.url; img.classList.add('ok'); prev.classList.add('ld');
     $('sh-list').removeAttribute('aria-busy');
-    const nat = shTouch() && shNative(); $('share-sheet').querySelector('[data-a=more]').hidden = !shNative();
+    const nat = shTouch() && shNative();
+    $('sh-list').classList.toggle('sh-simple', nat); $('share-sheet').querySelector('.sh-more').hidden = nat; $('share-sheet').querySelector('.sh-more [data-a=more]').hidden = !shNative();
     shHint(nat ? 'Pilih aplikasinya di daftar bagikan yang muncul.' : shTouch() ? 'Browser ini belum bisa mengirim gambar langsung ke aplikasi: gambar akan disalin, lalu tinggal ditempel.' : 'Di komputer, gambar disalin otomatis lalu aplikasinya dibuka. Tinggal tempel (Ctrl+V).');
   } catch (e) { if (t === SH.tok) shHint('Kartu gagal dibuat. Coba lagi.'); }
 }
