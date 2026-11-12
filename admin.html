@@ -1130,6 +1130,14 @@ $('form').addEventListener('submit', async e => {
     r.setlist.toLowerCase() === setlist.toLowerCase() && r.sesi === sesi);
   if (dup && !await ask('Data dengan kursi, setlist, tanggal, dan sesi yang sama sudah ada. Tetap simpan?', 'Tetap simpan')) return;
 
+  // member 2-Shot/Chekicha pasti tampil di show itu: kalau lineup sudah diisi tapi dia belum ada, tambahkan otomatis.
+  // Lineup kosong dibiarkan kosong (jangan sampai jadi lineup "1 member" yang mengubah mode statistik).
+  const addedLu = [];
+  if (lineup.length) for (const K of KINDS) {
+    if (ex[K.f] !== 'Ya') continue;
+    const n = luCanon(ex[K.m]);
+    if (n && !lineup.some(x => x.toLowerCase() === n.toLowerCase()) && !addedLu.includes(n)) { lineup.push(n); addedLu.push(n); }
+  }
   const rec = { id: id || Date.now(), seat, setlist, date, sesi, note, harga, tiket, ...ex, lineup: [...lineup] };
   if (id) {
     const i = records.findIndex(r => r.id === id);
@@ -1141,7 +1149,7 @@ $('form').addEventListener('submit', async e => {
   if (keep && !id) $('f-seat').focus();
   focusId = rec.id; // baris ini menyala sebentar & halamannya dibuka
   renderAll();
-  toast((id ? 'Diperbarui: ' : 'Tersimpan: ') + rec.seat + ' · ' + rec.setlist,
+  toast((id ? 'Diperbarui: ' : 'Tersimpan: ') + rec.seat + ' · ' + rec.setlist + (addedLu.length ? ' · masuk lineup: ' + addedLu.join(', ') : ''),
     {label: 'Lihat', fn: () => { const tr = $('tbody').querySelector(`tr[data-rid="${rec.id}"]`); if (!tr) return; tr.scrollIntoView({behavior: 'smooth', block: 'center'}); tr.classList.remove('flash'); void tr.offsetWidth; tr.classList.add('flash'); }});
 });
 
