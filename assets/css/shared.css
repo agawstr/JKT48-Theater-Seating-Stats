@@ -1198,3 +1198,10 @@ button.mem-more:active{transform:scale(.94)}
   .lb-cap{padding:0 56px}
 }
 @media(prefers-reduced-motion:reduce){#lightbox.open .lb-nav,#lightbox.open .lb-x{animation:none}}
+
+/* riwayat kursi yang dibuka dari kartu member tampil di atas kartu */
+#seat-modal.over{z-index:150}
+/* laptop: panel kursi yang menempel di halaman, kalau dibuka dari kartu member, tampil sebagai kartu melayang di atas kartu member */
+#seat-modal.docked.over.open{display:flex;position:fixed;inset:0;z-index:150;margin:0;padding:15px;justify-content:center;align-items:center;background:rgba(8,3,6,.45)}
+#seat-modal.docked.over.open .modal{display:block;position:relative;width:100%;max-width:440px}
+#seat-modal.docked.over.open .hist{max-height:min(60vh,440px)}
