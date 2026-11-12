@@ -284,16 +284,24 @@ html #seat-modal.docked.over.open.open.open.closing::before{animation:ovb-out .4
    Tablet/jendela sempit: panel kartu melayang di bawah tab bar, selebar kolom konten. Tanpa animasi masuk/keluar. */
 .jump{padding:8px 2px 6px;margin:0 -2px;top:var(--stick)}
 #mem-bar{padding:4px 0 12px;margin:0 0 -8px}
-#bars-bg{display:none;position:fixed;left:var(--bl,0px);width:var(--bw,100%);top:var(--stick);height:var(--bh,0px);z-index:4;pointer-events:none;
-  background:rgba(13,9,13,.66);-webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);
-  border-radius:22px;box-shadow:0 12px 24px -14px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.1)}
+#bars-bg{display:none;position:fixed;left:var(--bl,0px);width:var(--bw,100%);top:var(--bt,var(--stick));height:var(--bh,0px);z-index:4;pointer-events:none;
+  transition:left .5s var(--ios),width .5s var(--ios),top .5s var(--ios),height .5s var(--ios),border-radius .5s var(--ios);
+  background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02)),rgba(22,13,19,.5);
+  -webkit-backdrop-filter:blur(26px) saturate(185%);backdrop-filter:blur(26px) saturate(185%);
+  border-radius:var(--br,22px);box-shadow:0 14px 30px -16px rgba(0,0,0,.75),inset 0 1px 0 rgba(255,255,255,.2),inset 0 0 0 1px rgba(255,255,255,.08)}
 html.bars-on #bars-bg{display:block}
 html[data-glass=off] #bars-bg{background:rgba(13,9,13,.97);-webkit-backdrop-filter:none;backdrop-filter:none}
+/* isi panel ikut kaca: pil & kolom cari tembus-pandang (blur panel di belakangnya yang menutup teks kartu) */
+html[data-glass=on] .jump .btn-s,html[data-glass=on] .jump .btn-s:hover,html[data-glass=on] #mem-sort,html[data-glass=on] #mem-sort:hover{background:rgba(255,255,255,.08)}
+html[data-glass=on] .jump .btn-s.on{background:rgba(255,42,95,.24)}
+html[data-glass=on] #mem-q{background:rgba(0,0,0,.26)}
 @media(max-width:768px){
   #appbar{display:flex;justify-content:center;align-items:baseline;gap:10px;border-radius:0 0 26px 26px;
     background:rgba(13,9,13,.66);-webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%)}
   #appbar::before{display:none}
-  html.bars-on #appbar{border-radius:0;border-bottom-color:transparent}
-  #bars-bg{left:0;width:auto;right:0;border-radius:0 0 26px 26px;box-shadow:0 12px 24px -14px rgba(0,0,0,.7),inset 0 -1px 0 rgba(255,255,255,.1)}
+  html.bars-wide #appbar{border-radius:0;border-bottom-color:transparent}
+  #appbar{transition:border-radius .5s var(--ios),border-color .5s}
+  #appbar{background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02)),rgba(22,13,19,.5);-webkit-backdrop-filter:blur(26px) saturate(185%);backdrop-filter:blur(26px) saturate(185%)}
   html[data-glass=off] #appbar{background:rgba(13,9,13,.97);-webkit-backdrop-filter:none;backdrop-filter:none}
 }
+@media(prefers-reduced-motion:reduce){#bars-bg,#appbar{transition:none}}
