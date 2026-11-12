@@ -1084,7 +1084,7 @@ html[data-perf=lite] .gi .gi-ph:not(.ok):not(.bad)::before,
 .mem-h{margin:16px 0 6px;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#ff2a5f}
 .mem-r{display:flex;justify-content:space-between;gap:12px;padding:6px 0;font-size:14px;border-bottom:1px solid #2d1820}
 .mem-r b{color:#ff8c00;font-variant-numeric:tabular-nums}
-.mem-seats{display:flex;flex-wrap:wrap;gap:6px}
+.mem-seats{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:6px} /* kursi mengisi lebar penuh, tidak ada ruang kosong di samping */
 .mem-seats .seat-badge{border:0;cursor:pointer}
 .mem-ph{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .mem-ph img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;cursor:zoom-in}
@@ -1254,3 +1254,6 @@ html[data-glass=on] .mem-mode{-webkit-backdrop-filter:blur(14px) saturate(160%);
   .mem-chip.av b{padding:2px 6px}
   .mem-chip.av .mem-nums{gap:3px}
 }
+
+.mem-seats .seat-badge{text-align:center;box-sizing:border-box}
+.mem-seats button.mem-more{grid-column:span 2;text-align:center}
