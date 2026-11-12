@@ -909,11 +909,12 @@ img,canvas{max-width:100%}
 .mc.on .mc-b,.rk.on,.sl-row.on,.ev-c.on,.cd.sel{animation:selpulse 1s var(--ios)}
 
 /* --- 4. Modal, lembar bawah, popover: buka pelan, tutup agak singkat tapi tetap halus --- */
-@keyframes ov-in{from{opacity:0}}
+/* overlay jangan di-fade pakai opacity: opacity<1 di induk bikin blur kartu (backdrop-filter) di dalamnya kehilangan latar sampai fade selesai, lalu tiba-tiba "pop". Animasikan warna + blur-nya saja. */
+@keyframes ov-in{from{background-color:rgba(0,0,0,0);-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0)}}
 @keyframes modal-in{from{opacity:0;transform:translate3d(0,26px,0) scale(.97)}}
 @keyframes sheet-in{from{transform:translate3d(0,100%,0)}}
 @keyframes hi-in{from{opacity:0;transform:translate3d(0,16px,0)}}
-@keyframes fade-out{to{opacity:0}}
+@keyframes fade-out{to{background-color:rgba(0,0,0,0);-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0)}}
 @keyframes pop-out{to{opacity:0;transform:translate3d(0,12px,0) scale(.98)}}
 @keyframes menu-in{from{opacity:0;transform:translate3d(0,-8px,0) scale(.97)}}
 .overlay.open{animation:ov-in .5s var(--ios)}
