@@ -65,7 +65,7 @@ h1{font-size:clamp(30px,5vw,40px);font-weight:700;letter-spacing:-.03em;color:#f
 /* ---------- Modal / lightbox: muncul dengan pegas ---------- */
 @keyframes lg-in{from{opacity:0;transform:scale(.9) translateY(12px)}}
 @keyframes lg-img{from{opacity:0;transform:scale(.86)}}
-.overlay.open{animation:fade .45s ease-out}
+.overlay.open{animation:ov-in .45s ease-out}
 @media (hover:hover) and (pointer:fine){ /* di HP, bottom sheet milik app.js tetap dipakai */
   .overlay.open>.modal{animation:lg-in .6s var(--spring-b)}
 }
