@@ -55,19 +55,39 @@ with sync_playwright() as p:
     check(not errs, f"[index] tanpa error JS {errs[:2] if errs else ''}")
 
     chips = pg.evaluate("""[...document.querySelectorAll('#mem-list .mem-chip')].map(c =>
-        [c.dataset.mem, Number(c.querySelector('b').textContent), c.classList.contains('met')])""")
-    got = {n: (c, m) for n, c, m in chips}
+        [c.dataset.mem, Number(c.querySelector('b').textContent), c.classList.contains('met'),
+         Number(c.querySelector('b.mm')?.textContent || 0), !!c.querySelector('.mem-rt')])""")
+    got = {n: (c, m) for n, c, m, _, _ in chips}
     want = {"Ayu": (2, True), "Bela": (3, False), "Citra": (2, False), "Dewi": (1, True), "Eka": (1, True)}
     check(got == want, f"[index] chip Per member sesuai (lineup + 2-Shot/Chekicha dihitung sekali) -> {got}")
+    mm = {n: (x, bar) for n, _, _, x, bar in chips}
+    check(mm == {"Ayu": (1, True), "Bela": (0, False), "Citra": (0, False), "Dewi": (1, True), "Eka": (1, True)},
+          f"[index] angka 'ketemu' + garis rasio hanya pada member yang pernah ketemu -> {mm}")
+    check(pg.evaluate("getComputedStyle(document.querySelector('#mem-list .mem-chip[data-mem=Bela]')).opacity") == "0.6"
+          and pg.evaluate("getComputedStyle(document.querySelector('#mem-list .mem-chip[data-mem=Ayu]')).opacity") == "1",
+          "[index] member yang belum pernah ketemu tampil redup")
+    check(pg.evaluate("!document.getElementById('mem-mode').hidden"), "[index] saklar 'Semua yang tampil / Pernah ketemu' terlihat")
+    pg.click("#mem-mode [data-mode=met]"); pg.wait_for_timeout(300)
+    only = pg.evaluate("[...document.querySelectorAll('#mem-list .mem-chip')].map(c => c.dataset.mem).sort()")
+    check(only == ["Ayu", "Dewi", "Eka"], f"[index] saklar 'Pernah ketemu' hanya menampilkan yang pernah ketemu -> {only}")
+    pg.click("#mem-mode [data-mode=all]"); pg.wait_for_timeout(300)
+    check(pg.evaluate("document.querySelectorAll('#mem-list .mem-chip').length") == 5, "[index] saklar kembali ke 'Semua yang tampil'")
     check("ditonton tampil" in (pg.evaluate("document.getElementById('mem-key').textContent") or ""),
           "[index] keterangan memakai mode 'ditonton tampil'")
 
-    opts = pg.evaluate("[...document.querySelectorAll('#flt-member option')].map(o => o.value).filter(Boolean)")
-    check(set(opts) == set(want), f"[index] dropdown filter memuat member dari lineup juga -> {opts}")
+    opts = pg.evaluate("[...document.querySelectorAll('#dl-flt-member option')].map(o => o.value).filter(Boolean)")
+    check(set(opts) == set(want), f"[index] saran filter memuat member dari lineup juga -> {opts}")
+    check(pg.evaluate("document.getElementById('flt-member').tagName") == "INPUT", "[index] filter member berupa kolom ketik (bisa dicari)")
     for name, n in [("Citra", 2), ("Bela", 3), ("Dewi", 1), ("Eka", 1)]:
         set_select(pg, "#flt-member", name); pg.wait_for_timeout(400)
         info = pg.evaluate("document.getElementById('flt-info').textContent")
         check(info.startswith(f"{n} dari 4"), f"[index] filter {name} -> {n} dari 4 show (tampil: {info!r})")
+    set_select(pg, "#flt-member", "cit"); pg.wait_for_timeout(400)   # potongan nama yang hanya cocok dengan satu member
+    check(pg.evaluate("document.getElementById('flt-member').value") == "Citra"
+          and pg.evaluate("document.getElementById('flt-info').textContent").startswith("2 dari 4"),
+          "[index] ketik 'cit' -> otomatis jadi Citra (2 dari 4)")
+    set_select(pg, "#flt-member", ""); pg.wait_for_timeout(300)
+    check(pg.evaluate("document.getElementById('flt-info').textContent") == "", "[index] kolom dikosongkan -> filter hilang")
     ctx.close()
 
     # ---------- index.html: tanpa lineup sama sekali -> hitungan lama (hanya 2-Shot/Chekicha) ----------
@@ -77,6 +97,7 @@ with sync_playwright() as p:
     pg = ctx.new_page(); pg.goto(BASE + "/index.html"); pg.wait_for_timeout(2500)
     chips = pg.evaluate("""[...document.querySelectorAll('#mem-list .mem-chip')].map(c => [c.dataset.mem, Number(c.querySelector('b').textContent)])""")
     check(dict(chips) == {"Ayu": 1, "Dewi": 1, "Eka": 1}, f"[index] tanpa lineup: hanya member 2-Shot/Chekicha -> {dict(chips)}")
+    check(pg.evaluate("document.getElementById('mem-mode').hidden"), "[index] tanpa lineup: saklar disembunyikan")
     ctx.close()
 
     # ---------- admin.html: member 2-Shot masuk lineup, dan lineup disamakan ke kursi lain ----------
@@ -85,6 +106,7 @@ with sync_playwright() as p:
     errs = []
     pg.on("pageerror", lambda e: errs.append(str(e)))
     pg.goto(BASE + "/admin.html"); pg.wait_for_timeout(2000)
+    pg.click(".tab[data-tab=crud]"); pg.wait_for_timeout(600)   # form ada di tab Tambah & Kelola
 
     def fill(seat, setlist, date, lineup, ts=None, fid=0):
         pg.evaluate("""([seat, setlist, date, lu, ts, fid]) => {
@@ -99,11 +121,14 @@ with sync_playwright() as p:
         pg.evaluate("document.getElementById('form').requestSubmit()")
         pg.wait_for_timeout(500)
         if answer is not None:
-            modal_open = pg.evaluate("(() => { const m = document.getElementById('ask-modal'); return !!m && getComputedStyle(m).display !== 'none' && !m.hidden && m.classList.contains('open') || (m && m.offsetParent !== null); })()")
-            if modal_open:
-                pg.click("#ask-ok" if answer else "#ask-no"); pg.wait_for_timeout(400)
+            if pg.evaluate("!document.getElementById('sync-bn').hidden"):
+                locked = pg.evaluate("[...document.getElementById('form').children].filter(c => c.id !== 'sync-bn').every(c => c.inert)")
+                check(locked, "[admin] form terkunci selama menunggu jawaban 'Samakan lineup'")
+                pg.click("#sync-ok" if answer else "#sync-no"); pg.wait_for_timeout(400)
+                check(pg.evaluate("document.getElementById('sync-bn').hidden && [...document.getElementById('form').children].every(c => !c.inert)"),
+                      "[admin] banner tertutup dan form terbuka lagi")
             else:
-                check(False, "[admin] dialog 'Samakan lineup' tidak muncul")
+                check(False, "[admin] banner 'Samakan lineup' tidak muncul")
         return pg.evaluate("records.map(r => ({seat: r.seat, lineup: r.lineup}))")
 
     def seed(items):
@@ -143,6 +168,46 @@ with sync_playwright() as p:
     fill("A-1", "X", "2026-03-01", [], fid=11)
     out = {o["seat"]: o["lineup"] for o in submit_and_get()}
     check(out.get("A-2") == ["Ayu", "Bela"], f"[admin] lineup kosong tidak menimpa kursi lain -> {out.get('A-2')}")
+
+    # f) chip "Dari lineup" di bawah kolom member 2-Shot: ketuk mengisi nama
+    seed([])
+    fill("A-7", "X", "2026-04-01", ["Ayu", "Bela", "Citra"], ts="Ayu")
+    names = pg.evaluate("[...document.querySelectorAll('#mp-ts .m-pick-b')].map(b => b.dataset.n)")
+    check(names == ["Ayu", "Bela", "Citra"], f"[admin] chip pilih member memuat isi lineup -> {names}")
+    check(pg.evaluate("document.querySelector('#mp-ts .m-pick-b.on')?.dataset.n") == "Ayu", "[admin] chip yang cocok dengan isian ditandai")
+    pg.click("#mp-ts [data-n=Citra]")
+    check(pg.evaluate("document.getElementById('m-ts').value") == "Citra" and pg.evaluate("document.querySelector('#mp-ts .m-pick-b.on').dataset.n") == "Citra",
+          "[admin] ketuk chip mengisi kolom member")
+    fill("A-7", "X", "2026-04-01", [])
+    check(pg.evaluate("document.getElementById('mp-ts').hidden"), "[admin] lineup kosong: chip pilih member disembunyikan")
+
+    # g) umpan balik tempel banyak nama + urungkan + kosongkan
+    seed([{"id": 31, **rec(31, "A-1", "2026-04-02", "X", ["Ayu", "Bela"])}])
+    pg.evaluate("lineup = []; renderLineup(); luAdd('Ayu\\nBela\\nNama Baru\\nAyu')")
+    fb = pg.evaluate("document.getElementById('lu-fb').textContent")
+    check("3 ditambahkan" in fb and "1 nama baru" in fb and "1 sudah ada" in fb, f"[admin] umpan balik tempel -> {fb!r}")
+    pg.click("#lu-undo")
+    check(pg.evaluate("lineup.length") == 0, "[admin] Urungkan mengembalikan lineup sebelum tempel")
+    pg.evaluate("luAdd('Ayu,Bela,Citra')")
+    check(not pg.evaluate("document.getElementById('lu-clear').hidden"), "[admin] tombol Kosongkan muncul saat lineup berisi")
+    pg.click("#lu-clear")
+    check(pg.evaluate("lineup.length") == 0, "[admin] Kosongkan menghapus lineup")
+    pg.click("#lu-undo")
+    check(pg.evaluate("lineup.length") == 3, "[admin] Urungkan setelah Kosongkan mengembalikan 3 member")
+
+    # h) jumlah member di tabel bisa diketuk
+    seed([rec(41, "A-1", "2026-04-03", "X", ["Ayu", "Bela"], ts="Ayu")])
+    pg.click(".lu-open"); pg.wait_for_timeout(200)
+    lst = pg.evaluate("[...document.querySelectorAll('.lu-list span')].map(x => x.textContent + (x.classList.contains('met') ? '*' : ''))")
+    check(lst == ["Ayu*", "Bela"] and pg.evaluate("document.querySelector('.lu-open').getAttribute('aria-expanded')") == "true",
+          f"[admin] ketuk '2 member tampil' membuka daftar (yang ditemui bertanda *) -> {lst}")
+
+    # i) "Simpan & lanjut": catatan lineup dipakai lagi
+    seed([])
+    fill("A-8", "X", "2026-04-04", ["Ayu", "Bela"])
+    pg.evaluate("keepNext = true; document.getElementById('form').requestSubmit()"); pg.wait_for_timeout(500)
+    fb = pg.evaluate("document.getElementById('lu-fb').textContent")
+    check("dipakai lagi" in fb and pg.evaluate("lineup.length") == 2, f"[admin] simpan & lanjut: ada catatan lineup dipakai lagi -> {fb!r}")
     check(not errs, f"[admin] tanpa error JS {errs[:2] if errs else ''}")
     ctx.close()
     b.close()
