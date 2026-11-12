@@ -2273,14 +2273,21 @@ escHooks.push(() => { if ($('mem-modal').classList.contains('open') && !$('mem-m
     raf = 0;
     const j = document.querySelector('.jump'), m = $('mem-bar');
     let show = false;
-    if (mq.matches && j && j.offsetHeight) {
+    if (j && j.offsetHeight) {
       const st = stickPx(), jh = j.offsetHeight;
       root.style.setProperty('--jh', jh + 'px');
       if (j.getBoundingClientRect().top <= st + .5) {
         show = true;
         let h = jh;
-        if (m && !m.hidden && m.getBoundingClientRect().top <= st + jh + .5) h = Math.max(jh, m.getBoundingClientRect().bottom - st);
+        const hasM = m && !m.hidden, mr = hasM ? m.getBoundingClientRect() : null;
+        if (hasM && mr.top <= st + jh + .5) h = Math.max(jh, mr.bottom - st);
         bg.style.setProperty('--bh', Math.round(h) + 'px');
+        if (mq.matches) { bg.style.removeProperty('--bl'); bg.style.removeProperty('--bw'); }
+        else { // kartu melayang selebar kolom konten (+10px kiri-kanan)
+          const r = (hasM ? mr : j.getBoundingClientRect());
+          bg.style.setProperty('--bl', Math.round(r.left - 10) + 'px');
+          bg.style.setProperty('--bw', Math.round(r.width + 20) + 'px');
+        }
       }
     }
     if (show !== on) { on = show; root.classList.toggle('bars-on', show); }
