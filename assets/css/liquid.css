@@ -278,12 +278,19 @@ html #seat-modal.docked.over.open.open.open.closing::before{animation:ovb-out .4
 @media(prefers-reduced-motion:reduce){.overlay.open:not(.docked):not(#lightbox)::before,html #seat-modal.docked.over.open.open.open::before{animation:none}}
 
 
-/* ---------- HP: chip lompat + bar cari member tidak lagi menumpuk layar ----------
-   1) latar gradasi gelap supaya teks kartu di belakangnya tidak tembus ke belakang pil / kolom cari
-   2) saat menggulung ke bawah keduanya menyingkir (layar penuh untuk daftar), muncul lagi begitu menggulung ke atas */
+/* ---------- HP: chip lompat + bar cari member = satu panel kaca yang menyambung dengan header ----------
+   Saat menempel, latarnya kaca (blur mengikuti isi di belakangnya), rapat di bawah header (menyatu di garisnya),
+   dan batas bawahnya di bawah kolom cari melengkung. Saat menggulung ke bawah keduanya menyingkir; muncul lagi saat ke atas.
+   Kelas .stuck dipasang shared.js hanya ketika elemennya benar-benar menempel (di posisi aslinya tetap polos). */
 @media(max-width:768px){
-  .jump,#mem-bar{background:linear-gradient(180deg,rgba(13,9,13,.96) 72%,rgba(13,9,13,0));
-    transition:transform .45s var(--ios),opacity .3s}
+  #appbar{background:rgba(13,9,13,.58);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%)}
+  .jump,#mem-bar{margin-left:-12px;margin-right:-12px;padding-left:14px;padding-right:14px;
+    transition:transform .45s var(--ios),opacity .3s,background-color .25s,box-shadow .25s}
+  .jump{padding-top:10px;padding-bottom:6px;margin-bottom:0;top:calc(var(--stick) - 1px)}
+  #mem-bar{top:calc(var(--stick) + var(--jh) - 2px);padding-top:4px;padding-bottom:12px;margin-bottom:-8px;border-radius:0 0 26px 26px}
+  .jump.stuck,#mem-bar.stuck{background:rgba(13,9,13,.58);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%)}
+  #mem-bar.stuck{box-shadow:0 12px 24px -14px rgba(0,0,0,.7),inset 0 -1px 0 rgba(255,255,255,.09)}
+  html[data-glass=off] .jump.stuck,html[data-glass=off] #mem-bar.stuck,html[data-glass=off] #appbar{background:rgba(13,9,13,.96);-webkit-backdrop-filter:none;backdrop-filter:none}
   html.bars-hide .jump{transform:translate3d(0,calc(-100% - var(--stick)),0);opacity:0;pointer-events:none}
   html.bars-hide #mem-bar{transform:translate3d(0,calc(-100% - var(--stick) - var(--jh)),0);opacity:0;pointer-events:none}
 }
