@@ -1834,11 +1834,20 @@ function memberNames() {
   const all = new Set([...Object.keys(app), ...Object.keys(met)]);
   return [...all].map(n => [n, hasLineup ? (app[n] || met[n] || 0) : (met[n] || 0), met[n] || 0]); // [nama, angka utama, berapa kali ketemu (2-Shot/Chekicha/sesi lepas)]
 }
+// foto terbaru tiap member (2-Shot / Chekicha, termasuk sesi lepas) untuk avatar di chip
+function memberAvatars() {
+  const av = {};
+  const put = (n, src, date) => { if (n && src && (!av[n] || date > av[n].date)) av[n] = {src, date: date || ''}; };
+  records.forEach(r => extras(r).forEach(e => put(e.member, e.photo, r.date)));
+  solo.forEach(w => put(w.member, w.photo, w.date));
+  return av;
+}
+const memInit = n => (String(n).trim().match(/[A-Za-z0-9\u00C0-\uFFFF]/) || ['?'])[0].toUpperCase();
 let memQ = '', memSort = 'top', memMode = 'all'; // memMode: 'all' (semua yang tampil) | 'met' (pernah ketemu)
-$('mchart').insertAdjacentHTML('afterend', `<h2 class="sec" id="mem-h">Per member <small class="hint" style="display:inline">· ketuk nama untuk statistiknya</small></h2>
+$('mchart').insertAdjacentHTML('afterend', `<section id="mem-sec"><h2 class="sec" id="mem-h">Per member <small class="hint" style="display:inline">· ketuk nama untuk statistiknya</small></h2>
   <div id="mem-bar"><input type="search" id="mem-q" placeholder="Cari member…" aria-label="Cari member" autocomplete="off"><button type="button" class="btn-s" id="mem-sort" aria-label="Ubah urutan"></button></div>
   <div id="mem-mode" class="mem-mode" role="group" aria-label="Member yang ditampilkan" hidden><i class="seg-ind" aria-hidden="true"></i><button type="button" data-mode="all" aria-pressed="true">Semua member</button><button type="button" data-mode="met" aria-pressed="false">Pernah 2-Shot/Chekicha</button></div>
-  <p id="mem-key" class="mem-key"></p><div id="mem-list"></div>`);
+  <p id="mem-n" class="mem-n" aria-live="polite"></p><p id="mem-key" class="mem-key"></p><div id="mem-list"></div></section>`);
 function renderMembers(anim) {
   const box = $('mem-list');
   if (!box) return;
@@ -1855,7 +1864,7 @@ function renderMembers(anim) {
   }
   const all = memberNames(), hasLineup = records.some(r => (r.lineup || []).length);
   const mode = hasLineup ? memMode : 'all'; // saklar hanya berarti kalau lineup sudah ada
-  const q = memQ.trim().toLowerCase();
+  const q = memQ.trim().toLowerCase(), avs = memberAvatars();
   const list = all.filter(([n, , m]) => (mode === 'all' || m > 0) && (!q || n.toLowerCase().includes(q)))
     .sort((a, b) => memSort === 'az' ? a[0].localeCompare(b[0]) : b[1] - a[1] || a[0].localeCompare(b[0]));
   $('mem-h').hidden = $('mem-bar').hidden = $('mem-key').hidden = !all.length;
@@ -1868,10 +1877,15 @@ function renderMembers(anim) {
     ? '<span class="lg-i"><b class="lg-a">8</b> kali ditonton (tampil di show)</span><span class="lg-i"><b class="lg-m">3</b> di antaranya 2-Shot / Chekicha</span><span class="lg-i lg-n">Kotak berwarna = pernah 2-Shot/Chekicha · yang redup belum</span>'
     : 'Angka = jumlah 2-Shot + Chekicha. Isi lineup di admin untuk menghitung semua member yang tampil.';
   box.classList.toggle('lu', hasLineup);
+  const pool = all.filter(([, , m]) => mode === 'all' || m > 0).length; // jumlah sebelum pencarian
+  $('mem-n').hidden = !all.length;
+  $('mem-n').textContent = !all.length ? '' : q && list.length !== pool ? `${list.length} dari ${pool} member` : `${pool} member`;
   box.innerHTML = list.length ? list.map(([n, c, m]) => {
     const pct = c ? Math.min(100, Math.round(m / c * 100)) : 0;
     const ttl = hasLineup ? ` title="${esc(`Ditonton ${c}× · 2-Shot/Chekicha ${m}×` + (m ? ` (${pct}%)` : ''))}"` : '';
-    return `<button type="button" class="mem-chip${m && hasLineup ? ' met' : ''}" data-mem="${esc(n)}"${ttl}><span class="mem-cn">${esc(n)}</span><span class="mem-nums"><b>${c}</b>${hasLineup && m ? `<b class="mm">${m}</b>` : ''}</span>${hasLineup && m ? `<span class="mem-rt" style="width:${pct}%"></span>` : ''}</button>`;
+    const a = avs[n];
+    const ava = a ? `<img class="mem-avs" src="${esc(thumbOf(a.src))}" data-full="${esc(a.src)}" onerror="this.onerror=null;this.src=this.dataset.full" alt="" width="28" height="28" loading="lazy" decoding="async">` : `<span class="mem-avs ph" aria-hidden="true">${esc(memInit(n))}</span>`;
+    return `<button type="button" class="mem-chip av${m && hasLineup ? ' met' : ''}" data-mem="${esc(n)}"${ttl}>${ava}<span class="mem-cn">${esc(n)}</span><span class="mem-nums"><b>${c}</b>${hasLineup && m ? `<b class="mm">${m}</b>` : ''}</span>${hasLineup && m ? `<span class="mem-rt" style="width:${pct}%"></span>` : ''}</button>`;
   }).join('')
     : `<div class="empty">${all.length ? 'Tidak ada member yang cocok' : 'Belum ada data member'}</div>`;
   if (!fx || !oldPos.size) return;
@@ -1972,3 +1986,37 @@ document.addEventListener('keydown', e => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('.stat[data-member]')) { e.preventDefault(); openMember(e.target.dataset.member); }
 });
 escHooks.push(() => { if ($('mem-modal').classList.contains('open') && !$('mem-modal').classList.contains('closing')) { closeEl('mem-modal'); return true; } return false; });
+
+
+// ================= Chip lompat antar bagian (HP / tablet; di laptop dua kolom disembunyikan lewat CSS) =================
+(() => {
+  const view = $('view-main'), first = document.querySelector('#legend + h2.sec');
+  if (!view) return;
+  if (first) first.id = 'ch-h';
+  const J = [['Ringkasan', () => ($('last') && $('last').children.length ? $('last') : $('stats'))], ['Peta', () => $('filters')], ['Grafik', () => $('ch-h')], ['Member', () => $('mem-h')]];
+  const nav = document.createElement('nav');
+  nav.id = 'jump'; nav.className = 'jump'; nav.setAttribute('aria-label', 'Lompat ke bagian');
+  nav.innerHTML = J.map(([t], i) => `<button type="button" class="btn-s" data-j="${i}">${t}</button>`).join('');
+  view.prepend(nav);
+  const btns = [...nav.children];
+  const off = () => (parseFloat(getComputedStyle(nav).top) || 0) + nav.offsetHeight + 10;
+  nav.addEventListener('click', e => {
+    const b = e.target.closest('[data-j]'), el = b && J[b.dataset.j][1]();
+    if (!el || el.hidden) return;
+    const y = el.getBoundingClientRect().top + scrollY - off();
+    scrollTo({top: Math.max(0, y), behavior: calm() ? 'auto' : 'smooth'});
+  });
+  let raf = 0;
+  const mark = () => {
+    raf = 0;
+    if (view.hidden || !nav.offsetHeight) return;
+    const o = off() + 6;
+    let cur = 0;
+    J.forEach(([, f], i) => { const el = f(); if (el && !el.hidden && el.getBoundingClientRect().top <= o) cur = i; });
+    if (scrollY + innerHeight >= document.documentElement.scrollHeight - 4) cur = J.length - 1; // mentok bawah: bagian terakhir
+    btns.forEach((b, i) => { b.classList.toggle('on', i === cur); i === cur ? b.setAttribute('aria-current', 'true') : b.removeAttribute('aria-current'); });
+  };
+  addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(mark); }, {passive: true});
+  addEventListener('resize', () => { if (!raf) raf = requestAnimationFrame(mark); });
+  mark();
+})();
