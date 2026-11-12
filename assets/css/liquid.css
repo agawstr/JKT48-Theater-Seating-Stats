@@ -311,3 +311,4 @@ html[data-glass=on] #mem-q{background:rgba(0,0,0,.26)}
   html[data-glass=off] #appbar{background:rgba(13,9,13,.97);-webkit-backdrop-filter:none;backdrop-filter:none}
 }
 @media(prefers-reduced-motion:reduce){#bars-bg,#appbar{transition:none}}
+html.bars-kill #bars-bg{transition:none!important;opacity:0!important;visibility:hidden!important}
