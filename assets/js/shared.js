@@ -2263,16 +2263,29 @@ escHooks.push(() => { if ($('mem-modal').classList.contains('open') && !$('mem-m
   mark(); setTimeout(mark, 800); setTimeout(mark, 3000);
 })();
 
-// HP: chip lompat + bar cari member menyingkir saat menggulung ke bawah, muncul lagi saat ke atas (CSS: html.bars-hide)
+// HP: chip lompat + bar cari member = panel kaca menempel di bawah header; menyingkir saat menggulung ke bawah, muncul lagi saat ke atas
 (() => {
   const root = document.documentElement, mq = matchMedia('(max-width:768px)');
-  let y = scrollY, acc = 0, hid = false;
+  let y = scrollY, acc = 0, hid = false, raf = 0;
   const set = v => { if (v !== hid) { hid = v; root.classList.toggle('bars-hide', v); } };
+  const stickPx = () => parseFloat(getComputedStyle(root).getPropertyValue('--stick')) || 50;
+  const sync = () => { // ukur tinggi chip (untuk posisi bar cari) dan tandai mana yang benar-benar menempel
+    raf = 0;
+    const j = document.querySelector('.jump'), m = $('mem-bar');
+    if (!mq.matches) { j && j.classList.remove('stuck'); m && m.classList.remove('stuck'); return; }
+    if (j && j.offsetHeight) root.style.setProperty('--jh', j.offsetHeight + 'px');
+    if (hid) return;
+    const st = stickPx(), jh = j ? j.offsetHeight : 0;
+    if (j) j.classList.toggle('stuck', j.getBoundingClientRect().top <= st);
+    if (m) m.classList.toggle('stuck', m.getBoundingClientRect().top <= st + jh);
+  };
   addEventListener('scroll', () => {
     const n = scrollY, d = n - y; y = n;
-    if (!mq.matches || n < 160) { acc = 0; return set(false); }
-    acc = (d > 0) === (acc > 0) ? acc + d : d; // arah berubah: hitung ulang
-    if (acc > 24) set(true); else if (acc < -12) set(false);
+    if (!mq.matches || n < 160) { acc = 0; set(false); }
+    else { acc = (d > 0) === (acc > 0) ? acc + d : d; if (acc > 24) set(true); else if (acc < -12) set(false); }
+    if (!raf) raf = requestAnimationFrame(sync);
   }, {passive: true});
-  mq.addEventListener('change', () => set(false));
+  addEventListener('resize', () => { if (!raf) raf = requestAnimationFrame(sync); });
+  mq.addEventListener('change', () => { set(false); sync(); });
+  sync(); setTimeout(sync, 600);
 })();
