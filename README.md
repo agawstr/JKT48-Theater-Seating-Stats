@@ -20,6 +20,9 @@ Tanpa backend dan tanpa proses build: cukup file statis yang bisa di-hosting di 
 - **Filter** setlist, member, dan rentang tanggal. Hasilnya tersimpan di URL (`?setlist=...&member=...&from=2026-01-01&to=2026-06-30`), jadi bisa dibagikan lewat link.
 - Grafik total kunjungan per setlist (klik bar untuk memfilter), sebaran per baris, kalender kehadiran per hari, dan kunjungan per bulan.
 - **Kartu terakhir nonton** di bagian atas.
+- **Kilas balik "tahun lalu hari ini"**: kartu di bawah kartu terakhir nonton yang menampilkan show, 2-Shot/Chekicha lepas, dan event yang jatuh di tanggal yang sama pada tahun-tahun sebelumnya (tersembunyi kalau tidak ada). Tidak terpengaruh filter. Untuk menguji: tambahkan `?today=2026-09-26` di URL.
+- **Statistik per member**: daftar chip "Per member" di bawah grafik bulanan. Ketuk nama (atau kartu *Member terbanyak*, atau nama member di detail kursi) untuk melihat jumlah 2-Shot dan Chekicha, setlist yang paling sering bareng, kursi saat bertemu (bisa diketuk), dan foto.
+- **Angka berhitung naik** di semua kartu ringkasan: statistik (termasuk Rp), total di header, kursi terisi, kartu lotre, kategori Tiket & Event, dan statistik member. Mati otomatis jika "kurangi gerakan" aktif.
 
 **Tab lain**
 - **Riwayat**: timeline per tahun dan bulan. Header bulan menempel di bawah tab bar (lengkap dengan jumlah show), tiap kartu menampilkan tanggal, sesi, setlist, chip 2-Shot/Chekicha/lotre/harga, dan catatan. Milestone (show ke-1, 10, dan kelipatan 25) diberi bintang emas. **Seluruh kartu bisa diketuk** untuk membuka detail kursi. Ada kolom pencarian.
