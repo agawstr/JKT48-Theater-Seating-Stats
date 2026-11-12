@@ -25,6 +25,7 @@
 .lu-chips{display:flex;flex-wrap:wrap;gap:6px}
 .lu-chips:empty{display:none}
 .lu-chip{display:inline-flex;align-items:center;gap:6px;background:rgba(255,140,0,.16);border:1px solid rgba(255,140,0,.45);color:#ffd9b0;border-radius:9999px;padding:4px 6px 4px 10px;font-size:12.5px;font-weight:600}
+.lu-chip.new{background:rgba(255,210,63,.14);border:1px dashed rgba(255,210,63,.65);color:#ffe9a0}
 .lu-chip button{background:none;border:0;color:inherit;font-size:15px;line-height:1;cursor:pointer;padding:0 3px;opacity:.8}
 .lu-chip button:hover{opacity:1;color:#ff2a5f}
 .lu-copy{display:flex;gap:8px;align-items:center}
@@ -930,7 +931,10 @@ let lineup = [];
 const knownMembers = () => [...new Set([...records.flatMap(r => [...(r.lineup || []), r.member, r.ckMember]), ...solo.map(w => w.member), ...tickets.map(t => t.member)].filter(Boolean))].sort((a, b) => a.localeCompare(b));
 const luCanon = n => knownMembers().find(k => k.toLowerCase() === n.toLowerCase()) || n; // samakan huruf besar/kecil dengan nama yang sudah ada
 function luAdd(raw) {
-  String(raw || '').split(/[,\n;]+/).map(x => x.trim().replace(/\s+/g, ' ')).filter(Boolean).forEach(n => {
+  String(raw || '')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')            // [Nama](url) -> Nama
+    .replace(/^\s*anggota yang tampil\s*:?\s*$/gim, '')  // buang baris judul dari jkt48.com
+    .split(/[,\n;]+/).map(x => x.trim().replace(/\s+/g, ' ')).filter(Boolean).forEach(n => {
     n = luCanon(n);
     if (!lineup.some(x => x.toLowerCase() === n.toLowerCase())) lineup.push(n);
   });
@@ -947,7 +951,11 @@ function luFormSrc() { // show lain yang sudah punya lineup, diurutkan: setlist 
   return [...seen.values()].sort((a, b) => score(b) - score(a) || cmp(a, b));
 }
 function renderLineup() {
-  $('lu-chips').innerHTML = lineup.map((n, i) => `<span class="lu-chip">${esc(n)}<button type="button" data-lu-del="${i}" aria-label="Hapus ${esc(n)}">&times;</button></span>`).join('');
+  const known = new Set(knownMembers()); // nama yang pernah tersimpan; kosong = data masih baru, tidak ditandai
+  $('lu-chips').innerHTML = lineup.map((n, i) => {
+    const nw = known.size && !known.has(n);
+    return `<span class="lu-chip${nw ? ' new' : ''}"${nw ? ' title="Nama baru, belum pernah ada di data. Cek ejaan / nama lengkap."' : ''}>${esc(n)}<button type="button" data-lu-del="${i}" aria-label="Hapus ${esc(n)}">&times;</button></span>`;
+  }).join('');
   $('dl-lineup').innerHTML = knownMembers().filter(n => !lineup.includes(n)).map(n => `<option value="${esc(n)}">`).join('');
   const q = $('lu-in').value.trim().toLowerCase(), rest = knownMembers().filter(n => !lineup.some(x => x === n) && (!q || n.toLowerCase().includes(q)));
   $('lu-pick-l').innerHTML = rest.map(n => `<button type="button" data-lu-add="${esc(n)}">+ ${esc(n)}</button>`).join('') || '<small class="lu-n">Tidak ada lagi.</small>';
