@@ -2007,8 +2007,17 @@ escHooks.push(() => { if ($('mem-modal').classList.contains('open') && !$('mem-m
     scrollTo({top: Math.max(0, y), behavior: calm() ? 'auto' : 'smooth'});
   });
   let raf = 0;
+  const mb = $('mem-bar');
+  const scroller = el => { for (let e = el.parentElement; e && e !== document.body; e = e.parentElement) { const o = getComputedStyle(e).overflowY; if (o === 'auto' || o === 'scroll') return e; } return null; };
+  const stuckOf = el => { // menempel = tepinya sudah sampai batas atas wadah gulir (halaman, atau kolom kanan di laptop)
+    if (!el || !el.offsetHeight) return false;
+    const sc = scroller(el), base = sc ? sc.getBoundingClientRect().top : 0;
+    return el.getBoundingClientRect().top <= base + (parseFloat(getComputedStyle(el).top) || 0) + 1;
+  };
   const mark = () => {
     raf = 0;
+    if (mb) mb.classList.toggle('stuck', stuckOf(mb)); // latar baru muncul saat bar benar-benar menempel
+    nav.classList.toggle('stuck', stuckOf(nav));
     if (view.hidden || !nav.offsetHeight) return;
     const o = off() + 6;
     let cur = 0;
@@ -2016,7 +2025,8 @@ escHooks.push(() => { if ($('mem-modal').classList.contains('open') && !$('mem-m
     if (scrollY + innerHeight >= document.documentElement.scrollHeight - 4) cur = J.length - 1; // mentok bawah: bagian terakhir
     btns.forEach((b, i) => { b.classList.toggle('on', i === cur); i === cur ? b.setAttribute('aria-current', 'true') : b.removeAttribute('aria-current'); });
   };
-  addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(mark); }, {passive: true});
+  addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(mark); }, {passive: true, capture: true}); // capture: kolom kanan laptop menggulung sendiri
   addEventListener('resize', () => { if (!raf) raf = requestAnimationFrame(mark); });
-  mark();
+  if (window.ResizeObserver) new ResizeObserver(() => { if (!raf) raf = requestAnimationFrame(mark); }).observe(view); // layout berpindah (satu kolom <-> dua kolom)
+  mark(); setTimeout(mark, 800); setTimeout(mark, 3000);
 })();
