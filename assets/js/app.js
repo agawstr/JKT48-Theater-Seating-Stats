@@ -477,8 +477,17 @@
     VIEW_IDS.forEach(k => { viewOf(k).hidden = k !== name; });
     flushLazy('view-' + name); // kalau masih usang, gambar sekarang (sebelum animasi dimulai)
 
-    const hd = document.querySelector('.head'), top = hd.getBoundingClientRect().bottom + scrollY - 8; // isi baru mulai dari bawah header
-    if (scrollY > top) scrollTo({top, behavior: 'instant'});
+    // isi baru mulai dari titik yang sama di semua tab: tepat di bawah bar yang menempel di atas (header kecil di HP, status bar iPad, pil tab di jendela sedang).
+    // Sidebar kiri (laptop lebar): tidak ada bar di atas, jadi tetap mulai dari bawah header.
+    const side = getComputedStyle(document.querySelector('.tabbar')).flexDirection === 'column';
+    let top;
+    if (side) { const hd = document.querySelector('.head'); top = hd.getBoundingClientRect().bottom + scrollY - 8; }
+    else {
+      const pr = document.createElement('i'); pr.style.cssText = 'position:fixed;top:var(--stick);left:0;width:0;height:0;visibility:hidden';
+      document.body.appendChild(pr); const stick = pr.getBoundingClientRect().top; pr.remove();
+      top = next.getBoundingClientRect().top + scrollY - stick - 12;
+    }
+    if (scrollY > top) scrollTo({top: Math.max(0, top), behavior: 'instant'});
     syncLayout(true);
     if (name === 'main' && typeof centerChart === 'function') centerChart(); // ukur peta hanya saat tab peta dibuka
     syncFbar();
