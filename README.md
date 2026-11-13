@@ -26,6 +26,11 @@ Tanpa backend dan tanpa proses build: cukup file statis yang bisa di-hosting di 
 - **Statistik per member**: daftar chip "Per member" di bawah grafik bulanan. Ketuk nama (atau kartu *Member terbanyak*, atau nama member di detail kursi) untuk melihat jumlah 2-Shot dan Chekicha, setlist yang paling sering bareng, kursi saat bertemu (bisa diketuk), dan foto.
 - **Angka berhitung naik** di semua kartu ringkasan: statistik (termasuk Rp), total di header, kursi terisi, kartu lotre, kategori Tiket & Event, dan statistik member. Mati otomatis jika "kurangi gerakan" aktif.
 
+- **Cakupan setlist**: kartu di bawah Cakupan kursi (berapa setlist resmi yang sudah ditonton, dan daftar yang belum). Tampil hanya kalau `data.json` punya field `setlists`; isi daftarnya di admin (panel *Daftar setlist resmi*), lalu unduh ulang paket ZIP.
+- **Per member**: saklar *Belum ketemu* menampilkan member yang sering kamu lihat tampil tapi belum pernah 2-Shot/Chekicha. Kartu member menampilkan kapan terakhir ketemu dan terakhir tampil.
+- **Shortcut ikon PWA** dan deep link: `?tab=main|tl|gal|ev` membuka tab itu saat dimuat (tekan lama ikon app di Android untuk pintasan).
+- **HP landscape**: tab bar pindah ke rail di kiri supaya isi tidak tertutup. Kursi show terakhir berdenyut dua kali saat peta pertama tampil.
+
 **Tab lain**
 - **Riwayat**: timeline per tahun dan bulan. Header bulan menempel di bawah tab bar (lengkap dengan jumlah show), tiap kartu menampilkan tanggal, sesi, setlist, chip 2-Shot/Chekicha/lotre, dan catatan. Milestone (show ke-1, 10, dan kelipatan 25) diberi bintang emas. **Seluruh kartu bisa diketuk** untuk membuka detail kursi. Ada kolom pencarian.
 - **Galeri**: foto bergaya polaroid/instax. Nama member memakai tulisan tangan (Caveat) berukuran besar, jenis foto berupa label kecil, lalu setlist dan tanggal dengan ukuran lebih kecil. Warna bingkai dan selotip berbeda untuk 2-Shot (krem), Chekicha (merah muda), dan 2-Shot Event (ungu). Bisa difilter per jenis dan member, lalu dibuka di lightbox.
@@ -35,7 +40,9 @@ Tanpa backend dan tanpa proses build: cukup file statis yang bisa di-hosting di 
 - Tambah, edit, hapus, dan cari riwayat (tabel dengan halaman), dengan cek duplikat dan kompres foto otomatis.
 - **Lineup per show**: field "Member yang tampil" di form (ketik + Enter, tempel banyak nama sekaligus, atau ketuk dari daftar member). Show baru di tanggal + sesi + setlist yang sama (mis. kursi lain) otomatis memakai lineup yang sudah ada, ada tombol **Salin lineup** dari show lain, dan **Simpan & lanjut** mempertahankan lineup. Chip "show belum ada lineup" di daftar tugas membantu melengkapi show lama. Opsi *Samarkan nama member* ikut menyamarkan lineup. Di halaman publik, modal member menampilkan *Ditonton tampil* dan *Kursi saat dia tampil*.
 - Field harga dan jenis tiket (opsional; **harga hanya tampil di admin, tidak pernah di halaman publik**), serta saran otomatis untuk setlist dan member yang pernah diinput.
-- Pengingat backup: jumlah perubahan yang belum diunduh dan kapan terakhir diunduh.
+- Pengingat backup: jumlah perubahan yang belum diunduh dan kapan terakhir diunduh. Tombol *Simpan / bagikan backup…* memakai lembar bagikan (HP) atau pemilih lokasi simpan (Chrome/Edge).
+- **Restore** meringkas isi file dan meminta konfirmasi sebelum menggabungkan apa pun (batal = tidak ada yang berubah); lineup show yang masih kosong diisi dari backup tanpa menimpa yang sudah ada.
+- **Daftar setlist resmi** (untuk kartu Cakupan setlist) dan **Ekspor CSV** pengeluaran di tab Pengeluaran.
 
 ## Performa & animasi
 
