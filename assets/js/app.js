@@ -275,7 +275,7 @@
   const EASE = 'cubic-bezier(.32,.72,0,1)';
   // kurva masuk item: melambat halus lalu BERHENTI tepat di posisi akhir (tanpa overshoot).
   // Dulu memakai pegas yang melewati posisi akhir ±2px lalu kembali, sehingga kartu terlihat naik/turun sendiri setelah animasi selesai.
-  const POP = 'cubic-bezier(.22,1,.36,1)';
+  const POP = 'cubic-bezier(.32,.72,0,1)';
   const IN_MS = () => lite() ? 560 : 800, OUT_MS = () => lite() ? 300 : 440;
   const viewOf = k => $('view-' + k);
   let run = null; // transisi yang sedang berjalan: {anims, done}

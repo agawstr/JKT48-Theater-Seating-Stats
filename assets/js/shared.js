@@ -1887,14 +1887,14 @@ function burst(el) {
     document.body.appendChild(p);
     const a = Math.random() * Math.PI * 2, d = 40 + Math.random() * 70;
     p.animate([{transform: 'translate(0,0) scale(1)', opacity: 1}, {transform: `translate(${Math.cos(a) * d}px,${Math.sin(a) * d}px) scale(0)`, opacity: 0}],
-      {duration: 700 + Math.random() * 300, easing: 'cubic-bezier(.2,.8,.2,1)'}).onfinish = () => p.remove();
+      {duration: 700 + Math.random() * 300, easing: 'cubic-bezier(.32,.72,0,1)'}).onfinish = () => p.remove();
   }
 }
 
 // animasi ganti tahun di kalender: kalender & judul tahun meluncur sesuai arah, kotak berisi menyala bergantian
 function slideCal(dir) {
   if (calm()) return;
-  const ease = {duration: 560, easing: 'cubic-bezier(.22,1,.36,1)'};
+  const ease = {duration: 560, easing: 'cubic-bezier(.32,.72,0,1)'};
   ['.cal-g', '.cal-m'].forEach(sel => $('cal').querySelector(sel)?.animate([{opacity: 0, transform: `translateX(${dir * 28}px)`}, {opacity: 1, transform: 'none'}], ease));
   $('cal-nav').querySelector('b')?.animate([{opacity: 0, transform: `translateY(${dir * -10}px)`}, {opacity: 1, transform: 'none'}], ease);
   const c = $('cal');
@@ -2114,7 +2114,7 @@ function renderMembers(anim, fast) { // fast = ganti saklar: tanpa animasi tingg
   box.style.height = h0 + 'px'; void box.offsetHeight;
   // makin jauh selisih tingginya, makin lama (dan makin lembut: ease-in-out) supaya layar tidak "melesat" ke atas/bawah
   const dur = Math.round(Math.min(900, Math.max(450, 350 + Math.abs(h0 - h1) * .4)));
-  box.style.transition = `height ${dur}ms cubic-bezier(.45,.05,.25,1)`;
+  box.style.transition = `height ${dur}ms cubic-bezier(.32,.72,0,1)`;
   box.style.height = h1 + 'px';
   box._ht = setTimeout(() => { box.style.height = ''; box.style.transition = ''; }, dur + 80);
 }

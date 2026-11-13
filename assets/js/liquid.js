@@ -103,7 +103,7 @@
   /* ---------- 3b. swap: isi baru masuk bertahap (pegas) saat sub-tab / filter di dalam satu tab diganti ----------
      Dipakai untuk: Tiket (Gabungan/jenis/tahun), Biaya (Ringkasan/Away/lainnya + tahun), Galeri (Semua/2-Shot/...), Tiket index.
      Hanya opacity + transform, hanya item yang terlihat di layar. Dipanggil SETELAH render selesai. */
-  const EASE = 'cubic-bezier(.22,1,.36,1)';
+  const EASE = 'cubic-bezier(.32,.72,0,1)';
   const POP = EASE; // tanpa overshoot: item berhenti tepat di posisi akhir (tidak naik/turun sendiri setelah selesai)
   const SPRING = () => POP; // sengaja TANPA overshoot: --spring-b memantul ~2px melewati posisi akhir lalu kembali (item terlihat naik/turun sendiri)
   function swap(root, sel) {
