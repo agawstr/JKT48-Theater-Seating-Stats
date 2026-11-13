@@ -142,11 +142,19 @@ h1{font-size:28px}.sub{font-size:13px}.wrap{padding:20px 12px}
 @media(max-width:768px){.seat-block+.seat-block::before{left:-7px}}
 
 /* cakupan kursi */
-#cover{width:100%;margin:0 0 16px;background:#181115;border:1px solid #2d1820;border-radius:12px;padding:12px 16px;box-sizing:border-box}
+#cover,#cover-sl{width:100%;margin:0 0 16px;background:#181115;border:1px solid #2d1820;border-radius:12px;padding:12px 16px;box-sizing:border-box}
 .cov-t{display:flex;justify-content:space-between;color:#e4e4e7}
 .cov-t span{color:#ff8c00;font-weight:900}
 .cov-bar{height:10px;background:#1e050c;border-radius:99px;overflow:hidden;margin:8px 0}
 .cov-bar i{display:block;height:100%;background:linear-gradient(90deg,#c96a00,#ffd23f);border-radius:99px;transition:width .6s}
+#cover-sl[hidden]{display:none}
+.covsl-l{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.covsl-l[hidden]{display:none}
+.covsl-l span{font-size:12px;line-height:1;padding:6px 10px;border-radius:99px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:#d4d4d8}
+.mem-last{display:grid;gap:8px;margin:14px 0 4px}
+.mem-lr{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:13px;color:#a1a1aa;padding:10px 14px;border-radius:14px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08)}
+.mem-lr b{color:#f4f4f5;font-weight:600;text-align:right}
+.mem-lr small{display:block;font-size:11.5px;font-weight:500;color:#ff8c00}
 .cov-s{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;color:#a1a1aa}
 .seat.seen{opacity:.3}
 .seat.want{border-color:#34d399;color:#34d399;box-shadow:0 0 10px rgba(52,211,153,.45)}
@@ -437,13 +445,13 @@ body::before{content:'';position:fixed;inset:-10%;z-index:-1;pointer-events:none
     radial-gradient(30% 30% at 5% 85%,rgba(120,70,255,.25),transparent 70%)}
 
 /* permukaan kaca */
-.badge,.stat,#cover,.last-c,.tl-i,.ev-i,.ev-g,.ev-c,.hi,.gk,.btn-s,.modal,#pop,#fbar,.tabbar,
+.badge,.stat,#cover,#cover-sl,.last-c,.tl-i,.ev-i,.ev-g,.ev-c,.hi,.gk,.btn-s,.modal,#pop,#fbar,.tabbar,
 #filters select,#filters input,#gallery-bar select,#tl-q,#ev-bar select,.stage,.catwalk,.info-btn{
   background:var(--g-bg);
   -webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);
   border:1px solid var(--g-line);
   box-shadow:var(--g-shadow)}
-.stat,#cover,.last-c,.tl-i,.ev-i,.ev-g,.ev-c,.hi{border-radius:20px}
+.stat,#cover,#cover-sl,.last-c,.tl-i,.ev-i,.ev-g,.ev-c,.hi{border-radius:20px}
 .modal{border-radius:28px;background:var(--g-bg-hi);-webkit-backdrop-filter:blur(36px) saturate(190%);backdrop-filter:blur(36px) saturate(190%)}
 .overlay{background:rgba(10,4,8,.45);-webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%)}
 .tl-i,.ev-i,.ev-g{border-left-width:1px}
@@ -485,10 +493,10 @@ body::before{content:'';position:fixed;inset:-10%;z-index:-1;pointer-events:none
 
 /* browser tanpa backdrop-filter: pakai warna solid */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-  .badge,.stat,#cover,.last-c,.tl-i,.ev-i,.ev-g,.ev-c,.hi,.modal,#pop,#fbar,.tabbar{background:#1d1318}}
+  .badge,.stat,#cover,#cover-sl,.last-c,.tl-i,.ev-i,.ev-g,.ev-c,.hi,.modal,#pop,#fbar,.tabbar{background:#1d1318}}
 /* hemat baterai / permintaan pengguna */
 @media(prefers-reduced-transparency:reduce){
-  .badge,.stat,#cover,.last-c,.tl-i,.ev-i,.ev-g,.ev-c,.hi,.modal,#pop,#fbar,.tabbar,.stage,.catwalk{
+  .badge,.stat,#cover,#cover-sl,.last-c,.tl-i,.ev-i,.ev-g,.ev-c,.hi,.modal,#pop,#fbar,.tabbar,.stage,.catwalk{
     -webkit-backdrop-filter:none;backdrop-filter:none;background:#1d1318}}
 
 /* kontras teks di atas kaca: modal & popover diberi tint gelap, teks redup dicerahkan */
@@ -598,11 +606,11 @@ select option:checked{background:#881337;color:#fff}
 #filters input::-webkit-calendar-picker-indicator{filter:invert(.8) sepia(1) saturate(3) hue-rotate(300deg);cursor:pointer}
 
 /* ---- 2) performa: buang blur dari elemen berulang ---- */
-.stat,#cover,.last-c,.tl-i,.ev-i,.ev-g,.ev-c,.hi,.gk,.btn-s,.info-btn,#story,.tl-mh,
+.stat,#cover,#cover-sl,.last-c,.tl-i,.ev-i,.ev-g,.ev-c,.hi,.gk,.btn-s,.info-btn,#story,.tl-mh,
 #filters select,#filters input,#gallery-bar select,#tl-q,#ev-bar select,.seat-count{
   -webkit-backdrop-filter:none;backdrop-filter:none}
-.stat,#cover,.last-c,.ev-i,.ev-g,.ev-c,.hi,#story{box-shadow:0 4px 14px rgba(30,0,10,.35),inset 0 1px 0 rgba(255,170,190,.18)}
-.stat,#cover,.ev-i,.ev-g,.ev-c{background:linear-gradient(135deg,rgba(60,14,30,.78),rgba(34,12,22,.82))}
+.stat,#cover,#cover-sl,.last-c,.ev-i,.ev-g,.ev-c,.hi,#story{box-shadow:0 4px 14px rgba(30,0,10,.35),inset 0 1px 0 rgba(255,170,190,.18)}
+.stat,#cover,#cover-sl,.ev-i,.ev-g,.ev-c{background:linear-gradient(135deg,rgba(60,14,30,.78),rgba(34,12,22,.82))}
 .last-c{background:linear-gradient(135deg,rgba(150,24,62,.62),rgba(60,20,22,.7))}
 #story{background:linear-gradient(90deg,rgba(120,20,52,.5),rgba(34,12,22,.6))}
 .hi{background:rgba(60,14,30,.7)}
@@ -880,7 +888,7 @@ img,canvas{max-width:100%}
 /* --- 1. Tab: wadah & item tidak lagi dianimasikan oleh CSS (sebelumnya 6 lapis aturan saling menimpa,
         akibatnya kadang jalan, kadang tidak). Semuanya dipegang WAAPI di app.js. --- */
 #view-main,#view-gal,#view-tl,#view-ev,
-.enter .tl-i,.enter .gi,.enter .ev-g,.enter .ev-c,.enter #story,.enter .last-c,.enter #cover,.enter #filters,.enter #stats .stat,
+.enter .tl-i,.enter .gi,.enter .ev-g,.enter .ev-c,.enter #story,.enter .last-c,.enter #cover,#cover-sl,.enter #filters,.enter #stats .stat,
 #gallery .gi,#gallery .gi.a,.enter .tl-i.a,.enter .ev-g:nth-child(-n+8),.intro .seat-row{animation:none!important}
 .leave{animation:none!important}
 
