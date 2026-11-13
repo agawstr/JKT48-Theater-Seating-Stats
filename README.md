@@ -28,6 +28,7 @@ Tanpa backend dan tanpa proses build: cukup file statis yang bisa di-hosting di 
 
 - **Cakupan setlist**: kartu di bawah Cakupan kursi (berapa setlist resmi yang sudah ditonton, dan daftar yang belum). Tampil hanya kalau `data.json` punya field `setlists`; isi daftarnya di admin (panel *Daftar setlist resmi*), lalu unduh ulang paket ZIP.
 - **Per member**: saklar *Belum bertemu* menampilkan member yang sering kamu lihat tampil tapi belum pernah 2-Shot/Chekicha. Kartu member menampilkan kapan terakhir bertemu dan terakhir tampil.
+- **Sub-tab di HP/tablet**: tab *Peta & Statistik* dibagi jadi *Peta*, *Ringkasan*, *Grafik*, dan *Member* (chip di atas); hanya satu bagian yang tampil, jadi halaman lebih pendek dan ringan. Deep link `?sec=map|sum|chart|mem`. Mengetuk batang grafik, tanggal kalender, atau *Sorot yang belum* otomatis pindah ke Peta. Di laptop tetap dua kolom (semua bagian tampil).
 - **Shortcut ikon PWA** dan deep link: `?tab=main|tl|gal|ev` membuka tab itu saat dimuat (tekan lama ikon app di Android untuk pintasan).
 - **HP landscape**: tab bar pindah ke rail di kiri supaya isi tidak tertutup. Kursi show terakhir berdenyut dua kali saat peta pertama tampil.
 
