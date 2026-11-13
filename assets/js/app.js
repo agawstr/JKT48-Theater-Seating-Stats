@@ -199,6 +199,8 @@
   mqDesk.addEventListener('change', syncLayout);
   syncLayout();
   mqMobile.addEventListener('change', () => { updBar(); if (typeof moveInd === 'function') moveInd(true); });
+  // HP landscape: tab bar berpindah ke rail kiri (CSS), jadi pil tab dan tata letak perlu diukur ulang saat layar diputar
+  matchMedia('(orientation:landscape) and (max-height:520px)').addEventListener('change', () => { syncLayout(); if (typeof moveInd === 'function') { moveInd(true); requestAnimationFrame(() => moveInd(true)); } });
 
   // panel kursi: bawa ke layar kalau halaman sedang tergulung jauh
   if (typeof openSeat === 'function') {
