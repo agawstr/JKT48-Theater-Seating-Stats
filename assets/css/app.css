@@ -279,9 +279,9 @@ body.app #legend{justify-content:center}
    mengalahkan .overlay.closing yang masih membawa kelas .open, jadi animasi tutup tidak pernah jalan.
    Selektor di bawah lebih spesifik (open+closing sekaligus). Lembar bawah HP (#seat-modal.closing) tetap pakai aturannya sendiri. */
 @keyframes ov-out{to{background-color:rgba(0,0,0,0);-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0)}}
-@keyframes modal-out{to{opacity:0;transform:translate3d(0,26px,0) scale(.94)}}
-body.app .overlay.open.closing:not(.docked){animation:ov-out .46s cubic-bezier(.4,0,.2,1) forwards}
-body.app .overlay.open.closing:not(.docked)>.modal{transform-origin:var(--ox,50%) var(--oy,50%);animation:modal-out .46s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes modal-out{to{opacity:0;transform:translate3d(0,14px,0) scale(.94)}}
+body.app .overlay.open.closing:not(.docked){animation:ov-out .42s cubic-bezier(.4,0,.2,1) forwards}
+body.app .overlay.open.closing:not(.docked)>.modal{transform-origin:var(--ox,50%) var(--oy,50%);animation:modal-out .42s cubic-bezier(.4,0,.2,1) forwards}
 body.app #lightbox.open.closing>img{animation:none} /* gerak tutupnya (terbang ke thumbnail) diatur closeLightbox() */
 @media(prefers-reduced-motion:reduce){body.app .overlay.open.closing:not(.docked),body.app .overlay.open.closing:not(.docked)>.modal{animation:none}}
 
