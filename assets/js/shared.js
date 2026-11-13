@@ -2222,7 +2222,8 @@ const memSwap = () => { // chip pertama masuk bertahap: hanya opacity + transfor
 };
 $('mem-q').addEventListener('input', e => { memQ = e.target.value; renderMembers(true); });
 $('mem-qx').addEventListener('click', () => { memQ = ''; $('mem-q').value = ''; renderMembers(true); $('mem-q').focus(); });
-$('mem-mode').addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if (b && b.dataset.mode !== memMode) { memMode = b.dataset.mode; renderMembers(false, true); segMove(true); memSwap(); } });
+$('mem-mode').addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if (b && b.dataset.mode !== memMode) { memMode = b.dataset.mode; renderMembers(false, true); segMove(true); memSwap(); const mm = $('mem-mode'); if (mm.getBoundingClientRect().top < 110) mm.scrollIntoView({block: 'start', behavior: 'instant'}); } // daftar memendek: jangan biarkan layar tertinggal di tengah
+ });
 $('mem-sort').addEventListener('click', () => {
   // tombol melar/menyusut mulus ke lebar label baru (search bar ikut karena flex:1), label baru memudar masuk, chip meluncur ke urutan baru
   const btn = $('mem-sort'), w0 = btn.offsetWidth;
@@ -2289,43 +2290,52 @@ document.addEventListener('keydown', e => {
 escHooks.push(() => { if ($('mem-modal').classList.contains('open') && !$('mem-modal').classList.contains('closing')) { closeEl('mem-modal'); return true; } return false; });
 
 
-// ================= Chip lompat antar bagian (HP / tablet; di laptop dua kolom disembunyikan lewat CSS) =================
+// ================= Sub-tab tab Peta & Statistik (HP / tablet; di laptop dua kolom, chip disembunyikan lewat CSS) =================
+// Satu bagian tampil sekali waktu (Peta / Ringkasan / Grafik / Member): halaman jauh lebih pendek dan ringan.
 (() => {
   const view = $('view-main'), first = document.querySelector('#legend + h2.sec');
   if (!view) return;
   if (first) first.id = 'ch-h';
-  const J = [['Ringkasan', () => ($('last') && $('last').children.length ? $('last') : $('stats'))], ['Peta', () => $('filters')], ['Grafik', () => $('ch-h')], ['Member', () => $('mem-h')]];
+  const J = [['Peta', 'map'], ['Ringkasan', 'sum'], ['Grafik', 'chart'], ['Member', 'mem']];
+  // tandai tiap anak langsung view dengan bagiannya (urutan DOM: ringkasan -> filter+peta+legenda -> grafik -> member)
+  let part = 'sum';
+  [...view.children].forEach(k => {
+    if (k.id === 'filters') part = 'map';
+    if (k.id === 'mem-sec') part = 'mem';
+    k.dataset.s = part;
+    if (k.id === 'legend') part = 'chart';
+  });
+  const qs = new URLSearchParams(location.search).get('sec');
+  let cur = J.some(([, k]) => k === qs) ? qs : 'map';
   const nav = document.createElement('nav');
-  nav.id = 'jump'; nav.className = 'jump'; nav.setAttribute('aria-label', 'Lompat ke bagian');
+  nav.id = 'jump'; nav.className = 'jump'; nav.setAttribute('aria-label', 'Bagian halaman');
   nav.innerHTML = J.map(([t], i) => `<button type="button" class="btn-s" data-j="${i}">${t}</button>`).join('');
   view.prepend(nav);
   const btns = [...nav.children];
-  const off = () => (parseFloat(getComputedStyle(nav).top) || 0) + nav.offsetHeight + 10;
-  nav.addEventListener('click', e => {
-    const b = e.target.closest('[data-j]'), el = b && J[b.dataset.j][1]();
-    if (!el || el.hidden) return;
-    const y = el.getBoundingClientRect().top + scrollY - off();
-    glideTo(Math.max(0, y));
-  });
-  // gulir beranimasi buatan sendiri (rAF): tidak bergantung pada scroll-behavior bawaan browser,
-  // yang mati kalau HP memakai "kurangi animasi". Ini aksi yang sengaja diketuk, jadi tetap dianimasikan.
-  let glide = 0;
-  const glideTo = y => {
-    cancelAnimationFrame(glide);
-    const y0 = scrollY, d = y - y0;
-    if (Math.abs(d) < 2) return;
-    const dur = Math.min(750, 320 + Math.abs(d) * 0.16), t0 = performance.now();
-    const ease = t => 1 - Math.pow(1 - t, 3);
-    const stop = () => cancelAnimationFrame(glide);
-    addEventListener('wheel', stop, {once: true, passive: true}); addEventListener('touchstart', stop, {once: true, passive: true});
-    const step = now => {
-      const t = Math.min(1, (now - t0) / dur);
-      document.documentElement.style.scrollBehavior = 'auto';
-      scrollTo(0, y0 + d * ease(t));
-      if (t < 1) glide = requestAnimationFrame(step); else document.documentElement.style.scrollBehavior = '';
-    };
-    glide = requestAnimationFrame(step);
+  const inSplit = () => !!view.querySelector(':scope > #split');
+  const paint = () => {
+    view.dataset.sec = cur;
+    btns.forEach((b, i) => { const on = J[i][1] === cur; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); on ? b.setAttribute('aria-current', 'true') : b.removeAttribute('aria-current'); });
   };
+  paint();
+  function setSec(k) {
+    if (k === cur || inSplit()) return;
+    cur = k; paint();
+    // mulai dari atas bagian baru (tepat di bawah chip yang menempel)
+    const y = view.getBoundingClientRect().top + scrollY - (parseFloat(getComputedStyle(nav).top) || 0) - 12;
+    if (scrollY > y) scrollTo({top: Math.max(0, y), behavior: 'instant'});
+    if (k === 'map' && typeof centerChart === 'function') requestAnimationFrame(centerChart); // peta baru terlihat: ukur ulang
+    if (!calm()) [...view.children].filter(e => e.dataset.s === k && e.offsetHeight).slice(0, 6).forEach((el, i) => el.animate([{opacity: 0, transform: 'translate3d(0,10px,0)'}, {opacity: 1, transform: 'none'}], {duration: 320, delay: i * 30, easing: lbEase, fill: 'backwards'}));
+    dispatchEvent(new Event('scroll')); // panel kaca di belakang chip menghitung ulang
+  }
+  nav.addEventListener('click', e => { const b = e.target.closest('[data-j]'); if (b) setSec(J[b.dataset.j][1]); });
+  // aksi yang efeknya ada di peta (filter dari grafik / kalender, "Sorot yang belum"): pindah ke Peta supaya hasilnya terlihat
+  view.addEventListener('click', e => {
+    if (e.target.closest('#cov-btn')) { setTimeout(() => setSec('map'), 0); return; }
+    if (!e.target.closest('#sl-chart,#rchart,#cal')) return;
+    const f0 = JSON.stringify(filter);
+    setTimeout(() => { if (JSON.stringify(filter) !== f0) setSec('map'); }, 0);
+  }, true);
   let raf = 0;
   const mb = $('mem-bar');
   const scroller = el => { for (let e = el.parentElement; e && e !== document.body; e = e.parentElement) { const o = getComputedStyle(e).overflowY; if (o === 'auto' || o === 'scroll') return e; } return null; };
@@ -2338,12 +2348,6 @@ escHooks.push(() => { if ($('mem-modal').classList.contains('open') && !$('mem-m
     raf = 0;
     if (mb) mb.classList.toggle('stuck', stuckOf(mb)); // latar baru muncul saat bar benar-benar menempel
     nav.classList.toggle('stuck', stuckOf(nav));
-    if (view.hidden || !nav.offsetHeight) return;
-    const o = off() + 6;
-    let cur = 0;
-    J.forEach(([, f], i) => { const el = f(); if (el && !el.hidden && el.getBoundingClientRect().top <= o) cur = i; });
-    if (scrollY + innerHeight >= document.documentElement.scrollHeight - 4) cur = J.length - 1; // mentok bawah: bagian terakhir
-    btns.forEach((b, i) => { b.classList.toggle('on', i === cur); i === cur ? b.setAttribute('aria-current', 'true') : b.removeAttribute('aria-current'); });
   };
   addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(mark); }, {passive: true, capture: true}); // capture: kolom kanan laptop menggulung sendiri
   addEventListener('resize', () => { if (!raf) raf = requestAnimationFrame(mark); });
