@@ -27,7 +27,7 @@ Tanpa backend dan tanpa proses build: cukup file statis yang bisa di-hosting di 
 - **Angka berhitung naik** di semua kartu ringkasan: statistik (termasuk Rp), total di header, kursi terisi, kartu lotre, kategori Tiket & Event, dan statistik member. Mati otomatis jika "kurangi gerakan" aktif.
 
 - **Cakupan setlist**: kartu di bawah Cakupan kursi (berapa setlist resmi yang sudah ditonton, dan daftar yang belum). Tampil hanya kalau `data.json` punya field `setlists`; isi daftarnya di admin (panel *Daftar setlist resmi*), lalu unduh ulang paket ZIP.
-- **Per member**: saklar *Belum ketemu* menampilkan member yang sering kamu lihat tampil tapi belum pernah 2-Shot/Chekicha. Kartu member menampilkan kapan terakhir ketemu dan terakhir tampil.
+- **Per member**: saklar *Belum bertemu* menampilkan member yang sering kamu lihat tampil tapi belum pernah 2-Shot/Chekicha. Kartu member menampilkan kapan terakhir bertemu dan terakhir tampil.
 - **Shortcut ikon PWA** dan deep link: `?tab=main|tl|gal|ev` membuka tab itu saat dimuat (tekan lama ikon app di Android untuk pintasan).
 - **HP landscape**: tab bar pindah ke rail di kiri supaya isi tidak tertutup. Kursi show terakhir berdenyut dua kali saat peta pertama tampil.
 
