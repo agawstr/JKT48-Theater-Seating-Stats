@@ -134,6 +134,10 @@ body.adm .view.ghost{display:flex!important;flex-direction:column;align-items:ce
 /* galeri HP: jarak antar polaroid lebih lega */
 @media(max-width:600px){#gallery{column-gap:20px}}
 
+/* Layar lebar (>=1500px): kolom sempit TETAP rata kiri, sejajar dengan tepi header seperti di 1280-1499px.
+   Dulu di sini kolom ditengahkan sementara judul tetap di kiri, jadi posisinya melompat dan tidak sejajar dengan header
+   (terutama di laptop 1536px yang paling umum). Aturan: header rata kiri -> isi rata kiri; header di tengah (HP/tablet) -> isi di tengah. */
+
 /* laptop, tab Peta: halaman tidak ikut scroll; peta diam, hanya panel kanan (detail & statistik) yang scroll sendiri */
 @media(min-width:1280px) and (hover:hover) and (pointer:fine){
   html:has(body.app #view-main:not([hidden])){overflow:hidden}
@@ -327,7 +331,7 @@ html.bars-kill #bars-bg{transition:none!important;opacity:0!important;visibility
 html[data-glass=on] #tl-bar,html[data-glass=on] #gallery-bar,html[data-glass=on] #ev-bar{-webkit-backdrop-filter:blur(26px) saturate(185%);backdrop-filter:blur(26px) saturate(185%)}
 html[data-glass=off] #tl-bar,html[data-glass=off] #gallery-bar,html[data-glass=off] #ev-bar{background:rgba(22,13,19,.96)}
 /* Riwayat: tepi kartu sejajar dengan kartu timeline (rel di kiri), bukan dengan rel */
-#tl-bar{margin-left:30px;width:calc(100% - 30px);max-width:calc(var(--col-w,720px) - 30px)}
+#tl-bar{margin-left:30px;width:calc(100% - 30px);max-width:calc(var(--col-w,720px) - 30px)} /* lebar dikurangi margin kiri: dulu width:100% + margin 30px membuat panel melewati tepi kanan layar */
 @media(max-width:600px){#tl-bar{margin-left:26px;width:calc(100% - 26px)}}
 #tl-q,#g-member,#ev-member,#ev-status{background-color:rgba(0,0,0,.26)}
 
