@@ -125,13 +125,13 @@ summary{cursor:pointer;color:#ff8c00;font-size:13px;font-weight:600}
 .tt-big b{font-size:48px;font-weight:900;color:#ffd23f;line-height:1;font-variant-numeric:tabular-nums}
 .tt-big span{font-size:15px;font-weight:700;color:#e4e4e7}
 .tt-big small{color:#a1a1aa;font-size:12px}
-.tt-bar{display:flex;height:12px;border-radius:99px;overflow:hidden;background:#1e050c;transform-origin:left;animation:growx .8s cubic-bezier(.2,.8,.2,1) both}
+.tt-bar{display:flex;height:12px;border-radius:99px;overflow:hidden;background:#1e050c;transform-origin:left;animation:growx .8s cubic-bezier(.32,.72,0,1) both}
 .tt-bar i{display:block;height:100%}
 .tt-legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;font-size:12px;color:#d4d4d8}
 .tt-legend span{display:inline-flex;align-items:center;gap:6px}
 .tt-legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
 .tt-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
-.tt-c{background:#181115;border:1px solid #2d1820;border-top:3px solid var(--c);border-radius:14px;padding:14px;animation:rise .45s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i) * 80ms)}
+.tt-c{background:#181115;border:1px solid #2d1820;border-top:3px solid var(--c);border-radius:14px;padding:14px;animation:rise .45s cubic-bezier(.32,.72,0,1) both;animation-delay:calc(var(--i) * 80ms)}
 .tt-c b{display:block;font-size:34px;font-weight:900;color:var(--c);line-height:1.1;font-variant-numeric:tabular-nums}
 .tt-c .tl{font-size:14px;font-weight:800;color:#fff;margin-top:2px}
 .tt-c small{display:block;color:#a1a1aa;font-size:11px;margin-top:6px;line-height:1.55}
@@ -837,7 +837,7 @@ const renderAll = () => { renderChart(); renderTable(); renderLists(); renderTod
   }
 
   // kurva masuk item: berhenti tepat di posisi akhir (tanpa overshoot), supaya kartu tidak naik/turun sendiri setelah animasi selesai
-  const POP = 'cubic-bezier(.22,1,.36,1)';
+  const POP = 'cubic-bezier(.32,.72,0,1)';
   const CASCADE = { // blok yang ikut masuk bertahap di tiap tab (hanya yang terlihat di layar)
     peta: '#story, #last .last-c, #stats .stat, #cover, #filters, #zoomctl, #seating-wrapper, #legend', // sama dengan index; isi tab Peta dirender skrip, jadi bukan hanya peta kursinya
     tiket: '#tt > *:not(.tt-cards), #tt .tt-cards > *',
