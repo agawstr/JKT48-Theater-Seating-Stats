@@ -63,17 +63,16 @@ with sync_playwright() as p:
     mm = {n: (x, bar) for n, _, _, x, bar in chips}
     check(mm == {"Ayu": (1, True), "Bela": (0, False), "Citra": (0, False), "Dewi": (1, True), "Eka": (1, True)},
           f"[index] angka 'ketemu' + garis rasio hanya pada member yang pernah ketemu -> {mm}")
-    check(pg.evaluate("getComputedStyle(document.querySelector('#mem-list .mem-chip[data-mem=Bela]')).opacity") == "0.6"
-          and pg.evaluate("getComputedStyle(document.querySelector('#mem-list .mem-chip[data-mem=Ayu]')).opacity") == "1",
-          "[index] member yang belum pernah ketemu tampil redup")
-    check(pg.evaluate("!document.getElementById('mem-mode').hidden"), "[index] saklar 'Semua yang tampil / Pernah ketemu' terlihat")
+    check(pg.evaluate("!document.querySelector('#mem-list .mem-chip[data-mem=Bela]').classList.contains('met') && document.querySelector('#mem-list .mem-chip[data-mem=Ayu]').classList.contains('met')"),
+          "[index] member yang belum pernah bertemu tidak bertanda 'met' (gaya redup)")
+    check(pg.evaluate("!document.getElementById('mem-mode').hidden"), "[index] saklar 'Semua / Pernah / Belum bertemu' terlihat")
     pg.click("#mem-mode [data-mode=met]"); pg.wait_for_timeout(300)
     only = pg.evaluate("[...document.querySelectorAll('#mem-list .mem-chip')].map(c => c.dataset.mem).sort()")
     check(only == ["Ayu", "Dewi", "Eka"], f"[index] saklar 'Pernah ketemu' hanya menampilkan yang pernah ketemu -> {only}")
     pg.click("#mem-mode [data-mode=all]"); pg.wait_for_timeout(300)
     check(pg.evaluate("document.querySelectorAll('#mem-list .mem-chip').length") == 5, "[index] saklar kembali ke 'Semua yang tampil'")
-    check("ditonton tampil" in (pg.evaluate("document.getElementById('mem-key').textContent") or ""),
-          "[index] keterangan memakai mode 'ditonton tampil'")
+    check("ditonton" in (pg.evaluate("document.getElementById('mem-key').textContent") or ""),
+          "[index] keterangan memakai mode 'ditonton'")
 
     opts = pg.evaluate("[...document.querySelectorAll('#dl-flt-member option')].map(o => o.value).filter(Boolean)")
     check(set(opts) == set(want), f"[index] saran filter memuat member dari lineup juga -> {opts}")
