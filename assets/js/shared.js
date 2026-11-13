@@ -142,6 +142,8 @@ const cmp = (a, b) => b.date.localeCompare(a.date) || ((SO[b.sesi] || 0) - (SO[a
 
 // sesi lepas: Chekicha / 2-Shot yang dilakukan di luar menonton theater (punya tanggal, member, dan foto sendiri)
 let solo = [];
+let setlistMaster = []; // daftar setlist resmi (opsional, dari data.json "setlists"): dipakai kartu Cakupan setlist
+const sanitizeSetlists = a => Array.isArray(a) ? [...new Set(a.map(x => String(x || '').trim().slice(0, 80)).filter(Boolean))].slice(0, 300) : [];
 const sanitizeSolo = (s, i) => ({
   id: Number(s.id) || Date.now() + i,
   date: String(s.date || ''),
@@ -226,12 +228,22 @@ function renderChartRaw() {
   lastSig = sig;
   syncFbar();
   if (first) playEnter($('view-main'));
+  if (first && !calm()) setTimeout(pingLatest, 4700); // setelah animasi masuk peta selesai
   renderFilters(); renderStats(); if (first) { countUp($('stats')); countUp($('total').parentElement); }
   tweenNums('st', $('stats'));
-  renderSetlists(); renderRows(); renderCal(); lazyView('view-gal', renderGallery); lazyView('view-tl', renderTimeline); renderCover(); if (first) countUp($('cover')); renderLast(); renderMemory(); renderMembers(); renderStory(); lazyView('view-ev', renderTickets); syncUrl();
+  renderSetlists(); renderRows(); renderCal(); lazyView('view-gal', renderGallery); lazyView('view-tl', renderTimeline); renderCover(); renderCoverSl(); if (first) { countUp($('cover')); countUp($('cover-sl')); } renderLast(); renderMemory(); renderMembers(); renderStory(); lazyView('view-ev', renderTickets); syncUrl();
   requestAnimationFrame(centerChart);
 }
 
+// kursi show terakhir berdenyut dua kali (sekali, saat peta pertama kali tampil) supaya mata langsung tertuju ke sana
+function pingLatest() {
+  const r = [...records].sort(cmp)[0], v = $('view-main');
+  if (!r || !v || v.hidden) return;
+  const el = $('chart').querySelector(`.seat[data-seat="${r.seat}"]`);
+  if (!el) return;
+  el.classList.add('fresh');
+  setTimeout(() => el.classList.remove('fresh'), 3400);
+}
 let mapScale = 1, mapAuto = true; // zoom peta di HP (cubit dua jari / tombol); mapAuto = otomatis pas lebar layar
 var fitKey = ''; // ukuran saat terakhir diukur: kalau sama, peta tidak perlu diukur ulang (hemat 250 kursi x 2 tata letak)
 function fitChart(force) {
@@ -567,6 +579,8 @@ document.addEventListener('keydown', e => {
 
 // ================= Statistik, filter, legenda, setlist, PNG =================
 const filter = {setlist: '', member: '', from: '', to: '', row: ''};
+// ?tab=tl|gal|ev membuka tab itu saat halaman dimuat (dipakai shortcut ikon PWA); dibaca sekarang karena syncUrl() menulis ulang query
+const START_TAB = (t => ['main', 'tl', 'gal', 'ev'].includes(t) ? t : '')(new URLSearchParams(location.search).get('tab'));
 // filter dibaca dari URL (?setlist=..&member=..&from=YYYY-MM-DD&to=..) supaya hasilnya bisa dibagikan
 new URLSearchParams(location.search).forEach((v, k) => {
   if (!Object.keys(filter).includes(k)) return;
@@ -617,7 +631,7 @@ const heatLabel = (h, i) => heatExact ? `${h.min}×` : HEAT[i + 1] ? (HEAT[i + 1
 
 // kontainer disisipkan lewat JS supaya index & admin otomatis sama
 const wrapEl = $('seating-wrapper');
-wrapEl.insertAdjacentHTML('beforebegin', `<div id="last"></div><div id="stats"></div><div id="cover"></div>
+wrapEl.insertAdjacentHTML('beforebegin', `<div id="last"></div><div id="stats"></div><div id="cover"></div><div id="cover-sl" hidden></div>
   <div id="filters">
     <select id="flt-setlist" aria-label="Filter setlist"></select>
     <input type="search" id="flt-member" list="dl-flt-member" placeholder="Semua member" aria-label="Filter member (ketik untuk mencari)" autocomplete="off"><datalist id="dl-flt-member"></datalist>
@@ -946,6 +960,29 @@ function renderCover() {
 }
 $('cover').addEventListener('click', e => {
   if (e.target.closest('#cov-btn')) { showUnv = !showUnv; renderChart(); }
+});
+// Cakupan setlist: berapa setlist resmi yang sudah ditonton (mengikuti filter, sama seperti Cakupan kursi); hanya tampil kalau daftar setlist ada
+let covSlOpen = false;
+function renderCoverSl() {
+  const el = $('cover-sl');
+  if (!el) return;
+  const master = sanitizeSetlists(setlistMaster);
+  el.hidden = !master.length;
+  if (!master.length) { el.innerHTML = ''; return; }
+  const seen = new Set(view().map(r => String(r.setlist || '').trim().toLowerCase()).filter(Boolean));
+  const miss = master.filter(n => !seen.has(n.toLowerCase())), got = master.length - miss.length, pct = Math.round(got / master.length * 100);
+  el.innerHTML = `<div class="cov-t"><b>Setlist ditonton <span data-cu="${got}">${got}</span> dari ${master.length}</b><span data-cu="${pct}" data-suf="%">${pct}%</span></div>
+    <div class="cov-bar"><i style="width:${pct}%"></i></div>
+    <div class="cov-s"><span>${miss.length ? `${miss.length} setlist belum pernah ditonton` : 'Semua setlist sudah pernah ditonton'}</span>
+    ${miss.length ? `<button type="button" class="btn-s" id="covsl-btn" aria-expanded="${covSlOpen}" aria-controls="covsl-l">${covSlOpen ? 'Sembunyikan' : 'Lihat yang belum'}</button>` : ''}</div>
+    ${miss.length ? `<div class="covsl-l" id="covsl-l"${covSlOpen ? '' : ' hidden'}>${miss.map(n => `<span>${esc(n)}</span>`).join('')}</div>` : ''}`;
+}
+$('cover-sl').addEventListener('click', e => {
+  if (!e.target.closest('#covsl-btn')) return;
+  covSlOpen = !covSlOpen;
+  const b = $('covsl-btn'), l = $('covsl-l');
+  b.setAttribute('aria-expanded', covSlOpen); b.textContent = covSlOpen ? 'Sembunyikan' : 'Lihat yang belum';
+  if (l) l.hidden = !covSlOpen;
 });
 
 function renderTimeline() {
@@ -2059,7 +2096,7 @@ const memInit = n => (String(n).trim().match(/[A-Za-z0-9\u00C0-\uFFFF]/) || ['?'
 let memQ = '', memSort = 'top', memMode = 'all'; // memMode: 'all' (semua yang tampil) | 'met' (pernah ketemu)
 $('mchart').insertAdjacentHTML('afterend', `<section id="mem-sec"><h2 class="sec" id="mem-h">Per member <small class="hint" style="display:inline">· ketuk nama untuk statistiknya</small></h2>
   <div id="mem-bar"><span class="mem-qw" id="mem-qw"><input type="search" id="mem-q" placeholder="Cari member…" aria-label="Cari member" autocomplete="off"><span id="mem-qn" class="mem-qn" aria-hidden="true"></span><button type="button" id="mem-qx" class="mem-qx" aria-label="Hapus pencarian" hidden><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M3.5 3.5l9 9m0-9l-9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg></button></span><button type="button" class="btn-s" id="mem-sort" aria-label="Ubah urutan"></button></div>
-  <div id="mem-mode" class="mem-mode" role="group" aria-label="Member yang ditampilkan" hidden><i class="seg-ind" aria-hidden="true"></i><button type="button" data-mode="all" aria-pressed="true">Semua member</button><button type="button" data-mode="met" aria-pressed="false">Pernah 2-Shot/Chekicha</button></div>
+  <div id="mem-mode" class="mem-mode" role="group" aria-label="Member yang ditampilkan" hidden><i class="seg-ind" aria-hidden="true"></i><button type="button" data-mode="all" aria-pressed="true">Semua member</button><button type="button" data-mode="met" aria-pressed="false">Pernah 2-Shot/Chekicha</button><button type="button" data-mode="unmet" aria-pressed="false">Belum ketemu</button></div>
   <p id="mem-n" class="mem-n" aria-live="polite"></p><p id="mem-key" class="mem-key"></p><div id="mem-list"></div></section>`);
 // tinggi daftar member dianimasikan: saat hasil cari berkurang, halaman memendek perlahan (layar turun/naik mulus, tidak mendadak terlempar ke atas);
 // saat kata dihapus dan hasil bertambah, halaman memanjang perlahan.
@@ -2095,8 +2132,9 @@ function renderMembersCore(anim) {
   }
   const all = memberNames(), hasLineup = records.some(r => (r.lineup || []).length);
   const mode = hasLineup ? memMode : 'all'; // saklar hanya berarti kalau lineup sudah ada
+  const inMode = m => mode === 'all' || (mode === 'unmet' ? m === 0 : m > 0); // met = pernah 2-Shot/Chekicha, unmet = sering tampil tapi belum pernah ketemu
   const q = memQ.trim().toLowerCase(), avs = memberAvatars();
-  const list = all.filter(([n, , m]) => (mode === 'all' || m > 0) && (!q || n.toLowerCase().includes(q)))
+  const list = all.filter(([n, , m]) => inMode(m) && (!q || n.toLowerCase().includes(q)))
     .sort((a, b) => memSort === 'az' ? a[0].localeCompare(b[0]) : b[1] - a[1] || a[0].localeCompare(b[0]));
   $('mem-h').hidden = $('mem-bar').hidden = $('mem-key').hidden = !all.length;
   $('mem-mode').hidden = !all.length || !hasLineup;
@@ -2104,11 +2142,13 @@ function renderMembersCore(anim) {
   const sb = $('mem-sort'), stxt = memSort === 'az' ? 'A–Z' : 'Terbanyak';
   if (!sb.firstElementChild) sb.innerHTML = '<span class="ms-l"></span>';
   if (sb.firstElementChild.textContent !== stxt) sb.firstElementChild.textContent = stxt;
-  $('mem-key').innerHTML = hasLineup
+  $('mem-key').innerHTML = hasLineup && mode === 'unmet'
+    ? '<span class="lg-i"><b class="lg-a">8</b> kali ditonton tampil, belum pernah 2-Shot / Chekicha</span><span class="lg-i lg-n">Diurutkan dari yang paling sering kamu lihat di panggung</span>'
+    : hasLineup
     ? '<span class="lg-i"><b class="lg-a">8</b> kali ditonton (tampil di show)</span><span class="lg-i"><b class="lg-m">3</b> di antaranya 2-Shot / Chekicha</span><span class="lg-i lg-n">Kotak berwarna = pernah 2-Shot/Chekicha · yang redup belum</span>'
     : 'Angka = jumlah 2-Shot + Chekicha. Isi lineup di admin untuk menghitung semua member yang tampil.';
   box.classList.toggle('lu', hasLineup);
-  const pool = all.filter(([, , m]) => mode === 'all' || m > 0).length; // jumlah sebelum pencarian
+  const pool = all.filter(([, , m]) => inMode(m)).length; // jumlah sebelum pencarian
   $('mem-n').hidden = !all.length;
   $('mem-n').textContent = !all.length ? '' : q && list.length !== pool ? `${list.length} dari ${pool} member` : `${pool} member`;
   { const w = $('mem-qw'); if (w) { w.classList.toggle('has-q', !!memQ); $('mem-qx').hidden = !memQ; $('mem-qn').textContent = q ? `${list.length}/${pool}` : ''; } } // hitungan hasil + tombol hapus langsung di kolom cari
@@ -2177,6 +2217,9 @@ $('mem-sort').addEventListener('click', () => {
 $('lightbox').insertAdjacentHTML('beforebegin', `<div class="overlay" id="mem-modal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mem-title">
   <button class="x" id="mem-close" aria-label="Tutup">&times;</button><h3 id="mem-title" style="margin:0"></h3><div class="mem-body" id="mem-body"></div></div></div>`);
 const seatBlock = (title, list) => list.length ? `<h4 class="mem-h">${title}</h4><div class="mem-seats">${list.map(([n, c], i) => `<button type="button" class="seat-badge tl-s" data-seat="${esc(n)}"${i >= 10 ? ' data-x hidden' : ''}>${esc(n)}${c > 1 ? ` ×${c}` : ''}</button>`).join('')}${list.length > 10 ? `<button type="button" class="mem-more" data-more aria-expanded="false">+${list.length - 10} lainnya</button>` : ''}</div>` : '';
+// selisih hari dari hari ini ke tanggal ISO (null kalau tanggal tidak valid)
+const daysSince = iso => { const d = Math.round((new Date().setHours(0, 0, 0, 0) - new Date(iso + 'T00:00:00')) / 864e5); return isNaN(d) ? null : d; };
+const agoTxt = d => d === null ? '' : d < 0 ? `${-d} hari lagi` : d === 0 ? 'hari ini' : d < 60 ? `${d} hari lalu` : d < 730 ? `${Math.round(d / 30.4)} bulan lalu` : `${(d / 365).toFixed(1).replace('.0', '')} tahun lalu`;
 function openMember(name) {
   const m = memberStats(name);
   if (!m.ts && !m.ck && !m.ev && !m.appear.length) return;
@@ -2186,7 +2229,13 @@ function openMember(name) {
   const av = m.photos[0];
   $('mem-title').innerHTML = (av ? `<img class="mem-av" src="${esc(thumbOf(av.src))}" data-full="${esc(av.src)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="" data-cap="${esc(name)}" data-sub="${esc([av.label, av.setlist, fmtDate(av.date)].filter(Boolean).join(' · '))}" decoding="async">` : '')
     + `<span class="mem-nm"><span>${esc(name)}</span>${span ? `<small title="Dari show pertama sampai terakhir yang tercatat bersama dia (tampil atau ketemu)">${esc(span)}</small>` : ''}</span>`;
-  $('mem-body').innerHTML = `<div class="mem-grid c${cells.length}">${cells.join('')}</div>`
+  const lastMet = m.dates.length ? m.dates[m.dates.length - 1] : '', lastApp = m.appear.length ? m.appear.map(r => r.date).filter(Boolean).sort().pop() : '';
+  const recency = [
+    lastMet ? `<div class="mem-lr"><span>Terakhir ketemu (2-Shot / Chekicha)</span><b>${esc(fmtDate(lastMet))}<small>${esc(agoTxt(daysSince(lastMet)))}</small></b></div>` : '',
+    m.hasLineup && lastApp && lastApp !== lastMet ? `<div class="mem-lr"><span>Terakhir kamu lihat dia tampil</span><b>${esc(fmtDate(lastApp))}<small>${esc(agoTxt(daysSince(lastApp)))}</small></b></div>` : '',
+    m.hasLineup && !met && m.appear.length ? '<div class="mem-lr"><span>Belum pernah 2-Shot / Chekicha dengannya</span></div>' : ''
+  ].join('');
+  $('mem-body').innerHTML = `<div class="mem-grid c${cells.length}">${cells.join('')}</div>${recency ? `<div class="mem-last">${recency}</div>` : ''}`
     + ((sl => sl.length ? `<h4 class="mem-h">Setlist yang paling sering bareng</h4>` + sl.slice(0, 3).map(([n, c]) => `<div class="mem-r"><span class="mem-rn">${esc(n)}</span><i class="mem-rb"><u style="width:${c / sl[0][1] * 100}%"></u></i><b>${c}×</b></div>`).join('') : '')(m.hasLineup ? m.appSetlists : m.setlists))
     + seatBlock('Kursi saat 2-Shot / Chekicha', m.seats)
     + (m.hasLineup ? seatBlock('Kursi saat dia tampil', m.appSeats) : '')
