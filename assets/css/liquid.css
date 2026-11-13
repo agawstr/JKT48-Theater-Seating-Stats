@@ -34,7 +34,7 @@ h1{font-size:clamp(30px,5vw,40px);font-weight:700;letter-spacing:-.03em;color:#f
 .sv,.badge span,.seat-count,.mc-n,.rc,.ls-c,.cd-live,.tl-d b{font-variant-numeric:tabular-nums}
 
 /* ---------- Kaca netral (bukan pink) ---------- */
-.stat,#cover,.last-c,.tl-i,.ev-i,.ev-g,.ev-c,.hi{border-radius:22px}
+.stat,#cover,#cover-sl,.last-c,.tl-i,.ev-i,.ev-g,.ev-c,.hi{border-radius:22px}
 .modal{border-radius:34px;background-color:rgba(34,28,32,.5)}
 #pop{background-color:rgba(34,28,32,.55)}
 .overlay{background:rgba(0,0,0,.32);-webkit-backdrop-filter:blur(10px) saturate(150%);backdrop-filter:blur(10px) saturate(150%)}
@@ -343,3 +343,34 @@ html[data-glass=off] #tl-bar,html[data-glass=off] #gallery-bar,html[data-glass=o
 #tl-bar{margin-left:30px;max-width:calc(var(--col-w,720px) - 30px)}
 @media(max-width:600px){#tl-bar{margin-left:26px}}
 #tl-q,#g-member,#ev-member,#ev-status{background-color:rgba(0,0,0,.26)}
+
+
+/* =====================================================================
+   HP landscape / layar pendek (tinggi <= 520px, sentuh): tab bar jadi rail di kiri.
+   Tab bar melayang di bawah memakan sekitar seperempat tinggi layar di posisi ini; rail memakai lebar, bukan tinggi.
+   ===================================================================== */
+@media (orientation:landscape) and (max-height:520px) and (hover:none) and (pointer:coarse){
+  :root{--rail-w:76px;--stick:calc(env(safe-area-inset-top,0px) + 14px)!important}
+  body.app .wrap{max-width:none;padding:calc(env(safe-area-inset-top,0px) + 14px) calc(14px + env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) calc(var(--rail-w) + 22px + env(safe-area-inset-left,0px))}
+  body.app .tabbar{position:fixed;top:calc(env(safe-area-inset-top,0px) + 8px);bottom:calc(env(safe-area-inset-bottom,0px) + 8px);left:calc(env(safe-area-inset-left,0px) + 8px);right:auto;
+    width:var(--rail-w);margin:0;display:flex;flex-direction:column;flex-wrap:nowrap;justify-content:center;align-items:stretch;gap:2px;padding:6px;border-radius:26px;z-index:40;box-sizing:border-box;
+    box-shadow:0 14px 34px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,170,190,.22)}
+  body.app .tabbar::after{display:none}
+  body.app .sb-brand,body.app .sb-keys,#appbar{display:none}
+  body.app .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 2px 7px;border-radius:18px;font-size:0!important;line-height:0;text-align:center;min-width:0}
+  body.app .tab::before{width:20px;height:20px}
+  body.app .tab::after{content:attr(data-short);font-size:10.5px;font-weight:600;line-height:1.1;letter-spacing:.01em}
+  body.app .tab-ind{border-radius:18px}
+  body.app .head{margin-bottom:12px}
+  body.app .head h1{font-size:24px;margin-bottom:4px}
+  body.app .head .sub{margin-bottom:8px;max-width:none}
+  body.app #fbar{left:calc(50% + var(--rail-w) / 2);bottom:calc(14px + env(safe-area-inset-bottom,0px))}
+  body.app #toast{bottom:calc(14px + env(safe-area-inset-bottom,0px))}
+  body.app .tl-mh{top:var(--stick)}
+}
+
+/* kursi show terakhir: dua denyut cincin saat peta pertama tampil (dimatikan oleh "kurangi gerakan") */
+.seat.fresh{position:relative}
+.seat.fresh::after{content:'';position:absolute;inset:-3px;border-radius:9px;border:2px solid #ff2a5f;pointer-events:none;animation:seat-ping 1.5s ease-out 2 both}
+@keyframes seat-ping{from{opacity:.95;transform:scale(1)}to{opacity:0;transform:scale(1.7)}}
+@media(prefers-reduced-motion:reduce){.seat.fresh::after{animation:none;opacity:0}}
