@@ -1343,3 +1343,11 @@ button.sh-row:active{transform:scale(.98)}
 .seg-ind{box-sizing:border-box}
 .mem-mode button{overflow-wrap:anywhere;hyphens:none}
 @media(max-width:380px){.mem-mode button{padding-left:5px;padding-right:5px;font-size:12px}}
+
+/* ---- sub-tab Peta / Ringkasan / Grafik / Member: hanya bagian aktif yang tampil (HP & tablet; di laptop #split membungkus anak-anaknya, jadi tidak terkena) ---- */
+#view-main[data-sec=map]>[data-s]:not([data-s=map]),
+#view-main[data-sec=sum]>[data-s]:not([data-s=sum]),
+#view-main[data-sec=chart]>[data-s]:not([data-s=chart]),
+#view-main[data-sec=mem]>[data-s]:not([data-s=mem]){display:none!important}
+.mem-mode{scroll-margin-top:calc(var(--stick) + var(--jh) + 64px)}
+#split .mem-mode{scroll-margin-top:70px}
