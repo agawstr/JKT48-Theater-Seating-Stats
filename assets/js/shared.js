@@ -663,6 +663,7 @@ function renderFilters() {
   opts('flt-setlist', [...new Set(records.map(r => r.setlist).filter(Boolean))].sort(), 'Semua setlist');
   $('dl-flt-member').innerHTML = filterMembers().map(n => `<option value="${esc(n)}">`).join('');
   if (document.activeElement !== $('flt-member')) $('flt-member').value = filter.member; // jangan menimpa ketikan yang sedang berjalan
+  $('filters').classList.toggle('on', isFiltered()); // HP: tombol Reset di tengah saat tidak ada filter, geser ke kiri (animasi) saat ada
   $('flt-info').textContent = isFiltered() ? `${filter.row ? 'Baris ' + filter.row + ' · ' : ''}${view().length} dari ${records.length} show cocok` : '';
 }
 $('filters').addEventListener('change', e => {
@@ -2213,7 +2214,7 @@ function segMove(anim) {
   ind.style.transform = T(x); ind.style.width = w + 'px';
   if (!anim || !prev || calm() || (prev.x === x && prev.w === w)) return;
   const lo = Math.min(prev.x, x), hi = Math.max(prev.x + prev.w, x + w);
-  ind.animate([{transform: T(prev.x), width: prev.w + 'px'}, {transform: T(lo), width: (hi - lo) + 'px', offset: .45}, {transform: T(x), width: w + 'px'}], {duration: 650, easing: lbEase});
+  ind.animate([{transform: T(prev.x), width: prev.w + 'px'}, {transform: T(lo), width: (hi - lo) + 'px', offset: .45}, {transform: T(x), width: w + 'px'}], {duration: 1100, easing: lbEase});
 }
 if (window.ResizeObserver) new ResizeObserver(() => segMove(false)).observe($('mem-mode')); // muncul / ukuran berubah: pasang tanpa animasi
 const memSwap = () => { // chip pertama masuk bertahap: hanya opacity + transform, tanpa baca layout (jauh lebih ringan dari liquid.swap)
