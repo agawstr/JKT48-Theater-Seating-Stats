@@ -2070,7 +2070,7 @@ function memberStats(name) {
   m.seats = Object.entries(m.shows.reduce((o, r) => (r.seat && (o[r.seat] = (o[r.seat] || 0) + 1), o), {})).sort((a, b) => b[1] - a[1] || seatTie(a[0], b[0]));
   return m;
 }
-// semua member yang pernah muncul (lineup, 2-Shot, Chekicha, sesi lepas): [nama, jumlah ditampilkan, pernah ketemu?]
+// semua member yang pernah muncul (lineup, 2-Shot, Chekicha, sesi lepas): [nama, jumlah ditampilkan, pernah bertemu?]
 // jumlah = berapa kali ditonton tampil (lineup atau bertemu); kalau belum ada lineup sama sekali, jumlah pertemuan 2-Shot/Chekicha
 function memberNames() {
   const app = {}, met = {}, hasLineup = records.some(r => (r.lineup || []).length);
@@ -2082,7 +2082,7 @@ function memberNames() {
   });
   solo.forEach(w => { if (w.member) met[w.member] = (met[w.member] || 0) + 1; });
   const all = new Set([...Object.keys(app), ...Object.keys(met)]);
-  return [...all].map(n => [n, hasLineup ? (app[n] || met[n] || 0) : (met[n] || 0), met[n] || 0]); // [nama, angka utama, berapa kali ketemu (2-Shot/Chekicha/sesi lepas)]
+  return [...all].map(n => [n, hasLineup ? (app[n] || met[n] || 0) : (met[n] || 0), met[n] || 0]); // [nama, angka utama, berapa kali bertemu (2-Shot/Chekicha/sesi lepas)]
 }
 // foto terbaru tiap member (2-Shot / Chekicha, termasuk sesi lepas) untuk avatar di chip
 function memberAvatars() {
@@ -2093,17 +2093,18 @@ function memberAvatars() {
   return av;
 }
 const memInit = n => (String(n).trim().match(/[A-Za-z0-9\u00C0-\uFFFF]/) || ['?'])[0].toUpperCase();
-let memQ = '', memSort = 'top', memMode = 'all'; // memMode: 'all' (semua yang tampil) | 'met' (pernah ketemu)
+const memCache = {sig: '', nodes: new Map()};
+let memQ = '', memSort = 'top', memMode = 'all'; // memMode: 'all' (semua yang tampil) | 'met' (pernah bertemu) | 'unmet' (belum bertemu)
 $('mchart').insertAdjacentHTML('afterend', `<section id="mem-sec"><h2 class="sec" id="mem-h">Per member <small class="hint" style="display:inline">· ketuk nama untuk statistiknya</small></h2>
   <div id="mem-bar"><span class="mem-qw" id="mem-qw"><input type="search" id="mem-q" placeholder="Cari member…" aria-label="Cari member" autocomplete="off"><span id="mem-qn" class="mem-qn" aria-hidden="true"></span><button type="button" id="mem-qx" class="mem-qx" aria-label="Hapus pencarian" hidden><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M3.5 3.5l9 9m0-9l-9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg></button></span><button type="button" class="btn-s" id="mem-sort" aria-label="Ubah urutan"></button></div>
-  <div id="mem-mode" class="mem-mode" role="group" aria-label="Member yang ditampilkan" hidden><i class="seg-ind" aria-hidden="true"></i><button type="button" data-mode="all" aria-pressed="true">Semua member</button><button type="button" data-mode="met" aria-pressed="false">Pernah 2-Shot/Chekicha</button><button type="button" data-mode="unmet" aria-pressed="false">Belum ketemu</button></div>
+  <div id="mem-mode" class="mem-mode" role="group" aria-label="Member yang ditampilkan" hidden><i class="seg-ind" aria-hidden="true"></i><button type="button" data-mode="all" aria-pressed="true">Semua member</button><button type="button" data-mode="met" aria-pressed="false">Pernah 2‑Shot/<wbr>Chekicha</button><button type="button" data-mode="unmet" aria-pressed="false">Belum bertemu</button></div>
   <p id="mem-n" class="mem-n" aria-live="polite"></p><p id="mem-key" class="mem-key"></p><div id="mem-list"></div></section>`);
 // tinggi daftar member dianimasikan: saat hasil cari berkurang, halaman memendek perlahan (layar turun/naik mulus, tidak mendadak terlempar ke atas);
 // saat kata dihapus dan hasil bertambah, halaman memanjang perlahan.
-function renderMembers(anim) {
+function renderMembers(anim, fast) { // fast = ganti saklar: tanpa animasi tinggi (menghindari layout berulang tiap frame)
   const box = $('mem-list');
   if (!box) return;
-  if (calm()) { clearTimeout(box._ht); box.style.height = box.style.transition = ''; return renderMembersCore(anim); }
+  if (calm() || fast) { clearTimeout(box._ht); box.style.height = box.style.transition = ''; return renderMembersCore(anim); }
   const h0 = box.offsetHeight; // tinggi saat ini (bisa sedang di tengah animasi sebelumnya)
   clearTimeout(box._ht); box.style.transition = 'none'; box.style.height = '';
   renderMembersCore(anim);
@@ -2132,7 +2133,7 @@ function renderMembersCore(anim) {
   }
   const all = memberNames(), hasLineup = records.some(r => (r.lineup || []).length);
   const mode = hasLineup ? memMode : 'all'; // saklar hanya berarti kalau lineup sudah ada
-  const inMode = m => mode === 'all' || (mode === 'unmet' ? m === 0 : m > 0); // met = pernah 2-Shot/Chekicha, unmet = sering tampil tapi belum pernah ketemu
+  const inMode = m => mode === 'all' || (mode === 'unmet' ? m === 0 : m > 0); // met = pernah 2-Shot/Chekicha, unmet = sering tampil tapi belum pernah bertemu
   const q = memQ.trim().toLowerCase(), avs = memberAvatars();
   const list = all.filter(([n, , m]) => inMode(m) && (!q || n.toLowerCase().includes(q)))
     .sort((a, b) => memSort === 'az' ? a[0].localeCompare(b[0]) : b[1] - a[1] || a[0].localeCompare(b[0]));
@@ -2152,14 +2153,29 @@ function renderMembersCore(anim) {
   $('mem-n').hidden = !all.length;
   $('mem-n').textContent = !all.length ? '' : q && list.length !== pool ? `${list.length} dari ${pool} member` : `${pool} member`;
   { const w = $('mem-qw'); if (w) { w.classList.toggle('has-q', !!memQ); $('mem-qx').hidden = !memQ; $('mem-qn').textContent = q ? `${list.length}/${pool}` : ''; } } // hitungan hasil + tombol hapus langsung di kolom cari
-  box.innerHTML = list.length ? list.map(([n, c, m]) => {
+  // chip dibuat SEKALI per versi data lalu dipakai ulang (foto avatar tidak di-decode ulang tiap ganti saklar / urutan / pencarian)
+  const sig = hasLineup + '|' + all.map(x => x.join(':')).join(',') + '|' + Object.keys(avs).map(k => k + '=' + avs[k].src).join(',');
+  if (memCache.sig !== sig) { memCache.sig = sig; memCache.nodes = new Map(); }
+  const chipEl = ([n, c, m]) => {
+    let el = memCache.nodes.get(n);
+    if (el) return el;
     const pct = c ? Math.min(100, Math.round(m / c * 100)) : 0;
     const ttl = hasLineup ? ` title="${esc(`Ditonton ${c}× · 2-Shot/Chekicha ${m}×` + (m ? ` (${pct}%)` : ''))}"` : '';
     const a = avs[n];
     const ava = a ? `<img class="mem-avs" src="${esc(thumbOf(a.src))}" data-full="${esc(a.src)}" onerror="this.onerror=null;this.src=this.dataset.full" alt="" width="28" height="28" loading="lazy" decoding="async">` : `<span class="mem-avs ph" aria-hidden="true">${esc(memInit(n))}</span>`;
-    return `<button type="button" class="mem-chip av${m && hasLineup ? ' met' : ''}" data-mem="${esc(n)}"${ttl}>${ava}<span class="mem-cn">${esc(n)}</span><span class="mem-nums"><b>${c}</b>${hasLineup && m ? `<b class="mm">${m}</b>` : ''}</span>${hasLineup && m ? `<span class="mem-rt" style="width:${pct}%"></span>` : ''}</button>`;
-  }).join('')
-    : `<div class="empty">${all.length ? 'Tidak ada member yang cocok' : 'Belum ada data member'}</div>`;
+    const t = document.createElement('template');
+    t.innerHTML = `<button type="button" class="mem-chip av${m && hasLineup ? ' met' : ''}" data-mem="${esc(n)}"${ttl}>${ava}<span class="mem-cn">${esc(n)}</span><span class="mem-nums"><b>${c}</b>${hasLineup && m ? `<b class="mm">${m}</b>` : ''}</span>${hasLineup && m ? `<span class="mem-rt" style="width:${pct}%"></span>` : ''}</button>`;
+    el = t.content.firstElementChild;
+    memCache.nodes.set(n, el);
+    return el;
+  };
+  if (list.length) box.replaceChildren(...list.map(chipEl));
+  else {
+    const e = document.createElement('div');
+    e.className = 'empty';
+    e.textContent = !all.length ? 'Belum ada data member' : mode === 'unmet' && !q ? 'Semua member yang pernah tampil sudah pernah kamu temui' : 'Tidak ada member yang cocok';
+    box.replaceChildren(e);
+  }
   if (!fx || !oldPos.size) return;
   // chip yang masih ada: meluncur dari posisi lama; chip baru: muncul membesar; chip yang hilang: memudar (hantu)
   let ei = 0;
@@ -2197,13 +2213,16 @@ function segMove(anim) {
   ind.style.transform = T(x); ind.style.width = w + 'px';
   if (!anim || !prev || calm() || (prev.x === x && prev.w === w)) return;
   const lo = Math.min(prev.x, x), hi = Math.max(prev.x + prev.w, x + w);
-  ind.animate([{transform: T(prev.x), width: prev.w + 'px'}, {transform: T(lo), width: (hi - lo) + 'px', offset: .45}, {transform: T(x), width: w + 'px'}], {duration: 1100, easing: lbEase});
+  ind.animate([{transform: T(prev.x), width: prev.w + 'px'}, {transform: T(lo), width: (hi - lo) + 'px', offset: .45}, {transform: T(x), width: w + 'px'}], {duration: 650, easing: lbEase});
 }
 if (window.ResizeObserver) new ResizeObserver(() => segMove(false)).observe($('mem-mode')); // muncul / ukuran berubah: pasang tanpa animasi
-const memSwap = () => { if (window.liquid && window.liquid.swap) (window.liquid.swap($('mem-list'), '.mem-chip') || []).forEach(a => { a.playbackRate = .55; }); }; // chip masuk bertahap dengan pegas (liquid.js)
+const memSwap = () => { // chip pertama masuk bertahap: hanya opacity + transform, tanpa baca layout (jauh lebih ringan dari liquid.swap)
+  if (calm()) return;
+  [...$('mem-list').children].slice(0, 14).forEach((el, i) => el.animate([{opacity: 0, transform: 'translate3d(0,10px,0)'}, {opacity: 1, transform: 'none'}], {duration: 320, delay: i * 16, easing: lbEase, fill: 'backwards'}));
+};
 $('mem-q').addEventListener('input', e => { memQ = e.target.value; renderMembers(true); });
 $('mem-qx').addEventListener('click', () => { memQ = ''; $('mem-q').value = ''; renderMembers(true); $('mem-q').focus(); });
-$('mem-mode').addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if (b && b.dataset.mode !== memMode) { memMode = b.dataset.mode; renderMembers(); segMove(true); memSwap(); } });
+$('mem-mode').addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if (b && b.dataset.mode !== memMode) { memMode = b.dataset.mode; renderMembers(false, true); segMove(true); memSwap(); } });
 $('mem-sort').addEventListener('click', () => {
   // tombol melar/menyusut mulus ke lebar label baru (search bar ikut karena flex:1), label baru memudar masuk, chip meluncur ke urutan baru
   const btn = $('mem-sort'), w0 = btn.offsetWidth;
@@ -2228,10 +2247,10 @@ function openMember(name) {
   const cells = [...(m.hasLineup ? [cell('Ditonton', m.appear.length, m.appear.length && met ? `${met} dengan 2-Shot/Chekicha` : '')] : []), cell('2-Shot', m.ts), cell('Chekicha', m.ck), ...(m.hasLineup ? [] : [cell('Total pertemuan', met)]), ...(m.ev ? [cell('Hadir di event', m.ev)] : [])];
   const av = m.photos[0];
   $('mem-title').innerHTML = (av ? `<img class="mem-av" src="${esc(thumbOf(av.src))}" data-full="${esc(av.src)}" onerror="this.onerror=null;this.src=this.dataset.full" data-photo alt="" data-cap="${esc(name)}" data-sub="${esc([av.label, av.setlist, fmtDate(av.date)].filter(Boolean).join(' · '))}" decoding="async">` : '')
-    + `<span class="mem-nm"><span>${esc(name)}</span>${span ? `<small title="Dari show pertama sampai terakhir yang tercatat bersama dia (tampil atau ketemu)">${esc(span)}</small>` : ''}</span>`;
+    + `<span class="mem-nm"><span>${esc(name)}</span>${span ? `<small title="Dari show pertama sampai terakhir yang tercatat bersama dia (tampil atau bertemu)">${esc(span)}</small>` : ''}</span>`;
   const lastMet = m.dates.length ? m.dates[m.dates.length - 1] : '', lastApp = m.appear.length ? m.appear.map(r => r.date).filter(Boolean).sort().pop() : '';
   const recency = [
-    lastMet ? `<div class="mem-lr"><span>Terakhir ketemu (2-Shot / Chekicha)</span><b>${esc(fmtDate(lastMet))}<small>${esc(agoTxt(daysSince(lastMet)))}</small></b></div>` : '',
+    lastMet ? `<div class="mem-lr"><span>Terakhir bertemu (2-Shot / Chekicha)</span><b>${esc(fmtDate(lastMet))}<small>${esc(agoTxt(daysSince(lastMet)))}</small></b></div>` : '',
     m.hasLineup && lastApp && lastApp !== lastMet ? `<div class="mem-lr"><span>Terakhir kamu lihat dia tampil</span><b>${esc(fmtDate(lastApp))}<small>${esc(agoTxt(daysSince(lastApp)))}</small></b></div>` : '',
     m.hasLineup && !met && m.appear.length ? '<div class="mem-lr"><span>Belum pernah 2-Shot / Chekicha dengannya</span></div>' : ''
   ].join('');
