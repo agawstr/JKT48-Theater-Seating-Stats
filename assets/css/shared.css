@@ -1338,3 +1338,8 @@ button.sh-row:active{transform:scale(.98)}
 .sh-only{display:none}
 .sh-simple .sh-only{display:flex}
 .sh-simple .sh-app{display:none}
+
+/* ---- saklar Per member: label tidak terpotong di layar sempit (320px), penanda pas selebar tombol ---- */
+.seg-ind{box-sizing:border-box}
+.mem-mode button{overflow-wrap:anywhere;hyphens:none}
+@media(max-width:380px){.mem-mode button{padding-left:5px;padding-right:5px;font-size:12px}}
