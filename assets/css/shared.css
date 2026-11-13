@@ -1351,3 +1351,17 @@ button.sh-row:active{transform:scale(.98)}
 #view-main[data-sec=mem]>[data-s]:not([data-s=mem]){display:none!important}
 .mem-mode{scroll-margin-top:calc(var(--stick) + var(--jh) + 64px)}
 #split .mem-mode{scroll-margin-top:70px}
+
+/* ---- ritme jarak: antar-bagian 16, antar-judul 20+14, tidak ada ruang kosong berlebih; judul pertama tiap sub-tab rata dengan tab lain ---- */
+#view-main .sec,#view-ev .sec{margin-top:20px;padding-top:14px}
+#view-main[data-sec]>#ch-h,#view-main[data-sec]>#mem-sec>#mem-h,#view-ev>.sec:first-child{margin-top:0;padding-top:0;border-top:0}
+#legend{margin:6px 0 12px}
+.foot{margin-top:16px}
+.mem-n{margin:0 0 2px}
+.mem-key{margin:0 0 10px;gap:4px 14px;flex-direction:row;flex-wrap:wrap;align-items:center}
+#filters{margin-bottom:12px}
+@media(max-width:768px){
+  /* Reset dan keterangan hasil satu baris (sebelumnya dua baris, satu di antaranya kosong) */
+  #filters #flt-reset{grid-column:1;justify-self:start;min-width:0;min-height:36px;padding:0 18px}
+  #filters #flt-info,#filters #flt-info:empty{grid-column:2;min-height:0;text-align:right;align-self:center}
+}
