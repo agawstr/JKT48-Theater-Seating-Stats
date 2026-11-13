@@ -19,7 +19,9 @@
 <meta name="twitter:card" content="summary">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<!-- font dimuat tanpa memblokir render: halaman tampil dulu dengan font sistem, lalu berganti begitu font siap (display=swap) -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Caveat:wght@600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Caveat:wght@600;700&display=swap"></noscript>
 <link rel="stylesheet" href="assets/css/shared.css">
 <link rel="stylesheet" href="assets/css/app.css">
 <link rel="stylesheet" href="assets/css/liquid.css">
@@ -105,12 +107,17 @@ function applyData(json) {
   records = arr.map(sanitize).filter(r => SEATS.has(r.seat)); // kursi di luar peta dilewati, jadi total = yang tampil di peta
   tickets = (Array.isArray(json.tickets) ? json.tickets : []).map(sanitizeTicket).filter(t => t.date);
   solo = (Array.isArray(json.solo) ? json.solo : []).map(sanitizeSolo).filter(w => w.date);
+  setlistMaster = sanitizeSetlists(json.setlists);
   dataLoaded = true;
   document.documentElement.classList.add('ready');
   $('foot').textContent = json.updated ? 'Data diperbarui: ' + fmtDate(json.updated) : '';
 }
 // layar muat 2-bit (assets/js/splash.js): selalu tampil; menutup setelah data, semua tab, dan foto pertama galeri siap
-if (window.Splash) Splash.beforeClose = () => document.documentElement.classList.add('ready');
+let tabOpened = false;
+if (window.Splash) Splash.beforeClose = () => {
+  document.documentElement.classList.add('ready');
+  if (START_TAB && !tabOpened && window.switchTab) { tabOpened = true; switchTab(START_TAB); } // ?tab= (shortcut ikon PWA)
+};
 setTimeout(() => document.documentElement.classList.add('ready'), 7000); // jaga-jaga kalau splash.js gagal dimuat
 // siapkan semua tab selagi layar muat tampil, supaya pindah tab nanti langsung jadi
 async function warmTabs() {
