@@ -925,15 +925,15 @@ img,canvas{max-width:100%}
 @keyframes fade-out{to{background-color:rgba(0,0,0,0);-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0)}}
 @keyframes pop-out{to{opacity:0;transform:translate3d(0,14px,0) scale(.94)}}
 @keyframes menu-in{from{opacity:0;transform:translate3d(0,-8px,0) scale(.97)}}
-.overlay.open{animation:ov-in .5s var(--ios)}
-.overlay.open>.modal{transform-origin:var(--ox,50%) var(--oy,50%);animation:modal-in .6s var(--ios)}
-.overlay.open .hi{animation:hi-in .8s var(--ios) both;animation-delay:calc(var(--i,0) * 70ms + 160ms)}
-.overlay.closing{animation:fade-out .4s cubic-bezier(.4,0,.2,1) forwards}
-.overlay.closing>.modal,#lightbox.closing>img{animation:pop-out .42s cubic-bezier(.4,0,.2,1) forwards}
+.overlay.open{animation:ov-in calc(.5s * var(--spd,1)) var(--ios)}
+.overlay.open>.modal{transform-origin:var(--ox,50%) var(--oy,50%);animation:modal-in calc(.63s * var(--spd,1)) var(--ios)}
+.overlay.open .hi{animation:hi-in calc(.8s * var(--spd,1)) var(--ios) both;animation-delay:calc((var(--i,0) * 70ms + 160ms) * var(--spd,1))}
+.overlay.closing{animation:fade-out calc(.4s * var(--spd,1)) cubic-bezier(.4,0,.2,1) forwards}
+.overlay.closing>.modal,#lightbox.closing>img{animation:pop-out calc(.42s * var(--spd,1)) cubic-bezier(.4,0,.2,1) forwards}
 @media(max-width:600px){
-  #seat-modal .modal{animation:sheet-in .8s var(--ios);transition:transform .5s var(--ios)}
-  #seat-modal.closing>.modal{animation:none;transform:translate3d(0,105%,0);transition:transform .42s cubic-bezier(.4,0,.2,1)}
-  #seat-modal.closing{animation:fade-out .42s cubic-bezier(.4,0,.2,1) forwards}
+  #seat-modal .modal{animation:sheet-in calc(.8s * var(--spd,1)) var(--ios);transition:transform calc(.5s * var(--spd,1)) var(--ios)}
+  #seat-modal.closing>.modal{animation:none;transform:translate3d(0,105%,0);transition:transform calc(.42s * var(--spd,1)) cubic-bezier(.4,0,.2,1)}
+  #seat-modal.closing{animation:fade-out calc(.42s * var(--spd,1)) cubic-bezier(.4,0,.2,1) forwards}
 }
 #pop.on{animation:popin .3s var(--ios)}
 .actions.open .actions-m{animation:menu-in .35s var(--ios)}
@@ -1029,7 +1029,7 @@ html[data-glass=on][data-perf=lite] .modal{-webkit-backdrop-filter:none;backdrop
 html[data-glass=on] #pop{-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%)}
 @keyframes glass-in{from{opacity:0;transform:translate3d(0,14px,0) scale(.92)}}
 @media(min-width:601px){
-  html[data-glass=on] .overlay.open>.modal{transform-origin:var(--ox,50%) var(--oy,50%);animation:glass-in .6s var(--ios)}
+  html[data-glass=on] .overlay.open>.modal{transform-origin:var(--ox,50%) var(--oy,50%);animation:glass-in calc(.63s * var(--spd,1)) var(--ios)}
 }
 @media(prefers-reduced-motion:reduce){
   html[data-glass=on] #fbar,html[data-glass=on] #toast,html[data-glass=on] .tabbar{transition:none}
@@ -1218,10 +1218,10 @@ button.mem-more:active{transform:scale(.94)}
 #seat-modal.docked.over.open .modal{display:block;position:relative;width:100%;max-width:440px}
 #seat-modal.docked.over.open .hist{max-height:min(60vh,440px)}
 /* ...dan animasinya: panel yang menempel punya animasi dimatikan (!important), jadi dibuka/ditutup tiba-tiba. Hidupkan lagi hanya untuk mode melayang ini */
-#seat-modal.docked.over.open:not(.closing){animation:ov-in .5s var(--ios)!important}
-#seat-modal.docked.over.open:not(.closing) .modal{animation:modal-in .7s var(--ios)!important}
-#seat-modal.docked.over.open.closing{animation:ov-out .46s cubic-bezier(.4,0,.2,1) forwards!important}
-#seat-modal.docked.over.open.closing .modal{animation:modal-out .46s cubic-bezier(.4,0,.2,1) forwards!important;transform-origin:50% 50%}
+#seat-modal.docked.over.open:not(.closing){animation:ov-in calc(.5s * var(--spd,1)) var(--ios)!important}
+#seat-modal.docked.over.open:not(.closing) .modal{animation:modal-in calc(.63s * var(--spd,1)) var(--ios)!important}
+#seat-modal.docked.over.open.closing{animation:ov-out calc(.46s * var(--spd,1)) cubic-bezier(.4,0,.2,1) forwards!important}
+#seat-modal.docked.over.open.closing .modal{animation:modal-out calc(.46s * var(--spd,1)) cubic-bezier(.4,0,.2,1) forwards!important;transform-origin:50% 50%}
 @media(prefers-reduced-motion:reduce){#seat-modal.docked.over.open,#seat-modal.docked.over.open .modal{animation:none!important}}
 
 /* ---- Per member: dirapikan ---- */
@@ -1324,12 +1324,12 @@ button.sh-row:active{transform:scale(.98)}
 .sheet-grip{display:none}
 @media(max-width:600px){
   #share-sheet{align-items:flex-end;padding:0}
-  #share-sheet .modal{max-width:none;width:100%;border-radius:28px 28px 0 0;padding:8px 16px calc(16px + env(safe-area-inset-bottom));animation:sheet-in .8s var(--ios);transition:transform .5s var(--ios);will-change:transform}
+  #share-sheet .modal{max-width:none;width:100%;border-radius:28px 28px 0 0;padding:8px 16px calc(16px + env(safe-area-inset-bottom));animation:sheet-in calc(.8s * var(--spd,1)) var(--ios);transition:transform calc(.5s * var(--spd,1)) var(--ios);will-change:transform}
   #share-sheet .sheet-grip{display:block;width:40px;height:5px;margin:2px auto 12px;border-radius:3px;background:rgba(255,255,255,.3);touch-action:none}
   #share-sheet .sh-title{touch-action:none;padding:2px 0}
   #share-sheet .x{top:12px}
-  #share-sheet.closing>.modal{animation:none;transform:translate3d(0,105%,0);transition:transform .42s cubic-bezier(.4,0,.2,1)}
-  #share-sheet.closing{animation:fade-out .42s cubic-bezier(.4,0,.2,1) forwards}
+  #share-sheet.closing>.modal{animation:none;transform:translate3d(0,105%,0);transition:transform calc(.42s * var(--spd,1)) cubic-bezier(.4,0,.2,1)}
+  #share-sheet.closing{animation:fade-out calc(.42s * var(--spd,1)) cubic-bezier(.4,0,.2,1) forwards}
   .sh-prev{height:min(30vh,250px)}
 }
 @media(prefers-reduced-motion:reduce){.sh-prev,.sh-prev img,.sh-row,.sh-chip,#share-sheet .modal{transition:none!important;animation:none!important}.sh-prev img.ok{opacity:1}}
@@ -1368,3 +1368,36 @@ button.sh-row:active{transform:scale(.98)}
   #filters.on #flt-info{opacity:1;transform:none}
 }
 @media(max-width:768px) and (prefers-reduced-motion:reduce){#filters #flt-reset,#filters #flt-info{transition:none}}
+
+/* ===== Bandingkan periode (index + admin) ===== */
+#cmp{width:100%;display:flex;flex-direction:column;gap:12px}
+.cmp-pre{display:flex;flex-wrap:wrap;gap:8px;width:100%}
+#cmp-cust{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#cmp-cust[hidden]{display:none}
+#cmp-cust fieldset{margin:0;min-width:0;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:6px 10px 10px;display:flex;flex-wrap:wrap;gap:8px}
+#cmp-cust legend{padding:0 6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9a9aa4}
+#cmp-cust input[type=date]{flex:1 1 120px;min-width:0;height:40px;box-sizing:border-box;padding:0 10px;font:inherit;font-size:14px;color:#fff;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;color-scheme:dark;font-variant-numeric:tabular-nums}
+.cmp-same{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:#d4d4d8;cursor:pointer}
+.cmp-same input{margin-top:3px;accent-color:#ff2a5f}
+.cmp-same small{display:block;margin-top:2px;color:#8d8d97;font-size:12px;line-height:1.4}
+#cmp-out{display:flex;flex-direction:column;gap:10px}
+.cmp-sum{margin:0;font-size:14px;line-height:1.5;color:#e4e4e7}
+.cmp-card{border-radius:22px;padding:4px 16px 8px;background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.1)}
+.cmp-r{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.1fr);column-gap:12px;row-gap:6px;align-items:baseline;padding:11px 0;border-top:1px solid rgba(255,255,255,.07);animation:rise calc(.5s * var(--spd,1)) var(--ios) both;animation-delay:calc(min(var(--i,0),9) * 40ms * var(--spd,1))}
+.cmp-r:first-child{border-top:0}
+.cmp-l{grid-column:1/-1;font-size:13px;font-weight:600;color:#b9b9c2}
+.cmp-h .cmp-l{display:none}
+.cmp-l small,.cmp-v small{display:block;font-size:11px;font-weight:500;color:#8d8d97}
+.cmp-v{min-width:0;font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;color:#fff;overflow-wrap:anywhere}
+.cmp-v.a{color:#a1a1aa}
+.cmp-t .cmp-v{font-size:14px;font-weight:700}
+.cmp-h .cmp-v{font-size:13px;font-weight:700}
+.cmp-d{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;text-align:right;min-width:0}
+.cmp-h .cmp-d{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#8d8d97}
+.cmp-d.up{color:#6ee7a8}.cmp-d.dn{color:#ff7a98}.cmp-d.eq{color:#8d8d97}.cmp-d.ne{color:#ffd23f}
+.cmp-bars{grid-column:1/-1;display:grid;gap:3px}
+.cmp-bars i{display:block;height:5px;width:var(--w,0%);border-radius:3px;transform-origin:left;animation:growx calc(.7s * var(--spd,1)) var(--ios) both}
+.cmp-bars i.a{background:rgba(255,255,255,.3)}
+.cmp-bars i.b{background:linear-gradient(90deg,#ff2a5f,#ff7a98)}
+@media(max-width:600px){#cmp-cust{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.cmp-r,.cmp-bars i{animation:none}}

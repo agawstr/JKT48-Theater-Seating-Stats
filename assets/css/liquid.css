@@ -61,9 +61,9 @@ h1{font-size:clamp(30px,5vw,40px);font-weight:700;letter-spacing:-.03em;color:#f
 @keyframes lg-img{from{opacity:0;transform:scale(.86)}}
 .overlay.open{animation:ov-in .45s ease-out}
 @media (hover:hover) and (pointer:fine){ /* di HP, bottom sheet milik app.js tetap dipakai */
-  .overlay.open>.modal{animation:lg-in .6s var(--ios)}
+  .overlay.open>.modal{animation:lg-in calc(.63s * var(--spd,1)) var(--ios)}
 }
-#lightbox.open>img{animation:lg-img .55s var(--spring)}
+#lightbox.open>img{animation:lg-img calc(.55s * var(--spd,1)) var(--ios)}
 #lb-img{border-radius:22px}
 
 /* ---------- Kilau yang mengikuti kursor (hanya mouse; posisi diisi liquid.js) ---------- */
@@ -158,9 +158,9 @@ html[data-cheap] .enter .tl-i.a,html[data-cheap] .enter .ev-g,html[data-cheap] .
 html[data-cheap] #gallery .gi.a,html[data-cheap] body.app #gallery .gi.a,html[data-cheap] .enter #gallery .gi{animation:none!important}
 
 /* animasi CSS (bukan JS) diperlambat sedikit supaya sejalan dengan pengali di shared.js */
-.overlay.open>.modal{animation-duration:.85s}
-#lightbox.open>img{animation-duration:.75s}
-html:not([data-cheap]) .head h1{animation-duration:.95s}
+.overlay.open>.modal{animation-duration:calc(.63s * var(--spd,1))} /* .63 x 1.35 = .85s, nilai lama */
+#lightbox.open>img{animation-duration:calc(.555s * var(--spd,1))}
+html:not([data-cheap]) .head h1{animation-duration:calc(.7s * var(--spd,1))}
 html:not([data-cheap]) .head .sub{animation-duration:.95s}
 html:not([data-cheap]) .head .badge{animation-duration:.95s}
 
@@ -262,9 +262,9 @@ html #seat-modal.docked.over.open.open.open{
 html #seat-modal.docked.over.open.open.open::before{
   content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
   background:rgba(0,0,0,.32);-webkit-backdrop-filter:blur(10px) saturate(150%);backdrop-filter:blur(10px) saturate(150%);
-  animation:ovb-in .5s var(--ios) both}
+  animation:ovb-in calc(.5s * var(--spd,1)) var(--ios) both}
 .overlay.open.closing:not(.docked):not(#lightbox)::before,
-html #seat-modal.docked.over.open.open.open.closing::before{animation:ovb-out .42s cubic-bezier(.4,0,.2,1) forwards}
+html #seat-modal.docked.over.open.open.open.closing::before{animation:ovb-out calc(.42s * var(--spd,1)) cubic-bezier(.4,0,.2,1) forwards}
 @keyframes ovb-in{from{opacity:0}}
 @keyframes ovb-out{to{opacity:0}}
 @media(prefers-reduced-motion:reduce){.overlay.open:not(.docked):not(#lightbox)::before,html #seat-modal.docked.over.open.open.open::before{animation:none}}
