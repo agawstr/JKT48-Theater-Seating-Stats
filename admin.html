@@ -86,6 +86,10 @@ td{padding:12px 10px;border-bottom:1px solid #24151d;color:#e4e4e7}
 td .seat-badge{font-size:12px}
 #backup-note{font-size:12px;color:#a1a1aa;margin:0 0 10px}
 #backup-note.warn{color:#fbbf24}
+#bk-banner{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:10px 14px;border-radius:14px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.35);color:#fde68a;font-size:13px}
+#bk-banner[hidden]{display:none}
+#bk-banner span{flex:1 1 200px}
+#bk-banner .bk-later{background:none;border:0;color:#a1a1aa;text-decoration:underline;cursor:pointer;font:inherit;padding:6px}
 #pager{display:flex;gap:12px;align-items:center;justify-content:center;margin-top:12px;font-size:13px;color:#a1a1aa}
 .modal.wide{max-width:680px;max-height:90vh;overflow-y:auto}
 .jk-help{color:#a1a1aa;font-size:13px;margin:0 0 10px;line-height:1.5}
@@ -735,6 +739,26 @@ function renderBackup() {
   el.className = (b.dirty || !b.at || d >= 7) ? 'warn' : '';
   el.dataset.base = el.textContent;
   showStorage();
+  backupBanner(b, d);
+}
+// Pengingat aktif: banner di bawah judul kalau banyak perubahan belum di-backup atau backup sudah lama. "Nanti" menyembunyikannya sampai besok.
+function backupBanner(b, d) {
+  const n = new Date(), today = n.getFullYear() + '-' + (n.getMonth() + 1) + '-' + n.getDate(), dirty = b.dirty || 0;
+  let el = document.getElementById('bk-banner');
+  const need = records.length && stor.getItem(DK + '_snooze') !== today && (dirty >= 10 || (dirty > 0 && (!b.at || d >= 14)));
+  if (!need) { if (el) el.hidden = true; return; }
+  if (!el) {
+    el = document.createElement('div'); el.id = 'bk-banner'; el.setAttribute('role', 'status');
+    el.innerHTML = '<span></span><button type="button" class="btn" data-bk="now">Backup sekarang</button><button type="button" class="bk-later" data-bk="later">Nanti</button>';
+    (document.querySelector('.head') || document.body).insertAdjacentElement('afterend', el);
+    el.addEventListener('click', e => {
+      const k = e.target.dataset.bk;
+      if (k === 'now') $('btn-export').click();
+      else if (k === 'later') { stor.setItem(DK + '_snooze', today); el.hidden = true; }
+    });
+  }
+  el.firstChild.textContent = `${dirty} perubahan belum di-backup` + (b.at ? ` · backup terakhir ${d ? d + ' hari lalu' : 'hari ini'}` : ' · belum pernah di-backup');
+  el.hidden = false;
 }
 // indikator pemakaian penyimpanan browser (perkiraan)
 async function showStorage() {
@@ -1230,6 +1254,7 @@ $('form').addEventListener('submit', async e => {
   const luKey = a => (a || []).map(x => String(x).toLowerCase()).sort().join('|');
   const differ = !rec.lineup.length ? [] : records.filter(r => r.id !== rec.id && r.date === date && (r.sesi || '') === (sesi || '')
     && r.setlist.toLowerCase() === setlist.toLowerCase() && luKey(r.lineup) !== luKey(rec.lineup));
+  const prevLu = differ.map(r => [r.id, [...(r.lineup || [])]]); // lineup kursi lain sebelum disamakan (untuk Urungkan)
   let synced = 0;
   if (differ.length) {
     const seats = differ.slice(0, 6).map(r => r.seat).join(', ') + (differ.length > 6 ? ', …' : '');
@@ -1238,6 +1263,7 @@ $('form').addEventListener('submit', async e => {
       synced = differ.length;
     }
   }
+  const prevCopy = id ? JSON.parse(JSON.stringify(records.find(r => r.id === id) || null)) : null; // keadaan sebelum diedit (untuk Urungkan)
   if (id) {
     const i = records.findIndex(r => r.id === id);
     if (i !== -1) records[i] = rec; else records.push(rec);
@@ -1249,7 +1275,15 @@ $('form').addEventListener('submit', async e => {
   focusId = rec.id; // baris ini menyala sebentar & halamannya dibuka
   renderAll();
   toast((id ? 'Diperbarui: ' : 'Tersimpan: ') + rec.seat + ' · ' + rec.setlist + (addedLu.length ? ' · masuk lineup: ' + addedLu.join(', ') : '') + (synced ? ' · lineup disamakan ke ' + synced + ' kursi lain' : ''),
-    {label: 'Lihat', fn: () => { const tr = $('tbody').querySelector(`tr[data-rid="${rec.id}"]`); if (!tr) return; tr.scrollIntoView({behavior: 'smooth', block: 'center'}); tr.classList.remove('flash'); void tr.offsetWidth; tr.classList.add('flash'); }});
+    prevCopy
+      ? {label: 'Urungkan', fn: () => { // kembalikan data & lineup kursi lain yang ikut disamakan
+        const i = records.findIndex(r => r.id === prevCopy.id);
+        if (i !== -1) records[i] = prevCopy;
+        prevLu.forEach(([rid, lu]) => { const r = records.find(x => x.id === rid); if (r) r.lineup = lu; });
+        save(); renderAll(); toast('Perubahan dibatalkan: ' + prevCopy.seat + ' · ' + prevCopy.setlist);
+      }}
+      : {label: 'Lihat', fn: () => { const tr = $('tbody').querySelector(`tr[data-rid="${rec.id}"]`); if (!tr) return; tr.scrollIntoView({behavior: 'smooth', block: 'center'}); tr.classList.remove('flash'); void tr.offsetWidth; tr.classList.add('flash'); }},
+    prevCopy ? 6500 : 2600);
 });
 
 // ---------- Aksi tabel & peta ----------
@@ -1372,6 +1406,7 @@ $('btn-zip').addEventListener('click', async () => {
   const pub = [];
   for (const r of records) {
     const o = {...r};
+    o.harga = 0; // harga hanya untuk admin: data.json publik tidak boleh memuatnya (tetap ada di backup lengkap)
     if (opt.mask) o.lineup = (o.lineup || []).map(mask);
     for (const K of KINDS) {
       if (opt.mask) o[K.m] = mask(o[K.m]);
@@ -1426,12 +1461,7 @@ $('file-import').addEventListener('change', async e => {
     const json = JSON.parse(await file.text());
     const arr = Array.isArray(json) ? json : json.records;
     if (!Array.isArray(arr)) throw new Error('Format bukan array');
-    if (!Array.isArray(json) && Array.isArray(json.tickets)) mergeTickets(json.tickets);
-    if (!Array.isArray(json) && json.prices && json.prices.base) { prices = {base: {...DEF_PRICES.base, ...json.prices.base}, over: Array.isArray(json.prices.over) ? json.prices.over : []}; savePrices(); renderExpense(); }
-    if (!Array.isArray(json) && Array.isArray(json.misc)) { const ids = new Set(misc.map(w => w.id)); json.misc.map(cleanMisc).filter(w => (w.date || miscByName(w.kind)) && !ids.has(w.id)).forEach(w => misc.push(w)); saveMisc(); }
-    if (!Array.isArray(json) && Array.isArray(json.away)) { const ids = new Set(away.map(w => w.id)); json.away.map(cleanAway).filter(w => w.date && !ids.has(w.id)).forEach(w => away.push(w)); saveAway(); }
-    if (!Array.isArray(json) && (Array.isArray(json.away) || Array.isArray(json.misc))) { moveOffair(); renderAway(); renderMisc(); renderExpense(); }
-    if (!Array.isArray(json) && Array.isArray(json.solo)) { const ids = new Set(solo.map(w => w.id)); json.solo.map(sanitizeSolo).filter(w => w.date && !ids.has(w.id)).forEach(w => solo.push(w)); saveSolo(); renderSolo(); renderExpense(); }
+    const full = !Array.isArray(json);
     const ids = new Set(records.map(r => r.id));
     const incoming = arr.map(sanitize);
     // id kembar di dalam file yang sama juga dilewati (ids.add mengembalikan Set = truthy)
@@ -1439,12 +1469,41 @@ $('file-import').addEventListener('change', async e => {
     // show yang sudah ada tapi lineup-nya masih kosong: isi dari backup (lineup yang sudah terisi tidak pernah ditimpa)
     const byId = new Map(records.map(r => [r.id, r]));
     const fill = incoming.filter(b => { const c = byId.get(b.id); return c && !c.lineup.length && b.lineup.length; });
-    if (!await ask(`Gabungkan ${fresh.length} data baru dari file ini?` + (fill.length ? ` Lineup ${fill.length} show yang masih kosong juga akan diisi dari backup.` : '') + ' (data lain yang id-nya sama dilewati)', 'Gabungkan')) return;
+    // Hitung dulu semua yang akan berubah TANPA menyentuh data: menekan Batal tidak boleh mengubah apa pun.
+    const newBy = (cur, list, clean, ok) => { const have = new Set(cur.map(w => w.id)); return list.map(clean).filter(w => ok(w) && !have.has(w.id)); };
+    const freshMisc = full && Array.isArray(json.misc) ? newBy(misc, json.misc, cleanMisc, w => w.date || miscByName(w.kind)) : [];
+    const freshAway = full && Array.isArray(json.away) ? newBy(away, json.away, cleanAway, w => w.date) : [];
+    const freshSolo = full && Array.isArray(json.solo) ? newBy(solo, json.solo, sanitizeSolo, w => w.date) : [];
+    const tkIn = full && Array.isArray(json.tickets) ? json.tickets.length : 0;
+    const newPrices = full && json.prices && json.prices.base ? {base: {...DEF_PRICES.base, ...json.prices.base}, over: Array.isArray(json.prices.over) ? json.prices.over : []} : null;
+    const pricesChanged = !!newPrices && JSON.stringify(newPrices) !== JSON.stringify(prices);
+    const parts = [];
+    if (fresh.length) parts.push(`${fresh.length} show`);
+    if (fill.length) parts.push(`lineup ${fill.length} show diisi`);
+    if (tkIn) parts.push(`${tkIn} tiket (digabung per kunci)`);
+    if (freshSolo.length) parts.push(`${freshSolo.length} sesi solo`);
+    if (freshMisc.length) parts.push(`${freshMisc.length} catatan pengeluaran`);
+    if (freshAway.length) parts.push(`${freshAway.length} catatan Away`);
+    if (pricesChanged) parts.push('daftar harga DIGANTI dengan yang ada di file');
+    if (!parts.length) { toast('Tidak ada yang baru di file ini.'); return; }
+    if (!await ask(`Gabungkan dari file ini: ${parts.join(', ')}? (data lain yang id-nya sama dilewati; setelahnya bisa diurungkan)`, 'Gabungkan')) return;
+
+    const snap = JSON.parse(JSON.stringify({records, tickets, solo, misc, away, prices})); // untuk Urungkan
+    if (tkIn) mergeTickets(json.tickets);
+    if (pricesChanged) { prices = newPrices; savePrices(); }
+    if (freshMisc.length) { misc.push(...freshMisc); saveMisc(); }
+    if (freshAway.length) { away.push(...freshAway); saveAway(); }
+    if (full && (Array.isArray(json.away) || Array.isArray(json.misc))) moveOffair();
+    if (freshSolo.length) { solo.push(...freshSolo); saveSolo(); }
     fill.forEach(b => { byId.get(b.id).lineup = [...b.lineup]; });
     records.push(...fresh);
     save();
-    if (fill.length) toast(`Lineup diisi untuk ${fill.length} show dari backup.`);
-    renderAll();
+    renderAll(); renderMisc();
+    toast('Digabungkan: ' + parts.join(', '), {label: 'Urungkan', fn: () => {
+      records = snap.records; tickets = snap.tickets; solo = snap.solo; misc = snap.misc; away = snap.away; prices = snap.prices;
+      save(); saveTickets(); saveSolo(); saveMisc(); saveAway(); savePrices();
+      renderAll(); renderMisc(); toast('Penggabungan dibatalkan.');
+    }}, 12000);
   } catch (err) {
     alert('File tidak valid: ' + err.message);
   }
