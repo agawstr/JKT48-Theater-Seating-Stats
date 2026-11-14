@@ -6,7 +6,7 @@
    "setlist": "Cara Meminum Ramune",
    "date": "2026-09-25",
    "sesi": "Malam",
-   "note": "Shonichi Ramune Intan",
+   "note": "Shonichi Ramune Intan & Jemima",
    "harga": 200000,
    "tiket": "",
    "twoshot": "Ya",
@@ -41,14 +41,6 @@
    "note": "Shonichi Pajama Intan & Ekin",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Ya",
-   "tsType": "roulette",
-   "member": "Jacqueline Immanuela",
-   "photo": "photos/1790908089136-ts.jpg",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Abigail Rachel",
     "Hillary Abigail",
@@ -62,7 +54,15 @@
     "Regina Wilian",
     "Shabilqis Naila",
     "Victoria Kimberly"
-   ]
+   ],
+   "twoshot": "Ya",
+   "tsType": "roulette",
+   "member": "Jacqueline Immanuela",
+   "photo": "photos/1790908089136-ts.jpg",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790911847993,
@@ -73,14 +73,6 @@
    "note": "Show 2 JKT48 School",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Abigail Rachel",
     "Aisa Maharani",
@@ -94,7 +86,15 @@
     "Nina Tutachia",
     "Ribka Budiman",
     "Shabilqis Naila"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790912085565,
@@ -105,14 +105,6 @@
    "note": "Pertama kali theateran",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Ya",
-   "tsType": "roulette",
-   "member": "Abigail Rachel",
-   "photo": "photos/1790912085565-ts.jpg",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Abigail Rachel",
     "Adeline Wijaya",
@@ -126,7 +118,15 @@
     "Regina Wilian",
     "Shabilqis Naila",
     "Victoria Kimberly"
-   ]
+   ],
+   "twoshot": "Ya",
+   "tsType": "roulette",
+   "member": "Abigail Rachel",
+   "photo": "photos/1790912085565-ts.jpg",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790912278623,
@@ -137,14 +137,6 @@
    "note": "",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Abigail Rachel",
     "Alya Amanda",
@@ -158,7 +150,15 @@
     "Nina Tutachia",
     "Oline Manuel",
     "Regina Wilian"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790912404339,
@@ -169,14 +169,6 @@
    "note": "",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Ya",
-   "tsType": "roulette",
-   "member": "Nayla Suji",
-   "photo": "photos/1790912404339-ts.jpg",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Abigail Rachel",
     "Alya Amanda",
@@ -190,7 +182,15 @@
     "Nayla Suji",
     "Nina Tutachia",
     "Regina Wilian"
-   ]
+   ],
+   "twoshot": "Ya",
+   "tsType": "roulette",
+   "member": "Nayla Suji",
+   "photo": "photos/1790912404339-ts.jpg",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790912500816,
@@ -201,14 +201,6 @@
    "note": "huhu bigel nangis",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Ya",
-   "tsType": "roulette",
-   "member": "Chelsea Davina",
-   "photo": "photos/1790912500816-ts.jpg",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Abigail Rachel",
     "Alya Amanda",
@@ -222,7 +214,15 @@
     "Nayla Suji",
     "Nina Tutachia",
     "Regina Wilian"
-   ]
+   ],
+   "twoshot": "Ya",
+   "tsType": "roulette",
+   "member": "Chelsea Davina",
+   "photo": "photos/1790912500816-ts.jpg",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790912723786,
@@ -233,14 +233,6 @@
    "note": "",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Ya",
-   "tsType": "roulette",
-   "member": "Regina Wilian",
-   "photo": "photos/1790912723786-ts.jpg",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Abigail Rachel",
     "Aurhel Alana",
@@ -254,7 +246,15 @@
     "Regina Wilian",
     "Ribka Budiman",
     "Shabilqis Naila"
-   ]
+   ],
+   "twoshot": "Ya",
+   "tsType": "roulette",
+   "member": "Regina Wilian",
+   "photo": "photos/1790912723786-ts.jpg",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790912807668,
@@ -265,14 +265,6 @@
    "note": "",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Amanda Sukma",
     "Anindya Ramadhani",
@@ -290,7 +282,15 @@
     "Michelle Alexandra",
     "Raisha Syifa",
     "Regina Wilian"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790912860532,
@@ -301,14 +301,6 @@
    "note": "ROW BAGUS",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Abigail Rachel",
     "Aurhel Alana",
@@ -322,7 +314,15 @@
     "Ribka Budiman",
     "Shabilqis Naila",
     "Victoria Kimberly"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790912944256,
@@ -333,14 +333,6 @@
    "note": "",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Ya",
-   "tsType": "roulette",
-   "member": "Cathleen Nixie",
-   "photo": "photos/1790912944256-ts.jpg",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Alya Amanda",
     "Angelina Christy",
@@ -358,7 +350,15 @@
     "Indira Seruni",
     "Lulu Salsabila",
     "Michelle Alexandra"
-   ]
+   ],
+   "twoshot": "Ya",
+   "tsType": "roulette",
+   "member": "Cathleen Nixie",
+   "photo": "photos/1790912944256-ts.jpg",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790913006391,
@@ -369,14 +369,6 @@
    "note": "",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Angelina Christy",
     "Aurellia",
@@ -394,7 +386,15 @@
     "Marsha Lenathea",
     "Mutiara Azzahra",
     "Shania Gracia"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790913557219,
@@ -405,14 +405,6 @@
    "note": "Shonichi GEN 13",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Astrella Virgiananda",
     "Aulia Riza",
@@ -426,7 +418,15 @@
     "Nina Tutachia",
     "Nur Intan",
     "Oline Manuel"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790913633796,
@@ -437,14 +437,6 @@
    "note": "Shonichi SMET Show 1",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Alya Amanda",
     "Angelina Christy",
@@ -458,7 +450,15 @@
     "Jesslyn Elly",
     "Lulu Salsabila",
     "Shania Gracia"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790913680704,
@@ -469,14 +469,6 @@
    "note": "STS Levi",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Abigail Rachel",
     "Aurhel Alana",
@@ -490,7 +482,15 @@
     "Ribka Budiman",
     "Shabilqis Naila",
     "Victoria Kimberly"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790913805293,
@@ -501,14 +501,6 @@
    "note": "Aitakatta terakhir Lana",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Ya",
-   "tsType": "roulette",
-   "member": "Aurhel Alana",
-   "photo": "photos/1790913805293-ts.jpg",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Adeline Wijaya",
     "Astrella Virgiananda",
@@ -522,7 +514,15 @@
     "Jemima Evodie",
     "Mikaela Kusjanto",
     "Nur Intan"
-   ]
+   ],
+   "twoshot": "Ya",
+   "tsType": "roulette",
+   "member": "Aurhel Alana",
+   "photo": "photos/1790913805293-ts.jpg",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790913950029,
@@ -533,14 +533,6 @@
    "note": "",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Alya Amanda",
     "Amanda Sukma",
@@ -558,7 +550,15 @@
     "Jesslyn Elly",
     "Raisha Syifa",
     "Shania Gracia"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790914046959,
@@ -569,14 +569,6 @@
    "note": "Theater w/ UB boys",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Abigail Rachel",
     "Aulia Riza",
@@ -590,7 +582,15 @@
     "Ribka Budiman",
     "Shabilqis Naila",
     "Victoria Kimberly"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790914185897,
@@ -601,14 +601,6 @@
    "note": "",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Ya",
-   "ckType": "roulette",
-   "ckMember": "Nur Intan",
-   "ckPhoto": "photos/1790914185897-ck.jpg",
    "lineup": [
     "Adeline Wijaya",
     "Aulia Riza",
@@ -622,7 +614,15 @@
     "Nur Intan",
     "Oline Manuel",
     "Victoria Kimberly"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Ya",
+   "ckType": "roulette",
+   "ckMember": "Nur Intan",
+   "ckPhoto": "photos/1790914185897-ck.jpg"
   },
   {
    "id": 1790914244038,
@@ -633,14 +633,6 @@
    "note": "",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Abigail Rachel",
     "Aulia Riza",
@@ -654,7 +646,15 @@
     "Ribka Budiman",
     "Shabilqis Naila",
     "Victoria Kimberly"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790914369376,
@@ -665,14 +665,6 @@
    "note": "STS Fritzy",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Ya",
-   "tsType": "birthday",
-   "member": "Fritzy Rosmerian",
-   "photo": "photos/1790914369376-ts.jpg",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Alya Amanda",
     "Aurellia",
@@ -686,7 +678,15 @@
     "Marsha Lenathea",
     "Raisha Syifa",
     "Shania Gracia"
-   ]
+   ],
+   "twoshot": "Ya",
+   "tsType": "birthday",
+   "member": "Fritzy Rosmerian",
+   "photo": "photos/1790914369376-ts.jpg",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790914495058,
@@ -697,14 +697,6 @@
    "note": "So Long!",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Ya",
-   "tsType": "roulette",
-   "member": "Adeline Wijaya",
-   "photo": "photos/1790914495058-ts.jpg",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Abigail Rachel",
     "Adeline Wijaya",
@@ -718,7 +710,15 @@
     "Nayla Suji",
     "Nina Tutachia",
     "Oline Manuel"
-   ]
+   ],
+   "twoshot": "Ya",
+   "tsType": "roulette",
+   "member": "Adeline Wijaya",
+   "photo": "photos/1790914495058-ts.jpg",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790914536926,
@@ -729,14 +729,6 @@
    "note": "Senshuuraku RKJ",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Alya Amanda",
     "Amanda Sukma",
@@ -754,7 +746,15 @@
     "Marsha Lenathea",
     "Raisha Syifa",
     "Shania Gracia"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790914653302,
@@ -765,14 +765,6 @@
    "note": "STS Dena",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Alya Amanda",
     "Aurellia",
@@ -786,7 +778,15 @@
     "Indah Cahya",
     "Kathrina Irene",
     "Lulu Salsabila"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790914715302,
@@ -797,14 +797,6 @@
    "note": "",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Aurellia",
     "Aurhel Alana",
@@ -822,7 +814,15 @@
     "Nayla Suji",
     "Oline Manuel",
     "Victoria Kimberly"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790914799398,
@@ -833,14 +833,6 @@
    "note": "Shonichi TWT Levi",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Ya",
-   "ckType": "roulette",
-   "ckMember": "Michelle Levia",
-   "ckPhoto": "photos/1790914799398-ck.jpg",
    "lineup": [
     "Amanda Sukma",
     "Anindya Ramadhani",
@@ -854,7 +846,15 @@
     "Jesslyn Elly",
     "Michelle Levia",
     "Raisha Syifa"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Ya",
+   "ckType": "roulette",
+   "ckMember": "Michelle Levia",
+   "ckPhoto": "photos/1790914799398-ck.jpg"
   },
   {
    "id": 1790914836397,
@@ -865,14 +865,6 @@
    "note": "",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Cathleen Nixie",
     "Cornelia Vanisa",
@@ -890,7 +882,15 @@
     "Ribka Budiman",
     "Shabilqis Naila",
     "Victoria Kimberly"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790914871095,
@@ -901,14 +901,6 @@
    "note": "STS Ribka",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Abigail Rachel",
     "Adeline Wijaya",
@@ -922,7 +914,15 @@
     "Michelle Levia",
     "Raisha Syifa",
     "Ribka Budiman"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790914922718,
@@ -933,14 +933,6 @@
    "note": "STS Greesel",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Aurellia",
     "Aurhel Alana",
@@ -954,7 +946,15 @@
     "Kathrina Irene",
     "Marsha Lenathea",
     "Mutiara Azzahra"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790914993320,
@@ -965,14 +965,6 @@
    "note": "Shonichi Ramune Aralie",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Abigail Rachel",
     "Celline Thefani",
@@ -990,7 +982,15 @@
     "Nayla Suji",
     "Shabilqis Naila",
     "Victoria Kimberly"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790915023217,
@@ -1001,14 +1001,6 @@
    "note": "",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Angelina Christy",
     "Anindya Ramadhani",
@@ -1022,7 +1014,15 @@
     "Helisma Putri",
     "Indah Cahya",
     "Lulu Salsabila"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790915093355,
@@ -1033,14 +1033,6 @@
    "note": "Shonichi TWT Oline",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Ya",
-   "tsType": "roulette",
-   "member": "Oline Manuel",
-   "photo": "photos/1790915093355-ts.jpg",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Adeline Wijaya",
     "Alya Amanda",
@@ -1054,7 +1046,15 @@
     "Oline Manuel",
     "Raisha Syifa",
     "Shabilqis Naila"
-   ]
+   ],
+   "twoshot": "Ya",
+   "tsType": "roulette",
+   "member": "Oline Manuel",
+   "photo": "photos/1790915093355-ts.jpg",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790915127926,
@@ -1065,14 +1065,6 @@
    "note": "",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Ya",
-   "tsType": "roulette",
-   "member": "Jazzlyn Trisha",
-   "photo": "photos/1790915127926-ts.jpg",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Adeline Wijaya",
     "Aurellia",
@@ -1090,7 +1082,15 @@
     "Lulu Salsabila",
     "Mutiara Azzahra",
     "Shabilqis Naila"
-   ]
+   ],
+   "twoshot": "Ya",
+   "tsType": "roulette",
+   "member": "Jazzlyn Trisha",
+   "photo": "photos/1790915127926-ts.jpg",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790915166058,
@@ -1101,14 +1101,6 @@
    "note": "",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Abigail Rachel",
     "Alya Amanda",
@@ -1122,7 +1114,15 @@
     "Nina Tutachia",
     "Raisha Syifa",
     "Victoria Kimberly"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790915369203,
@@ -1133,14 +1133,6 @@
    "note": "Show 1 JKT48 School 2026",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Ya",
-   "tsType": "roulette",
-   "member": "Aulia Riza",
-   "photo": "photos/1790915369203-ts.jpg",
-   "chekicha": "Ya",
-   "ckType": "roulette",
-   "ckMember": "Astrella Virgiananda",
-   "ckPhoto": "photos/1790915369203-ck.jpg",
    "lineup": [
     "Astrella Virgiananda",
     "Aulia Riza",
@@ -1153,7 +1145,15 @@
     "Jemima Evodie",
     "Mikaela Kusjanto",
     "Nur Intan"
-   ]
+   ],
+   "twoshot": "Ya",
+   "tsType": "roulette",
+   "member": "Aulia Riza",
+   "photo": "photos/1790915369203-ts.jpg",
+   "chekicha": "Ya",
+   "ckType": "roulette",
+   "ckMember": "Astrella Virgiananda",
+   "ckPhoto": "photos/1790915369203-ck.jpg"
   },
   {
    "id": 1790915443527,
@@ -1164,14 +1164,6 @@
    "note": "Show 4 JKT48 School 2026",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Grace Octaviani",
     "Michelle Alexandra",
@@ -1188,7 +1180,15 @@
     "Putry Jazyta",
     "Ralyne Van Irwan",
     "Sona Kalyana"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790915632338,
@@ -1199,14 +1199,6 @@
    "note": "",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Anindya Ramadhani",
     "Aurellia",
@@ -1220,7 +1212,15 @@
     "Jazzlyn Trisha",
     "Michelle Alexandra",
     "Nayla Suji"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790915665116,
@@ -1231,14 +1231,6 @@
    "note": "",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Alya Amanda",
     "Anindya Ramadhani",
@@ -1252,7 +1244,15 @@
     "Indah Cahya",
     "Jazzlyn Trisha",
     "Nayla Suji"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790915766549,
@@ -1263,14 +1263,6 @@
    "note": "",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Ya",
-   "tsType": "roulette",
-   "member": "Carissa Dini",
-   "photo": "photos/1790915766549-ts.jpg",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Astrella Virgiananda",
     "Bong Aprilli",
@@ -1284,7 +1276,15 @@
     "Nur Intan",
     "Ralyne Van Irwan",
     "Sona Kalyana"
-   ]
+   ],
+   "twoshot": "Ya",
+   "tsType": "roulette",
+   "member": "Carissa Dini",
+   "photo": "photos/1790915766549-ts.jpg",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790915818736,
@@ -1295,14 +1295,6 @@
    "note": "",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Abigail Rachel",
     "Angelina Christy",
@@ -1316,7 +1308,15 @@
     "Raisha Syifa",
     "Ribka Budiman",
     "Victoria Kimberly"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790915892502,
@@ -1327,14 +1327,6 @@
    "note": "",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Afera Thalia",
     "Astrella Virgiananda",
@@ -1348,7 +1340,15 @@
     "Nur Intan",
     "Ralyne Van Irwan",
     "Sona Kalyana"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790915925629,
@@ -1368,18 +1368,18 @@
    "ckMember": "",
    "ckPhoto": "",
    "lineup": [
-    "Afera Thalia",
+    "Anindya Ramadhani",
     "Astrella Virgiananda",
-    "Fahira Putri",
-    "Fatimah Azzahra",
-    "Hagia Sopia",
-    "Heidi Suyangga",
-    "Humaira Ramadhani",
-    "Jacqueline Immanuela",
-    "Jemima Evodie",
-    "Nur Intan",
-    "Ralyne Van Irwan",
-    "Sona Kalyana"
+    "Aurhel Alana",
+    "Cathleen Nixie",
+    "Celline Thefani",
+    "Cynthia Yaputera",
+    "Fiony Alveria",
+    "Grace Octaviani",
+    "Hillary Abigail",
+    "Jazzlyn Trisha",
+    "Michelle Alexandra",
+    "Nayla Suji"
    ]
   },
   {
@@ -1391,14 +1391,6 @@
    "note": "Show 1 Theater Sementara, BB-6",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Fiony Alveria",
     "Indah Cahya",
@@ -1412,7 +1404,15 @@
     "Fritzy Rosmerian",
     "Aurhel Alana",
     "Jazzlyn Trisha"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   },
   {
    "id": 1790916110218,
@@ -1423,14 +1423,6 @@
    "note": "STS Virgi",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Ya",
-   "ckType": "birthday",
-   "ckMember": "Abigail Rachel",
-   "ckPhoto": "photos/1790916110218-ck.jpg",
    "lineup": [
     "Astrella Virgiananda",
     "Bong Aprilli",
@@ -1444,12 +1436,20 @@
     "Nur Intan",
     "Ralyne Van Irwan",
     "Sona Kalyana"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Ya",
+   "ckType": "birthday",
+   "ckMember": "Abigail Rachel",
+   "ckPhoto": "photos/1790916110218-ck.jpg"
   },
   {
    "id": 1790916162049,
    "seat": "C-25",
-   "setlist": "Cara Meminum Ramune",
+   "setlist": "Pajama Drive",
    "date": "2026-08-13",
    "sesi": "Malam",
    "note": "STS Maira",
@@ -1487,14 +1487,6 @@
    "note": "",
    "harga": 200000,
    "tiket": "",
-   "twoshot": "Tidak",
-   "tsType": "",
-   "member": "",
-   "photo": "",
-   "chekicha": "Tidak",
-   "ckType": "",
-   "ckMember": "",
-   "ckPhoto": "",
    "lineup": [
     "Astrella Virgiananda",
     "Bong Aprilli",
@@ -1508,7 +1500,15 @@
     "Putry Jazyta",
     "Ralyne Van Irwan",
     "Sona Kalyana"
-   ]
+   ],
+   "twoshot": "Tidak",
+   "tsType": "",
+   "member": "",
+   "photo": "",
+   "chekicha": "Tidak",
+   "ckType": "",
+   "ckMember": "",
+   "ckPhoto": ""
   }
  ],
  "solo": [
@@ -5457,5 +5457,5 @@
    "photo": ""
   }
  ],
- "updated": "2026-11-12"
+ "updated": "2026-11-14"
 }
