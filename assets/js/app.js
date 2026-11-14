@@ -58,10 +58,49 @@
     items.forEach(b => { b.setAttribute('role', 'menuitem'); menu.appendChild(b); }); // node dipindah, id & handler tetap
     lg.appendChild(box);
     const t = box.querySelector('#act-btn');
-    const set = on => { box.classList.toggle('open', on); t.setAttribute('aria-expanded', on); };
+    // Menu dibuka sebagai lapisan 'fixed' langsung di <body> (bukan di dalam wadah peta), jadi tidak bisa terpotong oleh
+    // overflow wadah dan posisinya dihitung terhadap layar. Menu SELALU muat utuh tanpa scroll: pilih sisi (bawah/atas tombol)
+    // yang lega di luar tab bar melayang dan header kecil; kalau dua sisi sama-sama sempit, rapatkan item; kalau masih kurang,
+    // geser menu supaya utuh di dalam area kosong (boleh menutupi tombol). Gulir di dalam menu hanya jalan terakhir.
+    const place = () => {
+      const vv = window.visualViewport, vh = vv ? vv.height + vv.offsetTop : innerHeight, vw = innerWidth, gap = 8;
+      menu.classList.remove('up', 'tight'); menu.style.maxHeight = '';
+      let lo = gap, hi = vh - gap;
+      const tb = document.querySelector('.tabbar'), tr = tb && getComputedStyle(tb).display !== 'none' ? tb.getBoundingClientRect() : null;
+      if (tr && tr.width > 0 && tr.top > vh / 2) hi = Math.min(hi, tr.top - gap);                 // tab bar bawah
+      const ab = $('appbar'), ar = ab && getComputedStyle(ab).position === 'fixed' ? ab.getBoundingClientRect() : null;
+      if (ar && ar.bottom > 0 && ar.bottom < vh / 3) lo = Math.max(lo, ar.bottom + gap);          // header kecil yang sedang tampil
+      const b = t.getBoundingClientRect();
+      let mh = menu.offsetHeight, below = hi - b.bottom - gap, above = b.top - lo - gap;
+      if (mh > Math.max(below, above)) { menu.classList.add('tight'); mh = menu.offsetHeight; } // item dirapatkan dulu
+      const up = mh > below && above > below;
+      menu.classList.toggle('up', up);
+      let top = up ? b.top - gap - mh : b.bottom + gap;
+      if (top < lo || top + mh > hi) top = Math.min(Math.max(top, lo), Math.max(lo, hi - mh));    // tetap utuh di area kosong
+      if (mh > hi - lo) menu.style.maxHeight = Math.max(96, hi - lo) + 'px';                        // pengaman terakhir
+      const mw = menu.offsetWidth;
+      menu.style.top = Math.round(top) + 'px';
+      menu.style.left = Math.round(Math.min(Math.max(b.right - mw, gap), Math.max(gap, vw - mw - gap))) + 'px';
+      menu.style.transformOrigin = (up ? 'bottom' : 'top') + ' right';
+    };
+    let raf = 0;
+    const onMove = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; if (box.classList.contains('open')) place(); }); };
+    const set = on => {
+      if (on === box.classList.contains('open')) return;
+      box.classList.toggle('open', on); t.setAttribute('aria-expanded', on);
+      if (on) {
+        document.body.appendChild(menu); menu.classList.add('on'); place();
+        addEventListener('scroll', onMove, {passive: true, capture: true}); addEventListener('resize', onMove);
+        if (window.visualViewport) visualViewport.addEventListener('resize', onMove);
+      } else {
+        menu.classList.remove('on', 'up', 'tight'); box.appendChild(menu);
+        removeEventListener('scroll', onMove, {capture: true}); removeEventListener('resize', onMove);
+        if (window.visualViewport) visualViewport.removeEventListener('resize', onMove);
+      }
+    };
     t.addEventListener('click', e => { e.stopPropagation(); set(!box.classList.contains('open')); });
     menu.addEventListener('click', () => setTimeout(() => set(false), 0));
-    document.addEventListener('click', e => { if (!box.contains(e.target)) set(false); });
+    document.addEventListener('click', e => { if (!box.contains(e.target) && !menu.contains(e.target)) set(false); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && box.classList.contains('open')) { set(false); t.focus(); } });
     window.closeActions = () => set(false);
   })();
