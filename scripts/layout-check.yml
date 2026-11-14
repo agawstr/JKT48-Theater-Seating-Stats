@@ -1,0 +1,50 @@
+name: Layout check
+
+# Uji tata letak di Chromium headless (7 ukuran layar, index + admin): tidak melebar, bar pencarian sejajar,
+# menu Aksi tidak terpotong, Bandingkan periode tergambar, tanpa error JS. Skrip: scripts/layout_test.js
+# Hanya jalan saat tampilan/kode berubah (bukan saat data.json atau foto saja) supaya hemat menit Actions.
+on:
+  push:
+    branches: [main]
+    paths:
+      - index.html
+      - admin.html
+      - sw.js
+      - 'assets/**'
+      - scripts/layout_test.js
+      - .github/workflows/layout-check.yml
+  pull_request:
+    paths:
+      - index.html
+      - admin.html
+      - sw.js
+      - 'assets/**'
+      - scripts/layout_test.js
+      - .github/workflows/layout-check.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: layout-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  layout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Pasang Playwright + Chromium
+        run: |
+          npm install --no-save playwright@1.49.1
+          npx playwright install --with-deps chromium
+
+      - name: Uji tata letak
+        run: node scripts/layout_test.js
