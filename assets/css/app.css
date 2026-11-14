@@ -48,6 +48,12 @@ body.app .tab::before{content:'';flex:none;width:22px;height:22px;background:cur
   background:#1d1318;border:1px solid rgba(255,255,255,.14);box-shadow:0 18px 40px rgba(0,0,0,.55);
   display:none;flex-direction:column;gap:2px}
 .actions.open .actions-m{display:flex;animation:menu-in .35s var(--ios)}
+/* Menu dibuka sebagai lapisan fixed di <body> (lihat app.js: place()), posisinya dihitung dari ruang kosong di layar */
+.actions-m.on{position:fixed;right:auto;bottom:auto;z-index:60;display:flex;max-width:calc(100vw - 16px);overflow-y:auto;overscroll-behavior:contain;animation:menu-in .35s var(--ios)}
+.actions-m.on.up{animation:menu-in-up .35s var(--ios)}
+.actions-m.tight{padding:4px;gap:0}
+.actions-m.tight .btn-s{padding:9px 14px;font-size:13.5px}
+@keyframes menu-in-up{from{opacity:0;transform:translate3d(0,8px,0) scale(.97)}}
 .actions-m .btn-s{display:block;width:100%;text-align:left;border:none;background:transparent;border-radius:12px;padding:12px 14px;font-size:14px;min-height:0;box-shadow:none}
 .actions-m .btn-s:hover,.actions-m .btn-s:focus-visible{background:rgba(255,255,255,.09)}
 body.app #legend{justify-content:center}
