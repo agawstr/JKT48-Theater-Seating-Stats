@@ -334,6 +334,8 @@ html[data-glass=off] #tl-bar,html[data-glass=off] #gallery-bar,html[data-glass=o
 /* Riwayat: bar pencarian selebar kolom penuh, kiri-kanan sama (12px di HP), persis seperti bar Galeri dan Event.
    Dulu digeser 26-30px ke kanan supaya sejajar kartu timeline, hasilnya tidak simetris dengan judul yang di tengah. */
 #tl-bar{margin-left:0;margin-right:0;width:100%;max-width:var(--col-w,720px)}
+/* penghitung hasil kosong (belum mengetik) jangan ikut dihitung: dulu tetap memakan jarak flex 10px, jadi kolom cari tidak simetris di dalam panel */
+#tl-info:empty{display:none}
 #tl-q,#g-member,#ev-member,#ev-status{background-color:rgba(0,0,0,.26)}
 
 
